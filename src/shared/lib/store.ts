@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, User } from '../types/auth';
+import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
 
 export const useAuthStore = create<AuthState>()(
