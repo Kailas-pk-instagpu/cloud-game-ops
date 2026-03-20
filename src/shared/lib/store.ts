@@ -52,16 +52,24 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'gpu-cloud-auth',
-      onRehydrate: () => (state) => {
-        if (state?.theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      },
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        is2FAVerified: state.is2FAVerified,
+        isAuthenticated: state.isAuthenticated,
+        theme: state.theme,
+      } as AuthState),
     }
   )
 );
+
+// Apply theme on load
+const savedTheme = JSON.parse(localStorage.getItem('gpu-cloud-auth') || '{}')?.state?.theme;
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark');
+} else {
+  document.documentElement.classList.remove('dark');
+}
 
 // Notification store
 interface Notification {
