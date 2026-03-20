@@ -1,4 +1,5 @@
 export type Role = 'super_admin' | 'admin' | 'cafe_owner' | 'manager';
+export type TwoFAMethod = 'authenticator' | 'sms' | 'email' | null;
 
 export interface User {
   id: string;
@@ -9,6 +10,8 @@ export interface User {
   assignedScope: string[];
   avatar?: string;
   is2FAEnabled: boolean;
+  twoFAMethod: TwoFAMethod;
+  phone?: string;
   createdAt: string;
 }
 
@@ -22,6 +25,8 @@ export interface AuthState {
   verify2FA: (code: string) => boolean;
   logout: () => void;
   toggleTheme: () => void;
+  enable2FA: (method: TwoFAMethod, phone?: string) => void;
+  disable2FA: () => void;
 }
 
 export const ROLE_LABELS: Record<Role, string> = {
