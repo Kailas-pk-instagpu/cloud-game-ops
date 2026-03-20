@@ -1,10 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { DashboardLayout } from "@/shared/ui/organisms/DashboardLayout";
+import { RoleGuard } from "@/shared/lib/RoleGuard";
+import LoginPage from "./pages/LoginPage";
+import Verify2FAPage from "./pages/Verify2FAPage";
+import DashboardPage from "./pages/DashboardPage";
+import UsersPage from "./pages/UsersPage";
+import GPUNodesPage from "./pages/GPUNodesPage";
+import BranchesPage from "./pages/BranchesPage";
+import SeatsPage from "./pages/SeatsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +25,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/verify-2fa" element={<Verify2FAPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/users" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><UsersPage /></RoleGuard>} />
+            <Route path="/gpu-nodes" element={<RoleGuard roles={['super_admin']}><GPUNodesPage /></RoleGuard>} />
+            <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
+            <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />
+            <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
