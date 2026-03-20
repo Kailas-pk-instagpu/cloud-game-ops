@@ -49,6 +49,20 @@ export const useAuthStore = create<AuthState>()(
         set({ theme: newTheme });
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
       },
+
+      enable2FA: (method: TwoFAMethod, phone?: string) => {
+        const user = get().user;
+        if (user) {
+          set({ user: { ...user, is2FAEnabled: true, twoFAMethod: method, ...(phone ? { phone } : {}) } });
+        }
+      },
+
+      disable2FA: () => {
+        const user = get().user;
+        if (user) {
+          set({ user: { ...user, is2FAEnabled: false, twoFAMethod: null } });
+        }
+      },
     }),
     {
       name: 'gpu-cloud-auth',
