@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, User } from '../types/auth';
+import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
 
 export const useAuthStore = create<AuthState>()(
@@ -48,6 +48,20 @@ export const useAuthStore = create<AuthState>()(
         const newTheme = get().theme === 'dark' ? 'light' : 'dark';
         set({ theme: newTheme });
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
+      },
+
+      enable2FA: (method: TwoFAMethod, phone?: string) => {
+        const user = get().user;
+        if (user) {
+          set({ user: { ...user, is2FAEnabled: true, twoFAMethod: method, ...(phone ? { phone } : {}) } });
+        }
+      },
+
+      disable2FA: () => {
+        const user = get().user;
+        if (user) {
+          set({ user: { ...user, is2FAEnabled: false, twoFAMethod: null } });
+        }
       },
     }),
     {
