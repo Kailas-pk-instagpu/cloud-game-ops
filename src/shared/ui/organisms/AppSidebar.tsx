@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings,
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell,
 };
 
 export function AppSidebar() {
