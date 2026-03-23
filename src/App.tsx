@@ -14,6 +14,7 @@ import BranchesPage from "./pages/BranchesPage";
 import SeatsPage from "./pages/SeatsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
