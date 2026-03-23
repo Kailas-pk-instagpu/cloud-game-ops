@@ -98,7 +98,9 @@ interface Notification {
 interface NotificationState {
   notifications: Notification[];
   markAsRead: (id: string) => void;
-  clearAll: () => void;
+  markAllAsRead: () => void;
+  deleteNotification: (id: string) => void;
+  deleteAllNotifications: () => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set) => ({
@@ -109,5 +111,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     { id: '4', title: 'Node Offline', message: 'Node Delta went offline in Westside Lounge', type: 'error', timestamp: '5 hours ago', read: false },
   ],
   markAsRead: (id) => set((s) => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
-  clearAll: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
+  markAllAsRead: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
+  deleteNotification: (id) => set((s) => ({ notifications: s.notifications.filter(n => n.id !== id) })),
+  deleteAllNotifications: () => set({ notifications: [] }),
 }));
