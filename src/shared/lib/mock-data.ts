@@ -25,6 +25,9 @@ export interface Branch {
   totalSeats: number;
   activeSeats: number;
   status: 'active' | 'maintenance' | 'inactive';
+  adminId?: string;
+  cafeOwnerId?: string;
+  managerId?: string;
 }
 
 export interface Seat {
