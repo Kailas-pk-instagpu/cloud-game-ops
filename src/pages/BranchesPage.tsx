@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { useBranchStore } from '@/shared/lib/store';
-import { useAuthStore } from '@/shared/lib/store';
+import { useState, useMemo } from 'react';
+import { useBranchStore, useAuthStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { Branch } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
@@ -10,21 +9,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { Role } from '@/shared/types/auth';
 
 interface BranchForm {
   name: string;
   address: string;
   cafeId: string;
   totalSeats: number;
+  adminId: string;
+  cafeOwnerId: string;
   managerId: string;
 }
 
-const emptyForm: BranchForm = { name: '', address: '', cafeId: '', totalSeats: 10, managerId: '' };
+const emptyForm: BranchForm = { name: '', address: '', cafeId: '', totalSeats: 10, adminId: '', cafeOwnerId: '', managerId: '' };
+
+function getUsersByRole(role: Role) {
+  return MOCK_USERS.filter(u => u.role === role);
+}
+
+function getUserName(id?: string) {
+  if (!id) return null;
+  return MOCK_USERS.find(u => u.id === id);
+}
 
 export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
@@ -37,10 +48,31 @@ export default function BranchesPage() {
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
 
-  const managers = MOCK_USERS.filter(u => u.role === 'manager');
+  const userRole = currentUser?.role;
+
+  // Filter branches based on role scope
+  const visibleBranches = useMemo(() => {
+    if (!currentUser) return [];
+    if (userRole === 'super_admin') return branches;
+    if (userRole === 'admin') return branches.filter(b => b.adminId === currentUser.id || currentUser.assignedScope.includes(b.cafeId));
+    if (userRole === 'cafe_owner') return branches.filter(b => b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId));
+    return branches.filter(b => b.managerId === currentUser.id);
+  }, [branches, currentUser, userRole]);
+
+  const admins = getUsersByRole('admin');
+  const cafeOwners = getUsersByRole('cafe_owner');
+  const managers = getUsersByRole('manager');
+
+  const canCreate = userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner';
 
   const handleAdd = () => {
-    setForm(emptyForm);
+    const f = { ...emptyForm };
+    // Auto-assign current user based on role
+    if (userRole === 'admin') f.adminId = currentUser!.id;
+    if (userRole === 'cafe_owner') {
+      f.cafeOwnerId = currentUser!.id;
+    }
+    setForm(f);
     setShowAddDialog(true);
   };
 
@@ -51,7 +83,9 @@ export default function BranchesPage() {
       address: branch.address,
       cafeId: branch.cafeId,
       totalSeats: branch.totalSeats,
-      managerId: managers.find(m => m.assignedScope.includes(branch.id))?.id || '',
+      adminId: branch.adminId || '',
+      cafeOwnerId: branch.cafeOwnerId || '',
+      managerId: branch.managerId || '',
     });
     setShowManageDialog(true);
   };
@@ -73,6 +107,9 @@ export default function BranchesPage() {
       totalSeats: form.totalSeats,
       activeSeats: 0,
       status: 'active',
+      adminId: form.adminId || undefined,
+      cafeOwnerId: form.cafeOwnerId || undefined,
+      managerId: form.managerId || undefined,
     });
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
@@ -85,6 +122,9 @@ export default function BranchesPage() {
       address: form.address,
       totalSeats: form.totalSeats,
       activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
+      adminId: form.adminId || undefined,
+      cafeOwnerId: form.cafeOwnerId || undefined,
+      managerId: form.managerId || undefined,
     });
     toast.success(`Branch "${form.name}" updated successfully`);
     setShowManageDialog(false);
@@ -115,96 +155,223 @@ export default function BranchesPage() {
     setShowSettingsDialog(false);
   };
 
-  const BranchFormFields = ({ isEdit }: { isEdit: boolean }) => (
-    <div className="space-y-5">
-      {/* Step 1: Basic Info */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Step 1 — Branch Details
-        </p>
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="name">Branch Name *</Label>
-            <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <p className="text-xs text-muted-foreground mt-1">Give your branch a recognizable name</p>
-          </div>
-          <div>
-            <Label htmlFor="address">Address *</Label>
-            <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
-            <p className="text-xs text-muted-foreground mt-1">Full street address of the branch</p>
-          </div>
-        </div>
-      </div>
+  // Filtered user lists for assignments based on current user role
+  const getAssignableAdmins = () => {
+    if (userRole === 'super_admin') return admins;
+    return [];
+  };
 
-      <Separator />
+  const getAssignableCafeOwners = () => {
+    if (userRole === 'super_admin') return cafeOwners;
+    if (userRole === 'admin') return cafeOwners.filter(o => o.createdBy === currentUser!.id);
+    return [];
+  };
 
-      {/* Step 2: Seats */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Step 2 — Configure Seats
-        </p>
+  const getAssignableManagers = () => {
+    if (userRole === 'super_admin') return managers;
+    if (userRole === 'admin') {
+      const ownCafeOwners = cafeOwners.filter(o => o.createdBy === currentUser!.id).map(o => o.id);
+      return managers.filter(m => m.createdBy && ownCafeOwners.includes(m.createdBy));
+    }
+    if (userRole === 'cafe_owner') return managers.filter(m => m.createdBy === currentUser!.id);
+    return [];
+  };
+
+  const AssignmentUserLabel = ({ userId, role }: { userId?: string; role: string }) => {
+    const user = getUserName(userId);
+    if (!user) return <span className="text-muted-foreground italic text-xs">Not assigned</span>;
+    return (
+      <span className="text-sm flex items-center gap-1.5">
+        <span className="font-medium">{user.name}</span>
+        <span className="text-muted-foreground">({user.email})</span>
+      </span>
+    );
+  };
+
+  const BranchFormFields = ({ isEdit }: { isEdit: boolean }) => {
+    const assignableAdmins = getAssignableAdmins();
+    const assignableCafeOwners = getAssignableCafeOwners();
+    const assignableManagers = getAssignableManagers();
+
+    return (
+      <div className="space-y-5">
+        {/* Step 1: Basic Info */}
         <div>
-          <Label htmlFor="seats">Number of Seats</Label>
-          <div className="flex items-center gap-3 mt-1">
-            <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: Math.max(1, f.totalSeats - 1) }))}>−</Button>
-            <Input id="seats" type="number" min={1} className="w-24 text-center" value={form.totalSeats} onChange={e => setForm(f => ({ ...f, totalSeats: Math.max(1, parseInt(e.target.value) || 1) }))} />
-            <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: f.totalSeats + 1 }))}>+</Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {isEdit && selectedBranch
-              ? `Currently ${selectedBranch.activeSeats} seats are active out of ${selectedBranch.totalSeats}`
-              : 'How many gaming stations does this branch have?'}
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Step 1 — Branch Details
           </p>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="name">Branch Name *</Label>
+              <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <p className="text-xs text-muted-foreground mt-1">Give your branch a recognizable name</p>
+            </div>
+            <div>
+              <Label htmlFor="address">Address *</Label>
+              <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
+              <p className="text-xs text-muted-foreground mt-1">Full street address of the branch</p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <Separator />
+        <Separator />
 
-      {/* Step 3: Manager */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Step 3 — Assign Manager
-        </p>
+        {/* Step 2: Seats */}
         <div>
-          <Label htmlFor="manager">Branch Manager</Label>
-          <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v }))}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a manager (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No manager assigned</SelectItem>
-              {managers.map(m => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name} ({m.email})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">This manager will have access to manage this branch only</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Step 2 — Configure Seats
+          </p>
+          <div>
+            <Label htmlFor="seats">Number of Seats</Label>
+            <div className="flex items-center gap-3 mt-1">
+              <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: Math.max(1, f.totalSeats - 1) }))}>−</Button>
+              <Input id="seats" type="number" min={1} className="w-24 text-center" value={form.totalSeats} onChange={e => setForm(f => ({ ...f, totalSeats: Math.max(1, parseInt(e.target.value) || 1) }))} />
+              <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: f.totalSeats + 1 }))}>+</Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {isEdit && selectedBranch
+                ? `Currently ${selectedBranch.activeSeats} seats are active out of ${selectedBranch.totalSeats}`
+                : 'How many gaming stations does this branch have?'}
+            </p>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Step 3: Assign Users */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Step 3 — Assign Team
+          </p>
+          <p className="text-xs text-muted-foreground mb-4">Assign users to manage and operate this branch</p>
+          <div className="space-y-4">
+            {/* Admin Assignment - only Super Admin can assign */}
+            {assignableAdmins.length > 0 && (
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1">
+                  <Shield className="h-3.5 w-3.5 text-destructive" /> Admin
+                </Label>
+                <Select value={form.adminId} onValueChange={v => setForm(f => ({ ...f, adminId: v === 'none' ? '' : v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an admin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No admin assigned</SelectItem>
+                    {assignableAdmins.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name} — {u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Admin will oversee this branch's operations</p>
+              </div>
+            )}
+
+            {/* Cafe Owner Assignment - Super Admin and Admin can assign */}
+            {assignableCafeOwners.length > 0 && (
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1">
+                  <User className="h-3.5 w-3.5 text-primary" /> Cafe Owner
+                </Label>
+                <Select value={form.cafeOwnerId} onValueChange={v => setForm(f => ({ ...f, cafeOwnerId: v === 'none' ? '' : v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a cafe owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No cafe owner assigned</SelectItem>
+                    {assignableCafeOwners.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name} — {u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Cafe owner will manage day-to-day operations</p>
+              </div>
+            )}
+
+            {/* Manager Assignment - Super Admin, Admin, Cafe Owner can assign */}
+            {assignableManagers.length > 0 && (
+              <div>
+                <Label className="flex items-center gap-1.5 mb-1">
+                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Manager
+                </Label>
+                <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v === 'none' ? '' : v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a manager" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No manager assigned</SelectItem>
+                    {assignableManagers.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name} — {u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Manager will handle this specific branch</p>
+              </div>
+            )}
+
+            {assignableAdmins.length === 0 && assignableCafeOwners.length === 0 && assignableManagers.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">No users available for assignment at your permission level</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const AssignedTeamCard = ({ branch }: { branch: Branch }) => {
+    const admin = getUserName(branch.adminId);
+    const owner = getUserName(branch.cafeOwnerId);
+    const manager = getUserName(branch.managerId);
+
+    const assignments = [
+      { label: 'Admin', user: admin, icon: Shield, color: 'text-destructive' },
+      { label: 'Cafe Owner', user: owner, icon: User, color: 'text-primary' },
+      { label: 'Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
+    ];
+
+    return (
+      <div className="space-y-1.5 mt-1">
+        {assignments.map(a => (
+          <div key={a.label} className="flex items-center gap-1.5 text-sm">
+            <a.icon className={`h-3 w-3 ${a.color} shrink-0`} />
+            <span className="text-muted-foreground text-xs w-[72px] shrink-0">{a.label}:</span>
+            {a.user ? (
+              <span className="text-xs font-medium truncate">{a.user.name}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground italic">Unassigned</span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Branches</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage gaming cafe locations and seat configurations</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage gaming cafe locations, seats, and team assignments</p>
         </div>
-        <Button className="gradient-primary text-primary-foreground gap-2" onClick={handleAdd}>
-          <Plus className="h-4 w-4" /> Add Branch
-        </Button>
+        {canCreate && (
+          <Button className="gradient-primary text-primary-foreground gap-2" onClick={handleAdd}>
+            <Plus className="h-4 w-4" /> Add Branch
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Branches', value: branches.length, icon: Building2 },
-          { label: 'Active', value: branches.filter(b => b.status === 'active').length, icon: Power },
-          { label: 'Total Seats', value: branches.reduce((s, b) => s + b.totalSeats, 0), icon: Armchair },
-          { label: 'Active Seats', value: branches.reduce((s, b) => s + b.activeSeats, 0), icon: Monitor },
+          { label: 'Total Branches', value: visibleBranches.length, icon: Building2 },
+          { label: 'Active', value: visibleBranches.filter(b => b.status === 'active').length, icon: Power },
+          { label: 'Total Seats', value: visibleBranches.reduce((s, b) => s + b.totalSeats, 0), icon: Armchair },
+          { label: 'Active Seats', value: visibleBranches.reduce((s, b) => s + b.activeSeats, 0), icon: Monitor },
         ].map(stat => (
           <Card key={stat.label}>
             <CardContent className="p-4 flex items-center gap-3">
@@ -222,46 +389,62 @@ export default function BranchesPage() {
 
       {/* Branch Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {branches.map(branch => {
-          const manager = managers.find(m => m.assignedScope.includes(branch.id));
-          return (
-            <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' ? 'opacity-60' : ''}`}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold">{branch.name}</h3>
-                  </div>
-                  <StatusBadge status={branch.status} />
+        {visibleBranches.map(branch => (
+          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' ? 'opacity-60' : ''}`}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">{branch.name}</h3>
                 </div>
-                <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                  <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {branch.address}</p>
-                  <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {branch.activeSeats} active / {branch.totalSeats} total seats</p>
-                  <p className="flex items-center gap-1.5">
-                    <UserCheck className="h-3.5 w-3.5" />
-                    {manager ? `Manager: ${manager.name}` : 'No manager assigned'}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
-                    <Edit className="h-3.5 w-3.5" /> Manage
-                  </Button>
+                <StatusBadge status={branch.status} />
+              </div>
+              <div className="space-y-2 text-sm text-muted-foreground mb-2">
+                <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {branch.address}</p>
+                <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {branch.activeSeats} active / {branch.totalSeats} total seats</p>
+              </div>
+
+              {/* Assigned Team */}
+              <div className="p-3 rounded-lg bg-muted/50 border mb-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Assigned Team
+                </p>
+                <AssignedTeamCard branch={branch} />
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
+                  <Edit className="h-3.5 w-3.5" /> Manage
+                </Button>
+                {(userRole === 'super_admin' || userRole === 'admin') && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(branch)}>
                     <Settings className="h-3.5 w-3.5" /> Settings
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {visibleBranches.length === 0 && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="font-semibold text-lg mb-1">No branches found</h3>
+            <p className="text-sm text-muted-foreground">
+              {canCreate ? 'Get started by adding your first branch' : 'No branches are assigned to you yet'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Add Branch Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Add New Branch</DialogTitle>
-            <DialogDescription>Set up a new gaming cafe location with seats and manager</DialogDescription>
+            <DialogDescription>Set up a new gaming cafe location with seats and team assignments</DialogDescription>
           </DialogHeader>
           <BranchFormFields isEdit={false} />
           <DialogFooter className="mt-4">
@@ -276,7 +459,7 @@ export default function BranchesPage() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Edit className="h-5 w-5" /> Edit Branch</DialogTitle>
-            <DialogDescription>Update branch details, seats, and manager assignment</DialogDescription>
+            <DialogDescription>Update branch details, seats, and team assignments</DialogDescription>
           </DialogHeader>
           <BranchFormFields isEdit={true} />
           <DialogFooter className="mt-4">

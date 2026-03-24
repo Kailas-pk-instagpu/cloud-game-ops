@@ -25,6 +25,9 @@ export interface Branch {
   totalSeats: number;
   activeSeats: number;
   status: 'active' | 'maintenance' | 'inactive';
+  adminId?: string;
+  cafeOwnerId?: string;
+  managerId?: string;
 }
 
 export interface Seat {
@@ -50,10 +53,10 @@ export interface GPUNode {
 }
 
 export const MOCK_BRANCHES: Branch[] = [
-  { id: 'branch-1', name: 'Downtown Hub', cafeId: 'cafe-1', address: '123 Main St', totalSeats: 20, activeSeats: 14, status: 'active' },
-  { id: 'branch-2', name: 'Uptown Arena', cafeId: 'cafe-1', address: '456 High St', totalSeats: 15, activeSeats: 10, status: 'active' },
-  { id: 'branch-3', name: 'Westside Lounge', cafeId: 'cafe-2', address: '789 West Blvd', totalSeats: 25, activeSeats: 18, status: 'active' },
-  { id: 'branch-4', name: 'Eastside Den', cafeId: 'cafe-2', address: '321 East Ave', totalSeats: 12, activeSeats: 8, status: 'maintenance' },
+  { id: 'branch-1', name: 'Downtown Hub', cafeId: 'cafe-1', address: '123 Main St', totalSeats: 20, activeSeats: 14, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '6' },
+  { id: 'branch-2', name: 'Uptown Arena', cafeId: 'cafe-1', address: '456 High St', totalSeats: 15, activeSeats: 10, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '7' },
+  { id: 'branch-3', name: 'Westside Lounge', cafeId: 'cafe-2', address: '789 West Blvd', totalSeats: 25, activeSeats: 18, status: 'active', adminId: '2', cafeOwnerId: '5' },
+  { id: 'branch-4', name: 'Eastside Den', cafeId: 'cafe-2', address: '321 East Ave', totalSeats: 12, activeSeats: 8, status: 'maintenance', adminId: '3' },
 ];
 
 export const MOCK_SEATS: Seat[] = Array.from({ length: 20 }, (_, i) => ({
