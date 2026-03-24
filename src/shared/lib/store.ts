@@ -85,6 +85,35 @@ if (savedTheme === 'dark') {
   document.documentElement.classList.remove('dark');
 }
 
+// Branch store
+import { Branch, MOCK_BRANCHES } from './mock-data';
+
+interface BranchState {
+  branches: Branch[];
+  addBranch: (branch: Omit<Branch, 'id'>) => void;
+  updateBranch: (id: string, updates: Partial<Branch>) => void;
+  deleteBranch: (id: string) => void;
+  toggleBranchStatus: (id: string) => void;
+}
+
+export const useBranchStore = create<BranchState>((set) => ({
+  branches: [...MOCK_BRANCHES],
+  addBranch: (branch) => set((s) => ({
+    branches: [...s.branches, { ...branch, id: `branch-${Date.now()}` }],
+  })),
+  updateBranch: (id, updates) => set((s) => ({
+    branches: s.branches.map(b => b.id === id ? { ...b, ...updates } : b),
+  })),
+  deleteBranch: (id) => set((s) => ({
+    branches: s.branches.filter(b => b.id !== id),
+  })),
+  toggleBranchStatus: (id) => set((s) => ({
+    branches: s.branches.map(b =>
+      b.id === id ? { ...b, status: b.status === 'inactive' ? 'active' : 'inactive' } : b
+    ),
+  })),
+}));
+
 // Notification store
 interface Notification {
   id: string;
