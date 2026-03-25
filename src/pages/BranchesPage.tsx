@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useBranchStore, useAuthStore } from '@/shared/lib/store';
+import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
-import { Branch } from '@/shared/lib/mock-data';
+import { Branch, Seat } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
+import { cn } from '@/lib/utils';
 
 interface BranchForm {
   name: string;
