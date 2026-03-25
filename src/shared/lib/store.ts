@@ -114,6 +114,27 @@ export const useBranchStore = create<BranchState>((set) => ({
   })),
 }));
 
+// Seat store
+import { Seat, MOCK_SEATS } from './mock-data';
+
+interface SeatState {
+  seats: Seat[];
+  getSeatsByBranch: (branchId: string) => Seat[];
+  updateSeatStatus: (seatId: string, status: Seat['status']) => void;
+  updateSeat: (seatId: string, updates: Partial<Seat>) => void;
+}
+
+export const useSeatStore = create<SeatState>((set, get) => ({
+  seats: [...MOCK_SEATS],
+  getSeatsByBranch: (branchId: string) => get().seats.filter(s => s.branchId === branchId),
+  updateSeatStatus: (seatId, status) => set((s) => ({
+    seats: s.seats.map(seat => seat.id === seatId ? { ...seat, status, ...(status !== 'occupied' ? { playerName: undefined, startTime: undefined } : {}) } : seat),
+  })),
+  updateSeat: (seatId, updates) => set((s) => ({
+    seats: s.seats.map(seat => seat.id === seatId ? { ...seat, ...updates } : seat),
+  })),
+}));
+
 // Notification store
 interface Notification {
   id: string;
