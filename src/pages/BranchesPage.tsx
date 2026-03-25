@@ -417,6 +417,9 @@ export default function BranchesPage() {
               </div>
 
               <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
+                  <LayoutGrid className="h-3.5 w-3.5" /> Seats
+                </Button>
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
