@@ -12,6 +12,8 @@ export interface User {
   is2FAEnabled: boolean;
   twoFAMethod: TwoFAMethod;
   phone?: string;
+  address?: string;
+  logoUrl?: string;
   createdAt: string;
 }
 
