@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useBranchStore, useAuthStore } from '@/shared/lib/store';
+import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
-import { Branch } from '@/shared/lib/mock-data';
+import { Branch, Seat } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
+import { cn } from '@/lib/utils';
 
 interface BranchForm {
   name: string;
@@ -39,12 +41,14 @@ function getUserName(id?: string) {
 
 export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
+  const { seats, updateSeatStatus } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showManageDialog, setShowManageDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
 
@@ -413,6 +417,9 @@ export default function BranchesPage() {
               </div>
 
               <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
+                  <LayoutGrid className="h-3.5 w-3.5" /> Seats
+                </Button>
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
@@ -502,19 +509,100 @@ export default function BranchesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="max-w-sm">
+
+      {/* Seat Grid Dialog */}
+      <Dialog open={showSeatGrid} onOpenChange={setShowSeatGrid}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Delete Branch?</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <LayoutGrid className="h-5 w-5 text-primary" />
+              {selectedBranch?.name} — Seat Map
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedBranch?.name}"? This action cannot be undone. All seats and data associated with this branch will be removed.
+              Click a seat to change its status. Colors indicate availability.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-          </DialogFooter>
+          {selectedBranch && (() => {
+            const branchSeats = seats.filter(s => s.branchId === selectedBranch.id);
+            const available = branchSeats.filter(s => s.status === 'available').length;
+            const occupied = branchSeats.filter(s => s.status === 'occupied').length;
+            const maintenance = branchSeats.filter(s => s.status === 'maintenance').length;
+
+            return (
+              <div className="space-y-4">
+                {/* Legend & Stats */}
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-sm bg-success/80" />
+                    <span className="text-muted-foreground">Available ({available})</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-sm bg-destructive/80" />
+                    <span className="text-muted-foreground">Occupied ({occupied})</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-sm bg-warning/80" />
+                    <span className="text-muted-foreground">Maintenance ({maintenance})</span>
+                  </div>
+                </div>
+
+                {/* Grid */}
+                <TooltipProvider delayDuration={200}>
+                  <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                    {branchSeats.map(seat => {
+                      const statusColor = seat.status === 'available'
+                        ? 'bg-success/15 border-success/30 hover:bg-success/25 text-success'
+                        : seat.status === 'occupied'
+                        ? 'bg-destructive/15 border-destructive/30 hover:bg-destructive/25 text-destructive'
+                        : 'bg-warning/15 border-warning/30 hover:bg-warning/25 text-warning';
+
+                      const cycleStatus = () => {
+                        const next: Record<string, Seat['status']> = {
+                          available: 'occupied',
+                          occupied: 'maintenance',
+                          maintenance: 'available',
+                        };
+                        updateSeatStatus(seat.id, next[seat.status]);
+                        toast.success(`Seat ${seat.number} → ${next[seat.status]}`);
+                      };
+
+                      return (
+                        <Tooltip key={seat.id}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={cycleStatus}
+                              className={cn(
+                                'relative flex flex-col items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer aspect-square',
+                                statusColor
+                              )}
+                            >
+                              <Armchair className="h-4 w-4 mb-0.5" />
+                              <span className="text-xs font-bold">{seat.number}</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs space-y-1 max-w-[180px]">
+                            <p className="font-semibold">Seat #{seat.number}</p>
+                            <p className="capitalize">Status: {seat.status}</p>
+                            <p className="flex items-center gap-1"><Cpu className="h-3 w-3" /> {seat.gpuModel}</p>
+                            {seat.playerName && <p className="flex items-center gap-1"><User className="h-3 w-3" /> {seat.playerName}</p>}
+                            {seat.startTime && <p className="flex items-center gap-1"><Clock className="h-3 w-3" /> Since {seat.startTime}</p>}
+                            <p className="text-muted-foreground italic mt-1">Click to cycle status</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                </TooltipProvider>
+
+                {branchSeats.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Armchair className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No seats configured for this branch yet</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>

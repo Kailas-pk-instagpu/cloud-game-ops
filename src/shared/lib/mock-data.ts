@@ -59,15 +59,26 @@ export const MOCK_BRANCHES: Branch[] = [
   { id: 'branch-4', name: 'Eastside Den', cafeId: 'cafe-2', address: '321 East Ave', totalSeats: 12, activeSeats: 8, status: 'maintenance', adminId: '3' },
 ];
 
-export const MOCK_SEATS: Seat[] = Array.from({ length: 20 }, (_, i) => ({
-  id: `seat-${i + 1}`,
-  branchId: 'branch-1',
-  number: i + 1,
-  status: i < 8 ? 'occupied' : i === 18 ? 'maintenance' : 'available' as Seat['status'],
-  playerName: i < 8 ? ['John D.', 'Sarah M.', 'Mike T.', 'Lisa K.', 'Dave W.', 'Amy R.', 'Chris L.', 'Nina P.'][i] : undefined,
-  startTime: i < 8 ? `${9 + Math.floor(i / 2)}:${i % 2 === 0 ? '00' : '30'} AM` : undefined,
-  gpuModel: i % 3 === 0 ? 'RTX 4090' : i % 3 === 1 ? 'RTX 4080' : 'RTX 4070 Ti',
-}));
+function generateSeatsForBranch(branchId: string, total: number, activeCount: number): Seat[] {
+  const players = ['John D.', 'Sarah M.', 'Mike T.', 'Lisa K.', 'Dave W.', 'Amy R.', 'Chris L.', 'Nina P.', 'Tom B.', 'Zoe W.'];
+  const gpus = ['RTX 4090', 'RTX 4080', 'RTX 4070 Ti'];
+  return Array.from({ length: total }, (_, i) => ({
+    id: `${branchId}-seat-${i + 1}`,
+    branchId,
+    number: i + 1,
+    status: (i < activeCount ? 'occupied' : i === total - 1 && total > 3 ? 'maintenance' : 'available') as Seat['status'],
+    playerName: i < activeCount ? players[i % players.length] : undefined,
+    startTime: i < activeCount ? `${9 + Math.floor(i / 2)}:${i % 2 === 0 ? '00' : '30'} AM` : undefined,
+    gpuModel: gpus[i % 3],
+  }));
+}
+
+export const MOCK_SEATS: Seat[] = [
+  ...generateSeatsForBranch('branch-1', 20, 14),
+  ...generateSeatsForBranch('branch-2', 15, 10),
+  ...generateSeatsForBranch('branch-3', 25, 18),
+  ...generateSeatsForBranch('branch-4', 12, 8),
+];
 
 export const MOCK_GPU_NODES: GPUNode[] = [
   { id: 'gpu-1', name: 'Node Alpha', status: 'online', gpuModel: 'RTX 4090', temperature: 62, utilization: 78, memoryUsed: 18, memoryTotal: 24, location: 'Downtown Hub' },
