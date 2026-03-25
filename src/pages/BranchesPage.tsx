@@ -41,12 +41,14 @@ function getUserName(id?: string) {
 
 export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
+  const { seats, updateSeatStatus } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showManageDialog, setShowManageDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
 
