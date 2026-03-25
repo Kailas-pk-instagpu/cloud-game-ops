@@ -29,6 +29,8 @@ export interface AuthState {
   toggleTheme: () => void;
   enable2FA: (method: TwoFAMethod, phone?: string) => void;
   disable2FA: () => void;
+  updateProfile: (updates: Partial<Pick<User, 'name' | 'email' | 'phone' | 'address' | 'logoUrl'>>) => void;
+  changePassword: (oldPassword: string, newPassword: string) => { success: boolean; error?: string };
 }
 
 export const ROLE_LABELS: Record<Role, string> = {
