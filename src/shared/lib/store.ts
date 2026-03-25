@@ -63,6 +63,25 @@ export const useAuthStore = create<AuthState>()(
           set({ user: { ...user, is2FAEnabled: false, twoFAMethod: null } });
         }
       },
+
+      updateProfile: (updates) => {
+        const user = get().user;
+        if (user) {
+          set({ user: { ...user, ...updates } });
+        }
+      },
+
+      changePassword: (oldPassword: string, newPassword: string) => {
+        const user = get().user;
+        if (!user) return { success: false, error: 'Not logged in' };
+        const cred = MOCK_CREDENTIALS[user.email];
+        if (!cred || cred.password !== oldPassword) {
+          return { success: false, error: 'Current password is incorrect' };
+        }
+        // Update mock credential
+        MOCK_CREDENTIALS[user.email].password = newPassword;
+        return { success: true };
+      },
     }),
     {
       name: 'gpu-cloud-auth',
