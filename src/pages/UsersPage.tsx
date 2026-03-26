@@ -49,6 +49,9 @@ export default function UsersPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailUser, setDetailUser] = useState<ManagedUser | null>(null);
+  const [detailHistory, setDetailHistory] = useState<ManagedUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ManagedUser | null>(null);
 
   // Form states
