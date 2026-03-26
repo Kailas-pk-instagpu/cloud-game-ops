@@ -537,6 +537,176 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Detail Dialog */}
+      <Dialog open={showDetail} onOpenChange={v => { if (!v) { setDetailUser(null); setDetailHistory([]); } setShowDetail(v); }}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          {detailUser && (() => {
+            const creatorChain = getCreatorChain(detailUser);
+            const subordinates = getSubordinates(detailUser.id);
+            const canNavigate = isSuperAdmin || currentUser.role === 'admin';
+
+            return (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-2">
+                    {detailHistory.length > 0 && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={navigateBack}>
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <div>
+                      <DialogTitle className="text-lg">User Details</DialogTitle>
+                      <DialogDescription>View profile and assigned hierarchy</DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                {/* Profile Card */}
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 border border-border">
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage src={detailUser.logoUrl} />
+                    <AvatarFallback className="gradient-primary text-primary-foreground text-lg font-bold">
+                      {detailUser.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-base truncate">{detailUser.name}</h3>
+                    <Badge variant="outline" className={`text-[10px] mt-1 ${roleColor(detailUser.role)}`}>
+                      {ROLE_LABELS[detailUser.role]}
+                    </Badge>
+                  </div>
+                  <Badge variant="outline" className={`text-[10px] ${detailUser.status === 'active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                    {detailUser.status === 'active' ? 'Active' : 'Disabled'}
+                  </Badge>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{detailUser.email}</span>
+                  </div>
+                  {detailUser.phone && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="h-4 w-4 shrink-0" />
+                      <span>{detailUser.phone}</span>
+                    </div>
+                  )}
+                  {detailUser.address && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{detailUser.address}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="h-4 w-4 shrink-0" />
+                    <span>Joined {detailUser.createdAt}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Shield className="h-4 w-4 shrink-0" />
+                    <span>2FA {detailUser.is2FAEnabled ? `Enabled (${detailUser.twoFAMethod})` : 'Disabled'}</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Creator Chain (upward hierarchy) */}
+                {creatorChain.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Assigned By</p>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {creatorChain.map((creator, i) => (
+                        <span key={creator.id} className="flex items-center gap-1">
+                          {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                          {canNavigate ? (
+                            <button
+                              className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                              onClick={() => navigateToUser(creator as ManagedUser)}
+                            >
+                              {creator.name}
+                              <span className="text-muted-foreground ml-1">({ROLE_LABELS[creator.role]})</span>
+                            </button>
+                          ) : (
+                            <span className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                              {creator.name} ({ROLE_LABELS[creator.role]})
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary font-semibold">
+                        {detailUser.name} ({ROLE_LABELS[detailUser.role]})
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Subordinates (downward hierarchy) */}
+                {subordinates.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                      Assigned Users ({subordinates.length})
+                    </p>
+                    <div className="space-y-2">
+                      {subordinates.map(sub => {
+                        const subSubs = getSubordinates(sub.id);
+                        return (
+                          <div key={sub.id} className="rounded-lg border border-border bg-muted/30 p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold gradient-primary text-primary-foreground">
+                                  {sub.name.split(' ').map(n => n[0]).join('')}
+                                </div>
+                                <div>
+                                  {canNavigate ? (
+                                    <button
+                                      className="text-sm font-medium hover:text-primary transition-colors text-left"
+                                      onClick={() => navigateToUser(sub)}
+                                    >
+                                      {sub.name}
+                                    </button>
+                                  ) : (
+                                    <p className="text-sm font-medium">{sub.name}</p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground">{sub.email}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className={`text-[10px] ${roleColor(sub.role)}`}>
+                                  {ROLE_LABELS[sub.role]}
+                                </Badge>
+                                {canNavigate && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigateToUser(sub)}>
+                                    <ChevronRight className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            {/* Show sub-subordinates count */}
+                            {subSubs.length > 0 && (
+                              <p className="text-[11px] text-muted-foreground mt-2 pl-11">
+                                {subSubs.length} assigned user{subSubs.length > 1 ? 's' : ''} under this {ROLE_LABELS[sub.role].toLowerCase()}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {subordinates.length === 0 && detailUser.role !== 'manager' && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <UsersIcon className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-xs">No users assigned yet</p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
