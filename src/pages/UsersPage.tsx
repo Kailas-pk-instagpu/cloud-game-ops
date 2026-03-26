@@ -269,7 +269,7 @@ export default function UsersPage() {
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${u.status === 'disabled' ? 'bg-muted text-muted-foreground' : 'gradient-primary text-primary-foreground'}`}>
                   {u.name.split(' ').map(n => n[0]).join('')}
                 </div>
-                <div className="min-w-0">
+              <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm truncate">{u.name}</p>
                     {u.status === 'disabled' && (
@@ -277,6 +277,22 @@ export default function UsersPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                  {(() => {
+                    const chain: string[] = [];
+                    const creator = users.find(c => c.id === u.createdBy);
+                    if (creator) {
+                      chain.push(`${ROLE_LABELS[creator.role]}: ${creator.name}`);
+                      const grandCreator = users.find(c => c.id === creator.createdBy);
+                      if (grandCreator) {
+                        chain.unshift(`${ROLE_LABELS[grandCreator.role]}: ${grandCreator.name}`);
+                      }
+                    }
+                    return chain.length > 0 ? (
+                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 truncate">
+                        {chain.join(' → ')}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
