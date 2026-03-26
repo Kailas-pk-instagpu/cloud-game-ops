@@ -47,9 +47,18 @@ export function AppNavbar() {
 
       <div className="flex items-center gap-2">
         {user && (
-          <span className="hidden sm:inline text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
-            {ROLE_LABELS[user.role]}
-          </span>
+          <div className="hidden sm:flex items-center gap-2">
+            {user.logoUrl ? (
+              <img src={user.logoUrl} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
+            ) : (
+              <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                {user.name.split(' ').map(n => n[0]).join('')}
+              </div>
+            )}
+            <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+              {ROLE_LABELS[user.role]}
+            </span>
+          </div>
         )}
 
         <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 text-muted-foreground hover:text-foreground">
