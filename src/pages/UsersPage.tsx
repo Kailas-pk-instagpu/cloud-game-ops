@@ -306,7 +306,11 @@ export default function UsersPage() {
       {/* User List */}
       <div className="grid gap-3">
         {visibleUsers.map(u => (
-          <Card key={u.id} className={`transition-shadow hover:shadow-sm ${u.status === 'disabled' ? 'opacity-60' : ''}`}>
+          <Card
+            key={u.id}
+            className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
+            onClick={() => openDetail(u)}
+          >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${u.status === 'disabled' ? 'bg-muted text-muted-foreground' : 'gradient-primary text-primary-foreground'}`}>
@@ -348,7 +352,7 @@ export default function UsersPage() {
                 {canActOn(u) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={e => e.stopPropagation()}>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
