@@ -183,6 +183,43 @@ export default function UsersPage() {
     return canManageUser(currentUser.role, target.role);
   };
 
+  const openDetail = (u: ManagedUser) => {
+    setDetailUser(u);
+    setDetailHistory([]);
+    setShowDetail(true);
+  };
+
+  const navigateToUser = (u: ManagedUser) => {
+    setDetailHistory(prev => detailUser ? [...prev, detailUser] : prev);
+    setDetailUser(u);
+  };
+
+  const navigateBack = () => {
+    const prev = [...detailHistory];
+    const last = prev.pop();
+    if (last) {
+      setDetailUser(last);
+      setDetailHistory(prev);
+    }
+  };
+
+  const getSubordinates = (userId: string): ManagedUser[] => {
+    return users.filter(u => u.createdBy === userId);
+  };
+
+  const getCreatorChain = (u: ManagedUser): ManagedUser[] => {
+    const chain: ManagedUser[] = [];
+    let current = u;
+    while (current.createdBy) {
+      const creator = users.find(c => c.id === current.createdBy);
+      if (creator) {
+        chain.unshift(creator as ManagedUser);
+        current = creator as ManagedUser;
+      } else break;
+    }
+    return chain;
+  };
+
   // Hierarchy breadcrumb
   const hierarchy = ['Super Admin', 'Admin', 'Cafe Owner', 'Manager'];
   const currentIndex = hierarchy.indexOf(ROLE_LABELS[currentUser.role]);
