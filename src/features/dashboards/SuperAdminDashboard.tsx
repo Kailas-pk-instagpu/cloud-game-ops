@@ -77,8 +77,8 @@ export default function SuperAdminDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(220, 9%, 46%)' }} />
-                  <YAxis className="text-xs" tick={{ fill: 'hsl(220, 9%, 46%)' }} tickFormatter={v => `$${v/1000}k`} />
+                  <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `$${v/1000}k`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']} />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(234, 89%, 64%)" fill="url(#revenueGrad)" strokeWidth={2} />
                 </AreaChart>
@@ -132,8 +132,8 @@ export default function SuperAdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={HOURLY_LOAD}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="hour" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 10 }} />
+                  <XAxis dataKey="hour" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value: number) => [`${value}%`, 'Load']} />
                   <Line type="monotone" dataKey="load" stroke="hsl(var(--info))" strokeWidth={2} dot={false} />
                 </LineChart>
@@ -204,8 +204,8 @@ export default function SuperAdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Bar dataKey="sessions" fill="hsl(234, 89%, 64%)" radius={[4, 4, 0, 0]} />
                 </BarChart>

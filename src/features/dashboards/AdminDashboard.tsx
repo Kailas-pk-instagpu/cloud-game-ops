@@ -64,8 +64,8 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Bar dataKey="revenue" fill="hsl(234, 89%, 64%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -84,8 +84,8 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_REVENUE} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis type="number" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 11 }} tickFormatter={v => `$${v/1000}k`} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 11 }} width={70} />
+                  <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={v => `$${v/1000}k`} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} width={70} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} />
                   <Bar dataKey="revenue" fill="hsl(var(--info))" radius={[0, 4, 4, 0]} />
                 </BarChart>
