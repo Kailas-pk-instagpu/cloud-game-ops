@@ -72,8 +72,8 @@ export default function CafeOwnerDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(152, 69%, 41%)" fill="url(#ownerRevGrad)" strokeWidth={2} />
                 </AreaChart>
@@ -92,8 +92,8 @@ export default function CafeOwnerDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={PEAK_HOURS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="hour" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 11 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 11 }} />
+                  <XAxis dataKey="hour" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(v: number) => [`${v} customers`, 'Traffic']} />
                   <Bar dataKey="customers" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
                 </BarChart>

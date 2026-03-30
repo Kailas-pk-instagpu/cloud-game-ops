@@ -150,8 +150,8 @@ export default function ManagerDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={HOURLY_SESSIONS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="hour" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 10 }} />
+                  <XAxis dataKey="hour" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
                 </BarChart>
@@ -225,9 +225,9 @@ export default function ManagerDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={REVENUE_DATA}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
-                <YAxis yAxisId="left" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} tickFormatter={v => `$${v}`} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(220, 9%, 46%)', fontSize: 12 }} />
+                <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                <YAxis yAxisId="left" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                 <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
                 <Line yAxisId="right" type="monotone" dataKey="sessions" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
