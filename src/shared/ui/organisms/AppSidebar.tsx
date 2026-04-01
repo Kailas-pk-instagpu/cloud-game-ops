@@ -3,7 +3,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { getRoutesForRole } from '@/shared/lib/rbac';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, LogOut, Gamepad2, Bell
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2, Bell
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
