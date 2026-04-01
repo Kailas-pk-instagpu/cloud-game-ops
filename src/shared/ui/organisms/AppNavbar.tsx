@@ -29,7 +29,8 @@ const typeBg = {
 };
 
 export function AppNavbar() {
-  const { user, theme, toggleTheme } = useAuthStore();
+  const { user, theme, toggleTheme, logout } = useAuthStore();
+  const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
 
