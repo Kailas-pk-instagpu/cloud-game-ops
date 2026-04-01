@@ -28,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-2fa" element={<Verify2FAPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
