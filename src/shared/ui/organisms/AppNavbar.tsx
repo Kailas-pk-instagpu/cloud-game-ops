@@ -1,4 +1,5 @@
-import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { useNotificationStore } from '@/shared/lib/store';
 import { ROLE_LABELS } from '@/shared/types/auth';
