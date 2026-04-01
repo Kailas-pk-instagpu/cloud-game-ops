@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { getRoutesForRole } from '@/shared/lib/rbac';
 import { ROLE_LABELS } from '@/shared/types/auth';
