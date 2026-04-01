@@ -16,9 +16,8 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export function AppSidebar() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const location = useLocation();
-  const navigate = useNavigate();
   if (!user) return null;
 
   const routes = getRoutesForRole(user.role);
