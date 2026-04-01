@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { getRoutesForRole } from '@/shared/lib/rbac';
-import { ROLE_LABELS } from '@/shared/types/auth';
+
 import {
   LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2, Bell
 } from 'lucide-react';
@@ -69,21 +69,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-sidebar-border">
-        <div className="flex items-center gap-3 p-2 rounded-lg group-data-[collapsible=icon]:justify-center">
-          {user.logoUrl ? (
-            <img src={user.logoUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary-foreground">
-              {user.name.split(' ').map(n => n[0]).join('')}
-            </div>
-          )}
-          <div className="overflow-hidden group-data-[collapsible=icon]:hidden flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{user.name}</p>
-            <p className="text-[11px] text-sidebar-foreground/60">{ROLE_LABELS[user.role]}</p>
-          </div>
-        </div>
-      </SidebarFooter>
+      <SidebarFooter />
     </Sidebar>
   );
 }

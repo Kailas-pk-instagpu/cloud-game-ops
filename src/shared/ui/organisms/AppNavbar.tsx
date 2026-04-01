@@ -1,4 +1,4 @@
-import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
+import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { useNotificationStore } from '@/shared/lib/store';
@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
 } from '@/components/ui/sheet';
@@ -49,27 +52,37 @@ export function AppNavbar() {
 
       <div className="flex items-center gap-2">
         {user && (
-          <div className="hidden sm:flex items-center gap-2">
-            {user.logoUrl ? (
-              <img src={user.logoUrl} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
-            ) : (
-              <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-                {user.name.split(' ').map(n => n[0]).join('')}
-              </div>
-            )}
-            <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
-              {ROLE_LABELS[user.role]}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => { logout(); navigate('/login'); }}
-              className="h-9 w-9 text-muted-foreground hover:text-destructive"
-              title="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="hidden sm:flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors focus:outline-none">
+                {user.logoUrl ? (
+                  <img src={user.logoUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-[11px] font-bold text-primary-foreground">
+                    {user.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-semibold text-foreground">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => { logout(); navigate('/login'); }} className="cursor-pointer gap-2 text-destructive focus:text-destructive">
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
 
         <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 text-muted-foreground hover:text-foreground">
