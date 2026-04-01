@@ -3,7 +3,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { getRoutesForRole } from '@/shared/lib/rbac';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, LogOut, Gamepad2, Bell
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2, Bell
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -16,7 +16,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export function AppSidebar() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   if (!user) return null;
@@ -82,13 +82,6 @@ export function AppSidebar() {
             <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{user.name}</p>
             <p className="text-[11px] text-sidebar-foreground/60">{ROLE_LABELS[user.role]}</p>
           </div>
-          <button
-            onClick={() => { logout(); navigate('/login'); }}
-            className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:hidden"
-            title="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
         </div>
       </SidebarFooter>
     </Sidebar>

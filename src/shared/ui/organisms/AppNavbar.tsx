@@ -1,4 +1,5 @@
-import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { useNotificationStore } from '@/shared/lib/store';
 import { ROLE_LABELS } from '@/shared/types/auth';
@@ -28,7 +29,8 @@ const typeBg = {
 };
 
 export function AppNavbar() {
-  const { user, theme, toggleTheme } = useAuthStore();
+  const { user, theme, toggleTheme, logout } = useAuthStore();
+  const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -58,6 +60,15 @@ export function AppNavbar() {
             <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
               {ROLE_LABELS[user.role]}
             </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => { logout(); navigate('/login'); }}
+              className="h-9 w-9 text-muted-foreground hover:text-destructive"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         )}
 
