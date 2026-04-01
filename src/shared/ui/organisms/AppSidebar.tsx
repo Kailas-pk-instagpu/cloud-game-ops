@@ -82,13 +82,6 @@ export function AppSidebar() {
             <p className="text-sm font-medium text-sidebar-accent-foreground truncate">{user.name}</p>
             <p className="text-[11px] text-sidebar-foreground/60">{ROLE_LABELS[user.role]}</p>
           </div>
-          <button
-            onClick={() => { logout(); navigate('/login'); }}
-            className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-accent-foreground transition-colors group-data-[collapsible=icon]:hidden"
-            title="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
         </div>
       </SidebarFooter>
     </Sidebar>
