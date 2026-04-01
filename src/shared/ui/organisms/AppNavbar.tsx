@@ -1,4 +1,4 @@
-import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
+import { Bell, Moon, Sun, Search, Check, Trash2, CheckCheck, X, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { useNotificationStore } from '@/shared/lib/store';
@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
 } from '@/components/ui/sheet';
