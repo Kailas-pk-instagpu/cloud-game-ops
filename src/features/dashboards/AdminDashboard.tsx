@@ -80,7 +80,7 @@ export default function AdminDashboard() {
             <CardDescription>Compare branch performance</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-56">
+            <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_REVENUE} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
