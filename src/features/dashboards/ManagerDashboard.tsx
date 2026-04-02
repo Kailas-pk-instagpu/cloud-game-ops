@@ -107,7 +107,7 @@ export default function ManagerDashboard() {
               <CardTitle className="text-base font-semibold">Seat Map — Tap a seat to manage</CardTitle>
               <CardDescription>Click on any seat to check in/out players or restart</CardDescription>
             </div>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-success" /> Available</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-destructive" /> Occupied</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-warning" /> Maintenance</span>
