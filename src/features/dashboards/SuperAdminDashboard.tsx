@@ -160,7 +160,7 @@ export default function SuperAdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-4 mt-2">
+            <div className="flex justify-center gap-3 sm:gap-4 mt-2 flex-wrap">
               {ROLE_DISTRIBUTION.map((r, i) => (
                 <span key={i} className="flex items-center gap-1.5 text-xs">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
