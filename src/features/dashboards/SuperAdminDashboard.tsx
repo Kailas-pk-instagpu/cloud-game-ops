@@ -148,7 +148,7 @@ export default function SuperAdminDashboard() {
             <CardDescription>Active users by role</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48 flex items-center justify-center">
+            <div className="h-40 sm:h-48 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={ROLE_DISTRIBUTION} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={4} dataKey="value">
