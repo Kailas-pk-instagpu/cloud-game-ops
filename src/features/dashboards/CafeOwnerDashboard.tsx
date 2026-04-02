@@ -88,7 +88,7 @@ export default function CafeOwnerDashboard() {
             <CardDescription>When your branches are busiest today</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-56">
+            <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={PEAK_HOURS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
