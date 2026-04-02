@@ -311,7 +311,7 @@ export default function UsersPage() {
             className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
             onClick={() => openDetail(u)}
           >
-            <CardContent className="p-4 flex items-center justify-between gap-3">
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${u.status === 'disabled' ? 'bg-muted text-muted-foreground' : 'gradient-primary text-primary-foreground'}`}>
                   {u.name.split(' ').map(n => n[0]).join('')}
