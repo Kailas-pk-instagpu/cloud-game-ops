@@ -31,17 +31,17 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Bell className="h-6 w-6 text-primary" />
             Notifications
             {unreadCount > 0 && (
-              <Badge className="bg-destructive text-destructive-foreground text-[10px] sm:text-xs ml-1">{unreadCount} unread</Badge>
+              <Badge className="bg-destructive text-destructive-foreground text-xs ml-1">{unreadCount} unread</Badge>
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">View and manage all your notifications</p>
+          <p className="text-sm text-muted-foreground mt-1">View and manage all your notifications</p>
         </div>
         {notifications.length > 0 && (
           <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function NotificationsPage() {
               {notifications.map(n => (
                 <div
                   key={n.id}
-                  className={`flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 transition-colors ${!n.read ? 'bg-accent/20' : ''} hover:bg-muted/30`}
+                  className={`flex items-start gap-4 px-6 py-4 transition-colors ${!n.read ? 'bg-accent/20' : ''} hover:bg-muted/30`}
                 >
                   <div className={`mt-0.5 flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${typeBg[n.type]}`}>
                     {typeIcon[n.type]}

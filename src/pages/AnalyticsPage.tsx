@@ -4,17 +4,17 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export default function AnalyticsPage() {
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Revenue and performance insights</p>
+        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+        <p className="text-muted-foreground text-sm mt-1">Revenue and performance insights</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm sm:text-base">Monthly Revenue</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base">Monthly Revenue</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-48 sm:h-64">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={MONTHLY_REVENUE}>
                   <defs>
@@ -35,9 +35,9 @@ export default function AnalyticsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm sm:text-base">Weekly Sessions</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base">Weekly Sessions</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-48 sm:h-64">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

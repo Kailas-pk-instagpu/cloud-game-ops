@@ -38,11 +38,11 @@ export default function SuperAdminDashboard() {
   const avgUtilization = Math.round(MOCK_GPU_NODES.filter(n => n.status !== 'offline').reduce((a, b) => a + b.utilization, 0) / MOCK_GPU_NODES.filter(n => n.status !== 'offline').length);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Command Center</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Complete platform overview and GPU infrastructure monitoring</p>
+          <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
+          <p className="text-muted-foreground text-sm mt-1">Complete platform overview and GPU infrastructure monitoring</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1.5 text-xs text-success"><span className="w-2 h-2 rounded-full bg-success animate-pulse" /> All Systems Operational</span>
@@ -50,7 +50,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Primary KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <StatCard title="Total Revenue" value="$138,400" icon={DollarSign} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Active Sessions" value="186" icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
         <StatCard title="GPU Nodes" value={`${onlineNodes}/${MOCK_GPU_NODES.length}`} subtitle={`Avg ${avgUtilization}% util`} icon={Cpu} iconClassName="bg-primary/10 text-primary" />
@@ -60,14 +60,14 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Revenue + GPU Status Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
             <CardDescription>Monthly platform revenue across all branches</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48 sm:h-64">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={MONTHLY_REVENUE}>
                   <defs>
@@ -121,14 +121,14 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Platform Load + User Distribution + System Health */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Platform Load (Today)</CardTitle>
             <CardDescription>Hourly session load across all branches</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-40 sm:h-48">
+            <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={HOURLY_LOAD}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -148,7 +148,7 @@ export default function SuperAdminDashboard() {
             <CardDescription>Active users by role</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-40 sm:h-48 flex items-center justify-center">
+            <div className="h-48 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={ROLE_DISTRIBUTION} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={4} dataKey="value">
@@ -160,7 +160,7 @@ export default function SuperAdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-3 sm:gap-4 mt-2 flex-wrap">
+            <div className="flex justify-center gap-4 mt-2">
               {ROLE_DISTRIBUTION.map((r, i) => (
                 <span key={i} className="flex items-center gap-1.5 text-xs">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
@@ -194,13 +194,13 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Weekly Sessions + Branch Performance + Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Sessions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-40 sm:h-48">
+            <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

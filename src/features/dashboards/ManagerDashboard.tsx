@@ -77,11 +77,11 @@ export default function ManagerDashboard() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">🎮 Floor Manager</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
+          <h1 className="text-2xl font-bold tracking-tight">🎮 Floor Manager</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
           <Clock className="h-3.5 w-3.5" />
@@ -90,7 +90,7 @@ export default function ManagerDashboard() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <StatCard title="Today's Earnings" value={`$${todayEarnings}`} icon={DollarSign} iconClassName="bg-success/10 text-success" />
         <StatCard title="Occupied" value={occupied} subtitle={`of ${seats.length}`} icon={Users} iconClassName="bg-destructive/10 text-destructive" />
         <StatCard title="Available" value={available} icon={Monitor} iconClassName="bg-success/10 text-success" />
@@ -107,7 +107,7 @@ export default function ManagerDashboard() {
               <CardTitle className="text-base font-semibold">Seat Map — Tap a seat to manage</CardTitle>
               <CardDescription>Click on any seat to check in/out players or restart</CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+            <div className="flex items-center gap-4 text-xs">
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-success" /> Available</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-destructive" /> Occupied</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-warning" /> Maintenance</span>
@@ -115,7 +115,7 @@ export default function ManagerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
             {seats.map(seat => (
               <button
                 key={seat.id}
@@ -139,14 +139,14 @@ export default function ManagerDashboard() {
       </Card>
 
       {/* Hourly Sessions + Recent Activity + Shift Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">📈 Hourly Sessions</CardTitle>
             <CardDescription>Session starts throughout today</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-40 sm:h-48">
+            <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={HOURLY_SESSIONS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -221,7 +221,7 @@ export default function ManagerDashboard() {
           <CardDescription>Revenue and sessions this week</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-40 sm:h-48">
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={REVENUE_DATA}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

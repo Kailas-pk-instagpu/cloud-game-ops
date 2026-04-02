@@ -33,19 +33,19 @@ export default function CafeOwnerDashboard() {
   const myManagers = MOCK_USERS.filter(u => u.role === 'manager' && u.createdBy === '4');
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">My Business</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Overview of your gaming cafes and operations</p>
+          <h1 className="text-2xl font-bold tracking-tight">My Business</h1>
+          <p className="text-muted-foreground text-sm mt-1">Overview of your gaming cafes and operations</p>
         </div>
-        <Button className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto" onClick={() => navigate('/branches')}>
+        <Button className="gradient-primary text-primary-foreground gap-2" onClick={() => navigate('/branches')}>
           <Plus className="h-4 w-4" /> Add Branch
         </Button>
       </div>
 
       {/* Primary KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <StatCard title="This Week's Earnings" value="$12,400" icon={DollarSign} trend={{ value: 8, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="My Branches" value={myBranches.length} icon={Building2} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Seat Occupancy" value={`${occupancy}%`} subtitle={`${activeSeats}/${totalSeats} seats`} icon={Users} iconClassName="bg-info/10 text-info" />
@@ -55,14 +55,14 @@ export default function CafeOwnerDashboard() {
       </div>
 
       {/* Earnings Chart + Peak Hours */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">💰 Weekly Earnings</CardTitle>
             <CardDescription>Revenue across all your branches</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-44 sm:h-56">
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={REVENUE_DATA}>
                   <defs>
@@ -88,7 +88,7 @@ export default function CafeOwnerDashboard() {
             <CardDescription>When your branches are busiest today</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-44 sm:h-56">
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={PEAK_HOURS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -104,7 +104,7 @@ export default function CafeOwnerDashboard() {
       </div>
 
       {/* Customer Insights + Manager Performance + Branches */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">👥 Customer Insights</CardTitle>
