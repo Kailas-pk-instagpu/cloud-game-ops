@@ -115,7 +115,7 @@ export default function ManagerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-10 gap-2">
             {seats.map(seat => (
               <button
                 key={seat.id}
