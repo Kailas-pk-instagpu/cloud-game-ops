@@ -33,13 +33,13 @@ export default function CafeOwnerDashboard() {
   const myManagers = MOCK_USERS.filter(u => u.role === 'manager' && u.createdBy === '4');
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Business</h1>
-          <p className="text-muted-foreground text-sm mt-1">Overview of your gaming cafes and operations</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">My Business</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Overview of your gaming cafes and operations</p>
         </div>
-        <Button className="gradient-primary text-primary-foreground gap-2" onClick={() => navigate('/branches')}>
+        <Button className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto" onClick={() => navigate('/branches')}>
           <Plus className="h-4 w-4" /> Add Branch
         </Button>
       </div>
