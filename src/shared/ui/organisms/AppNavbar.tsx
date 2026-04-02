@@ -41,13 +41,6 @@ export function AppNavbar() {
     <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-        <div className="hidden md:flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-1.5">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="border-0 bg-transparent h-7 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 w-48"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-2">
