@@ -342,7 +342,7 @@ export default function UsersPage() {
                   })()}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 <Badge variant="outline" className={`text-[10px] ${roleColor(u.role)}`}>
                   {ROLE_LABELS[u.role]}
                 </Badge>
