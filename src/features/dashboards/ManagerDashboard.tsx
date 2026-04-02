@@ -77,11 +77,11 @@ export default function ManagerDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">🎮 Floor Manager</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">🎮 Floor Manager</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
           <Clock className="h-3.5 w-3.5" />
