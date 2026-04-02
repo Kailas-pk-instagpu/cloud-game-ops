@@ -378,14 +378,14 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-4 sm:space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your account preferences</p>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage your account preferences</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="profile" className="gap-1.5">
             <User className="h-3.5 w-3.5" />
             Profile

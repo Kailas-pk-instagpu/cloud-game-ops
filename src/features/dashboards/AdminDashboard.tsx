@@ -32,18 +32,18 @@ export default function AdminDashboard() {
   const activeSeats = MOCK_BRANCHES.reduce((a, b) => a + b.activeSeats, 0);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage your portfolio of cafes and operators</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage your portfolio of cafes and operators</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/branches')}>
+        <Button variant="outline" size="sm" className="gap-2 w-full sm:w-auto" onClick={() => navigate('/branches')}>
           <Building2 className="h-4 w-4" /> View All Branches
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard title="Portfolio Revenue" value="$95,200" icon={DollarSign} trend={{ value: 15, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Cafe Owners" value={cafeOwners.length} icon={Users} subtitle="Active operators" iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Branches" value={MOCK_BRANCHES.length} icon={Building2} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} iconClassName="bg-info/10 text-info" />
@@ -53,14 +53,14 @@ export default function AdminDashboard() {
       </div>
 
       {/* Revenue + Branch Revenue Comparison */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Revenue</CardTitle>
             <CardDescription>Revenue trend across your portfolio</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-56">
+            <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -80,7 +80,7 @@ export default function AdminDashboard() {
             <CardDescription>Compare branch performance</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-56">
+            <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_REVENUE} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Cafe Owner Performance + Branch Overview + Compliance */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Cafe Owner Performance</CardTitle>

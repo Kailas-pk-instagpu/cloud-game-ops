@@ -238,17 +238,17 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">User Management</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
             {isSuperAdmin ? 'Full control over all platform users' : 'Manage users within your scope'}
           </p>
         </div>
         {creatableRoles.length > 0 && (
-          <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2">
+          <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Create User
           </Button>
@@ -266,8 +266,8 @@ export default function UsersPage() {
       </div>
 
       {/* Search + Filter Bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2 flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2 flex-1 min-w-0">
           <Search className="h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
@@ -277,7 +277,7 @@ export default function UsersPage() {
           />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
@@ -311,7 +311,7 @@ export default function UsersPage() {
             className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
             onClick={() => openDetail(u)}
           >
-            <CardContent className="p-4 flex items-center justify-between gap-3">
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${u.status === 'disabled' ? 'bg-muted text-muted-foreground' : 'gradient-primary text-primary-foreground'}`}>
                   {u.name.split(' ').map(n => n[0]).join('')}
@@ -342,7 +342,7 @@ export default function UsersPage() {
                   })()}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 <Badge variant="outline" className={`text-[10px] ${roleColor(u.role)}`}>
                   {ROLE_LABELS[u.role]}
                 </Badge>

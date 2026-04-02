@@ -6,10 +6,10 @@ import { Cpu, Thermometer, HardDrive } from 'lucide-react';
 
 export default function GPUNodesPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">GPU Nodes</h1>
-        <p className="text-muted-foreground text-sm mt-1">Monitor and manage GPU infrastructure</p>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">GPU Nodes</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Monitor and manage GPU infrastructure</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
