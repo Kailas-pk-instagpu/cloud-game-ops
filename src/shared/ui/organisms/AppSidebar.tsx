@@ -32,11 +32,7 @@ export function AppSidebar() {
           </div>
           <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
             <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">GPU Cloud</h2>
-            <div className="overflow-hidden mt-0.5">
-              <p className="text-[10px] italic font-medium bg-gradient-to-r from-primary via-accent-foreground to-primary bg-clip-text text-transparent whitespace-nowrap animate-marquee">
-                Game Hard. We Handle the Rest.
-              </p>
-            </div>
+            <p className="text-[10px] italic font-medium text-muted-foreground mt-0.5">Beyond Hardware</p>
           </div>
         </div>
       </SidebarHeader>
