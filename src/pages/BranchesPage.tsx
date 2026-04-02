@@ -357,13 +357,13 @@ export default function BranchesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Branches</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage gaming cafe locations, seats, and team assignments</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Branches</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage gaming cafe locations, seats, and team assignments</p>
         </div>
         {canCreate && (
-          <Button className="gradient-primary text-primary-foreground gap-2" onClick={handleAdd}>
+          <Button className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto" onClick={handleAdd}>
             <Plus className="h-4 w-4" /> Add Branch
           </Button>
         )}
