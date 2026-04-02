@@ -32,13 +32,13 @@ export default function AdminDashboard() {
   const activeSeats = MOCK_BRANCHES.reduce((a, b) => a + b.activeSeats, 0);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage your portfolio of cafes and operators</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage your portfolio of cafes and operators</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/branches')}>
+        <Button variant="outline" size="sm" className="gap-2 w-full sm:w-auto" onClick={() => navigate('/branches')}>
           <Building2 className="h-4 w-4" /> View All Branches
         </Button>
       </div>
