@@ -139,7 +139,7 @@ export default function ManagerDashboard() {
       </Card>
 
       {/* Hourly Sessions + Recent Activity + Shift Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">📈 Hourly Sessions</CardTitle>
