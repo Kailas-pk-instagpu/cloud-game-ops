@@ -53,7 +53,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Revenue + Branch Revenue Comparison */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Revenue</CardTitle>
