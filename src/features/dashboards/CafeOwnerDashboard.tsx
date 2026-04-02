@@ -62,7 +62,7 @@ export default function CafeOwnerDashboard() {
             <CardDescription>Revenue across all your branches</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-56">
+            <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={REVENUE_DATA}>
                   <defs>
