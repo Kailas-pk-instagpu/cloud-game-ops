@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard title="Portfolio Revenue" value="$95,200" icon={DollarSign} trend={{ value: 15, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Cafe Owners" value={cafeOwners.length} icon={Users} subtitle="Active operators" iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Branches" value={MOCK_BRANCHES.length} icon={Building2} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} iconClassName="bg-info/10 text-info" />
