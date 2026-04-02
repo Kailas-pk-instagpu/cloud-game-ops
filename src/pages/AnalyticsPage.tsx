@@ -35,9 +35,9 @@ export default function AnalyticsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Weekly Sessions</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm sm:text-base">Weekly Sessions</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

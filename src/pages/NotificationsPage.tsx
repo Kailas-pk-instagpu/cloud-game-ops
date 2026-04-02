@@ -82,7 +82,7 @@ export default function NotificationsPage() {
               {notifications.map(n => (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-4 px-6 py-4 transition-colors ${!n.read ? 'bg-accent/20' : ''} hover:bg-muted/30`}
+                  className={`flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 transition-colors ${!n.read ? 'bg-accent/20' : ''} hover:bg-muted/30`}
                 >
                   <div className={`mt-0.5 flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${typeBg[n.type]}`}>
                     {typeIcon[n.type]}
