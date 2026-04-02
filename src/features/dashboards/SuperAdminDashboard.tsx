@@ -128,7 +128,7 @@ export default function SuperAdminDashboard() {
             <CardDescription>Hourly session load across all branches</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48">
+            <div className="h-40 sm:h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={HOURLY_LOAD}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
