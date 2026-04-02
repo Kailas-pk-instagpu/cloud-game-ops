@@ -90,7 +90,7 @@ export default function ManagerDashboard() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
         <StatCard title="Today's Earnings" value={`$${todayEarnings}`} icon={DollarSign} iconClassName="bg-success/10 text-success" />
         <StatCard title="Occupied" value={occupied} subtitle={`of ${seats.length}`} icon={Users} iconClassName="bg-destructive/10 text-destructive" />
         <StatCard title="Available" value={available} icon={Monitor} iconClassName="bg-success/10 text-success" />
