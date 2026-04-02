@@ -221,7 +221,7 @@ export default function ManagerDashboard() {
           <CardDescription>Revenue and sessions this week</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-48">
+          <div className="h-40 sm:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={REVENUE_DATA}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
