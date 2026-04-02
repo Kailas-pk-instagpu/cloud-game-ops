@@ -277,7 +277,7 @@ export default function UsersPage() {
           />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
