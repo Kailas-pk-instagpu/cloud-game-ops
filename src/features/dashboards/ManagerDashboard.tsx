@@ -146,7 +146,7 @@ export default function ManagerDashboard() {
             <CardDescription>Session starts throughout today</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48">
+            <div className="h-40 sm:h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={HOURLY_SESSIONS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
