@@ -38,11 +38,11 @@ export default function SuperAdminDashboard() {
   const avgUtilization = Math.round(MOCK_GPU_NODES.filter(n => n.status !== 'offline').reduce((a, b) => a + b.utilization, 0) / MOCK_GPU_NODES.filter(n => n.status !== 'offline').length);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
-          <p className="text-muted-foreground text-sm mt-1">Complete platform overview and GPU infrastructure monitoring</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Command Center</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Complete platform overview and GPU infrastructure monitoring</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1.5 text-xs text-success"><span className="w-2 h-2 rounded-full bg-success animate-pulse" /> All Systems Operational</span>
