@@ -266,8 +266,8 @@ export default function UsersPage() {
       </div>
 
       {/* Search + Filter Bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2 flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2 flex-1 min-w-0">
           <Search className="h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
