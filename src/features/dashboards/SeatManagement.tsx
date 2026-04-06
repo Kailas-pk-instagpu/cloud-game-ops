@@ -60,7 +60,7 @@ export default function SeatManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">🖥️ Seat Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Seat Management</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
       </div>
 
