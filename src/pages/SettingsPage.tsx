@@ -315,12 +315,13 @@ function ProfileSection() {
               <Input id="profile-role" value={ROLE_LABELS[user.role]} disabled className="bg-muted" />
             </div>
           </div>
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="profile-address" className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" /> Address
             </Label>
             <Textarea id="profile-address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Street address, city, state, zip..." rows={2} className="resize-none" />
           </div>
+          <Separator />
           <div className="flex justify-end">
             <Button className="gradient-primary text-primary-foreground" onClick={handleSaveProfile} disabled={isSaving}>
               {isSaving ? 'Saving...' : 'Save Changes'}
