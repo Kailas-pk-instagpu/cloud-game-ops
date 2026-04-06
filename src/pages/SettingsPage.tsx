@@ -268,7 +268,7 @@ function ProfileSection() {
                   {user.name.split(' ').map(n => n[0]).join('')}
                 </span>
               )}
-              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                 <Camera className="h-5 w-5 text-foreground" />
               </div>
             </div>
