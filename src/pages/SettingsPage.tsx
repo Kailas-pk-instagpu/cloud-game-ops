@@ -331,38 +331,39 @@ function ProfileSection() {
       </Card>
 
       {/* Change Password */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Lock className="h-4 w-4" /> Change Password
+            <Lock className="h-4 w-4 text-primary" /> Change Password
           </CardTitle>
           <CardDescription>Update your account password</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="current-pw">Current Password</Label>
             <div className="relative">
               <Input id="current-pw" type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowCurrentPw(!showCurrentPw)}>
+              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowCurrentPw(!showCurrentPw)}>
                 {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="new-pw">New Password</Label>
               <div className="relative">
                 <Input id="new-pw" type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 6 characters" />
-                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowNewPw(!showNewPw)}>
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowNewPw(!showNewPw)}>
                   {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="confirm-pw">Confirm New Password</Label>
               <Input id="confirm-pw" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
             </div>
           </div>
+          <Separator />
           <div className="flex justify-end">
             <Button variant="outline" onClick={handleChangePassword} disabled={!currentPassword || !newPassword}>
               <Lock className="h-4 w-4 mr-2" /> Change Password
