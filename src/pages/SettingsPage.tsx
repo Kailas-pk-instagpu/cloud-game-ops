@@ -378,20 +378,20 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your account preferences</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="profile" className="gap-1.5">
+      <Tabs defaultValue="profile" className="space-y-5">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="profile" className="gap-1.5 flex-1 sm:flex-none">
             <User className="h-3.5 w-3.5" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="security" className="gap-1.5">
+          <TabsTrigger value="general" className="flex-1 sm:flex-none">General</TabsTrigger>
+          <TabsTrigger value="security" className="gap-1.5 flex-1 sm:flex-none">
             <Shield className="h-3.5 w-3.5" />
             Security
           </TabsTrigger>
@@ -402,13 +402,16 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="general" className="space-y-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Preferences</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Preferences</CardTitle>
+              <CardDescription>Customize your experience</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                 <div>
-                  <Label>Dark Mode</Label>
-                  <p className="text-xs text-muted-foreground">Toggle between light and dark theme</p>
+                  <Label className="font-medium">Dark Mode</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Toggle between light and dark theme</p>
                 </div>
                 <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
               </div>
@@ -417,10 +420,10 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-4 w-4 text-primary" />
                 Two-Factor Authentication
               </CardTitle>
               <CardDescription>
