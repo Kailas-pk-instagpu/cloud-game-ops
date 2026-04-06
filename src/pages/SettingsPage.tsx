@@ -246,19 +246,19 @@ function ProfileSection() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Avatar / Logo */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Camera className="h-4 w-4" /> Profile Photo / Logo
+            <Camera className="h-4 w-4 text-primary" /> Profile Photo / Logo
           </CardTitle>
           <CardDescription>Upload a profile picture or company logo</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-5">
             <div
-              className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted flex items-center justify-center cursor-pointer group"
+              className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center cursor-pointer group shadow-sm"
               onClick={() => fileInputRef.current?.click()}
             >
               {logoPreview ? (
@@ -268,7 +268,7 @@ function ProfileSection() {
                   {user.name.split(' ').map(n => n[0]).join('')}
                 </span>
               )}
-              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                 <Camera className="h-5 w-5 text-foreground" />
               </div>
             </div>
@@ -289,38 +289,39 @@ function ProfileSection() {
       </Card>
 
       {/* Personal Info */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <User className="h-4 w-4" /> Personal Information
+            <User className="h-4 w-4 text-primary" /> Personal Information
           </CardTitle>
           <CardDescription>Update your account details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-name">Full Name *</Label>
               <Input id="profile-name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-email">Email Address *</Label>
               <Input id="profile-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-phone">Phone Number</Label>
               <Input id="profile-phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-role">Role</Label>
               <Input id="profile-role" value={ROLE_LABELS[user.role]} disabled className="bg-muted" />
             </div>
           </div>
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="profile-address" className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" /> Address
             </Label>
             <Textarea id="profile-address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Street address, city, state, zip..." rows={2} className="resize-none" />
           </div>
+          <Separator />
           <div className="flex justify-end">
             <Button className="gradient-primary text-primary-foreground" onClick={handleSaveProfile} disabled={isSaving}>
               {isSaving ? 'Saving...' : 'Save Changes'}
@@ -330,38 +331,39 @@ function ProfileSection() {
       </Card>
 
       {/* Change Password */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Lock className="h-4 w-4" /> Change Password
+            <Lock className="h-4 w-4 text-primary" /> Change Password
           </CardTitle>
           <CardDescription>Update your account password</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="current-pw">Current Password</Label>
             <div className="relative">
               <Input id="current-pw" type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowCurrentPw(!showCurrentPw)}>
+              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowCurrentPw(!showCurrentPw)}>
                 {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="new-pw">New Password</Label>
               <div className="relative">
                 <Input id="new-pw" type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 6 characters" />
-                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowNewPw(!showNewPw)}>
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowNewPw(!showNewPw)}>
                   {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="confirm-pw">Confirm New Password</Label>
               <Input id="confirm-pw" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
             </div>
           </div>
+          <Separator />
           <div className="flex justify-end">
             <Button variant="outline" onClick={handleChangePassword} disabled={!currentPassword || !newPassword}>
               <Lock className="h-4 w-4 mr-2" /> Change Password
@@ -378,20 +380,20 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your account preferences</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="profile" className="gap-1.5">
+      <Tabs defaultValue="profile" className="space-y-5">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="profile" className="gap-1.5 flex-1 sm:flex-none">
             <User className="h-3.5 w-3.5" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="security" className="gap-1.5">
+          <TabsTrigger value="general" className="flex-1 sm:flex-none">General</TabsTrigger>
+          <TabsTrigger value="security" className="gap-1.5 flex-1 sm:flex-none">
             <Shield className="h-3.5 w-3.5" />
             Security
           </TabsTrigger>
@@ -402,13 +404,16 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="general" className="space-y-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Preferences</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Preferences</CardTitle>
+              <CardDescription>Customize your experience</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                 <div>
-                  <Label>Dark Mode</Label>
-                  <p className="text-xs text-muted-foreground">Toggle between light and dark theme</p>
+                  <Label className="font-medium">Dark Mode</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Toggle between light and dark theme</p>
                 </div>
                 <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
               </div>
@@ -417,10 +422,10 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-4 w-4 text-primary" />
                 Two-Factor Authentication
               </CardTitle>
               <CardDescription>
