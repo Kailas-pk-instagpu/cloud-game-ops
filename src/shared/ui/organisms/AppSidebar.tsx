@@ -37,7 +37,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4">
+      <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0 transition-all duration-200">
         <SidebarGroup>
           <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 font-semibold px-3 mb-1">
             Navigation
@@ -52,7 +52,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       onClick={() => navigate(route.path)}
                       className={cn(
-                        'rounded-lg transition-all h-10',
+                        'rounded-lg transition-all duration-200 h-10 group-data-[collapsible=icon]:justify-center',
                         active
                           ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-primary/20'
                           : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
