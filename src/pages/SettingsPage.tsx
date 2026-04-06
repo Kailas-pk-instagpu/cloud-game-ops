@@ -298,19 +298,19 @@ function ProfileSection() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-name">Full Name *</Label>
               <Input id="profile-name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-email">Email Address *</Label>
               <Input id="profile-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-phone">Phone Number</Label>
               <Input id="profile-phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="profile-role">Role</Label>
               <Input id="profile-role" value={ROLE_LABELS[user.role]} disabled className="bg-muted" />
             </div>
