@@ -1,5 +1,5 @@
-import ManagerDashboard from '@/features/dashboards/ManagerDashboard';
+import SeatManagement from '@/features/dashboards/SeatManagement';
 
 export default function SeatsPage() {
-  return <ManagerDashboard />;
+  return <SeatManagement />;
 }
