@@ -3,7 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Apply persisted theme on initial load to prevent flash
-const persisted = localStorage.getItem('auth-storage');
+const persisted = localStorage.getItem('gpu-cloud-auth');
 if (persisted) {
   try {
     const parsed = JSON.parse(persisted);
