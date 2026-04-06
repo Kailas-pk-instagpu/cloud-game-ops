@@ -289,10 +289,10 @@ function ProfileSection() {
       </Card>
 
       {/* Personal Info */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <User className="h-4 w-4" /> Personal Information
+            <User className="h-4 w-4 text-primary" /> Personal Information
           </CardTitle>
           <CardDescription>Update your account details</CardDescription>
         </CardHeader>
