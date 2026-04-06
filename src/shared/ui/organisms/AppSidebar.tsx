@@ -25,14 +25,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0">
+      <SidebarHeader className="p-4 border-b border-sidebar-border overflow-hidden">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 min-w-[2.25rem] rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 transition-all duration-300">
             <Gamepad2 className="h-5 w-5 text-primary-foreground" />
           </div>
-          <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
-            <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">GPU Cloud</h2>
-            <p className="text-[10px] italic font-medium text-muted-foreground mt-0.5">Beyond Hardware</p>
+          <div className="overflow-hidden transition-all duration-300 ease-in-out group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 w-auto opacity-100">
+            <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight whitespace-nowrap">GPU Cloud</h2>
+            <p className="text-[10px] italic font-medium text-muted-foreground mt-0.5 whitespace-nowrap">Beyond Hardware</p>
           </div>
         </div>
       </SidebarHeader>
