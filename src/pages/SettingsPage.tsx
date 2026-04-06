@@ -258,7 +258,7 @@ function ProfileSection() {
         <CardContent>
           <div className="flex items-center gap-5">
             <div
-              className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted flex items-center justify-center cursor-pointer group"
+              className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center cursor-pointer group shadow-sm"
               onClick={() => fileInputRef.current?.click()}
             >
               {logoPreview ? (
