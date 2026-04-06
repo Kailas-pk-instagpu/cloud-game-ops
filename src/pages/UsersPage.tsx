@@ -357,10 +357,10 @@ export default function UsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => openEdit(u)} className="gap-2">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(u); }} className="gap-2">
                         <Edit className="h-4 w-4" /> Edit User
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toggleUserStatus(u.id)} className="gap-2">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUserStatus(u.id); }} className="gap-2">
                         {u.status === 'active' ? (
                           <><UserX className="h-4 w-4" /> Disable User</>
                         ) : (
@@ -369,19 +369,19 @@ export default function UsersPage() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {u.is2FAEnabled ? (
-                        <DropdownMenuItem onClick={() => reset2FA(u.id)} className="gap-2">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
                           <ShieldOff className="h-4 w-4" /> Reset 2FA
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => toggle2FA(u.id)} className="gap-2">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggle2FA(u.id); }} className="gap-2">
                           <ShieldCheck className="h-4 w-4" /> Enable 2FA
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => toast.success(`Password reset link sent to ${u.email}`)} className="gap-2">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
                         <KeyRound className="h-4 w-4" /> Reset Password
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => openDelete(u)} className="gap-2 text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
                         <Trash2 className="h-4 w-4" /> Delete User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
