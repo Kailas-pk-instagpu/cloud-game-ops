@@ -246,7 +246,7 @@ function ProfileSection() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Avatar / Logo */}
       <Card>
         <CardHeader>
