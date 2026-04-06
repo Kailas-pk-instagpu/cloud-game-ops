@@ -248,10 +248,10 @@ function ProfileSection() {
   return (
     <div className="space-y-5">
       {/* Avatar / Logo */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Camera className="h-4 w-4" /> Profile Photo / Logo
+            <Camera className="h-4 w-4 text-primary" /> Profile Photo / Logo
           </CardTitle>
           <CardDescription>Upload a profile picture or company logo</CardDescription>
         </CardHeader>
