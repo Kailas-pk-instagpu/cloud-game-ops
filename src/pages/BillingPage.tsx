@@ -1175,7 +1175,7 @@ export default function BillingPage() {
                       <p className="text-sm font-semibold">{b.topGame}</p>
                     </div>
                   </div>
-                </CardContent>
+                </Card>
               ))}
             </div>
           </TabsContent>
