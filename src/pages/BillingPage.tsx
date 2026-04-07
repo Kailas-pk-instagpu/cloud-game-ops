@@ -104,9 +104,19 @@ const subscriptionPlans = [
 ];
 
 const branchData = [
-  { name: 'Branch A', machines: 15, activeSessions: 12, revenue: 45200, gpuUtil: 78 },
-  { name: 'Branch B', machines: 10, activeSessions: 8, revenue: 32100, gpuUtil: 65 },
-  { name: 'Branch C', machines: 8, activeSessions: 6, revenue: 24500, gpuUtil: 72 },
+  { name: 'Branch A', location: 'Koramangala, Bangalore', manager: 'Suresh M.', machines: 15, activeSessions: 12, revenue: 45200, monthlyRevenue: 185000, gpuUtil: 78, cpuUtil: 65, ramUtil: 72, bandwidth: 45, topGame: 'Cyberpunk 2077', avgSessionDuration: '2h 20m', totalSessions: 480, occupancy: 80, status: 'active' as const },
+  { name: 'Branch B', location: 'Indiranagar, Bangalore', manager: 'Priya K.', machines: 10, activeSessions: 8, revenue: 32100, monthlyRevenue: 120000, gpuUtil: 65, cpuUtil: 58, ramUtil: 60, bandwidth: 38, topGame: 'Valorant', avgSessionDuration: '1h 50m', totalSessions: 320, occupancy: 80, status: 'active' as const },
+  { name: 'Branch C', location: 'HSR Layout, Bangalore', manager: 'Rahul D.', machines: 8, activeSessions: 6, revenue: 24500, monthlyRevenue: 85000, gpuUtil: 72, cpuUtil: 62, ramUtil: 68, bandwidth: 42, topGame: 'Fortnite', avgSessionDuration: '2h 05m', totalSessions: 248, occupancy: 75, status: 'active' as const },
+];
+
+const branchRevenueData = [
+  { day: 'Mon', 'Branch A': 6200, 'Branch B': 3800, 'Branch C': 2500 },
+  { day: 'Tue', 'Branch A': 7500, 'Branch B': 4200, 'Branch C': 3500 },
+  { day: 'Wed', 'Branch A': 9200, 'Branch B': 5100, 'Branch C': 4600 },
+  { day: 'Thu', 'Branch A': 6800, 'Branch B': 4500, 'Branch C': 3000 },
+  { day: 'Fri', 'Branch A': 11200, 'Branch B': 6100, 'Branch C': 4800 },
+  { day: 'Sat', 'Branch A': 14000, 'Branch B': 8200, 'Branch C': 6300 },
+  { day: 'Sun', 'Branch A': 12500, 'Branch B': 7500, 'Branch C': 5800 },
 ];
 
 const CHART_COLORS = ['hsl(234, 89%, 64%)', 'hsl(262, 83%, 58%)', 'hsl(152, 55%, 42%)', 'hsl(38, 80%, 50%)', 'hsl(199, 75%, 48%)'];
@@ -186,6 +196,7 @@ export default function BillingPage() {
     if (isCafeOwner) tabs.push({ value: 'wallet', label: 'Wallet & Payments', icon: Wallet });
     tabs.push({ value: 'usage', label: 'Session Usage', icon: Monitor });
     if (canPurchasePlans) tabs.push({ value: 'plans', label: 'Subscription Plans', icon: Crown });
+    if (isCafeOwner) tabs.push({ value: 'branches', label: 'Branch Breakdown', icon: Building2 });
     if (!isBranchOnly) tabs.push({ value: 'resources', label: 'Resources', icon: Cpu });
     tabs.push({ value: 'analytics', label: 'Analytics', icon: BarChart3 });
     return tabs;
