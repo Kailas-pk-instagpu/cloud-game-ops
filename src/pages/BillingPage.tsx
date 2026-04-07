@@ -962,6 +962,225 @@ export default function BillingPage() {
           </TabsContent>
         )}
 
+        {/* ===== BRANCH BREAKDOWN TAB (Cafe Owner) ===== */}
+        {isCafeOwner && (
+          <TabsContent value="branches" className="space-y-4">
+            {/* Branch Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {branchData.map((branch, idx) => (
+                <Card key={branch.name} className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full" style={{ background: CHART_COLORS[idx] }} />
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">{branch.name}</CardTitle>
+                      <Badge className="bg-success/10 text-success border-0 text-[10px]">{branch.status}</Badge>
+                    </div>
+                    <CardDescription className="text-xs">{branch.location}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 rounded-lg bg-muted/30">
+                        <p className="text-[10px] text-muted-foreground">Monthly Revenue</p>
+                        <p className="text-lg font-bold">₹{(branch.monthlyRevenue / 1000).toFixed(0)}K</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-muted/30">
+                        <p className="text-[10px] text-muted-foreground">Sessions (MTD)</p>
+                        <p className="text-lg font-bold">{branch.totalSessions}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">GPU Utilization</span>
+                        <span className="font-semibold">{branch.gpuUtil}%</span>
+                      </div>
+                      <Progress value={branch.gpuUtil} className="h-1.5" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Occupancy</span>
+                        <span className="font-semibold">{branch.occupancy}%</span>
+                      </div>
+                      <Progress value={branch.occupancy} className="h-1.5" />
+                    </div>
+                    <Separator />
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Manager</span>
+                        <p className="font-medium">{branch.manager}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Top Game</span>
+                        <p className="font-medium">{branch.topGame}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Machines</span>
+                        <p className="font-medium">{branch.activeSessions}/{branch.machines} active</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Avg Duration</span>
+                        <p className="font-medium">{branch.avgSessionDuration}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Branch Revenue Comparison Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Branch Revenue Comparison</CardTitle>
+                  <CardDescription>Daily revenue by branch this week</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={branchRevenueData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                      <XAxis dataKey="day" className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} />
+                      <YAxis className="text-xs fill-muted-foreground" tick={{ fontSize: 12 }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
+                      <Tooltip formatter={(v: number) => [`₹${v.toLocaleString()}`, '']} contentStyle={{ background: 'hsl(222, 47%, 9%)', border: '1px solid hsl(222, 40%, 16%)', borderRadius: '8px', fontSize: '12px' }} />
+                      <Bar dataKey="Branch A" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Branch B" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Branch C" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="flex justify-center gap-4 mt-2">
+                    {branchData.map((b, i) => (
+                      <div key={b.name} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS[i] }} />
+                        <span className="text-xs text-muted-foreground">{b.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Revenue Share</CardTitle>
+                  <CardDescription>Monthly revenue distribution across branches</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={branchData.map(b => ({ name: b.name, value: b.monthlyRevenue }))}
+                        dataKey="value" nameKey="name" cx="50%" cy="50%"
+                        outerRadius={85} innerRadius={50} strokeWidth={2} className="stroke-card"
+                      >
+                        {branchData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} contentStyle={{ background: 'hsl(222, 47%, 9%)', border: '1px solid hsl(222, 40%, 16%)', borderRadius: '8px', fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex justify-center gap-4 mt-1">
+                    {branchData.map((b, i) => (
+                      <div key={b.name} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS[i] }} />
+                        <span className="text-xs text-muted-foreground">{b.name} — ₹{(b.monthlyRevenue / 1000).toFixed(0)}K</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Branch Resource Comparison Table */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Resource Utilization by Branch</CardTitle>
+                <CardDescription>Real-time resource metrics across all branches</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30">
+                        <TableHead className="text-xs">Branch</TableHead>
+                        <TableHead className="text-xs">Manager</TableHead>
+                        <TableHead className="text-xs">GPU</TableHead>
+                        <TableHead className="text-xs">CPU</TableHead>
+                        <TableHead className="text-xs">RAM</TableHead>
+                        <TableHead className="text-xs">Bandwidth</TableHead>
+                        <TableHead className="text-xs text-right">Today's Revenue</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {branchData.map((b, idx) => (
+                        <TableRow key={b.name} className="hover:bg-muted/20">
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full" style={{ background: CHART_COLORS[idx] }} />
+                              <span className="font-medium text-sm">{b.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{b.manager}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={b.gpuUtil} className="h-1.5 w-16" />
+                              <span className="text-xs font-medium">{b.gpuUtil}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={b.cpuUtil} className="h-1.5 w-16" />
+                              <span className="text-xs font-medium">{b.cpuUtil}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={b.ramUtil} className="h-1.5 w-16" />
+                              <span className="text-xs font-medium">{b.ramUtil}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={b.bandwidth} className="h-1.5 w-16" />
+                              <span className="text-xs font-medium">{b.bandwidth}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-sm">₹{b.revenue.toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Branch-wise session breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {branchData.map((b, idx) => (
+                <Card key={b.name} className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: CHART_COLORS[idx] }} />
+                    <span className="text-sm font-semibold">{b.name}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Active Now</p>
+                      <p className="text-xl font-bold text-success">{b.activeSessions}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Total (MTD)</p>
+                      <p className="text-xl font-bold">{b.totalSessions}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Avg Duration</p>
+                      <p className="text-sm font-semibold">{b.avgSessionDuration}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Top Game</p>
+                      <p className="text-sm font-semibold">{b.topGame}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              ))}
+            </div>
+          </TabsContent>
+        )}
+
         {/* ===== ANALYTICS TAB (All roles, scoped data) ===== */}
         <TabsContent value="analytics" className="space-y-4">
           {isBranchOnly && (
