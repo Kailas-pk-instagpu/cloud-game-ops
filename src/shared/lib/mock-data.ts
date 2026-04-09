@@ -106,3 +106,28 @@ export const MONTHLY_REVENUE = [
   { name: 'May', revenue: 125000 },
   { name: 'Jun', revenue: 138000 },
 ];
+
+export interface Booking {
+  id: string;
+  branchId: string;
+  seatNumber: number;
+  customerName: string;
+  customerPhone: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  status: 'upcoming' | 'completed' | 'cancelled' | 'no_show';
+  gpuPreference?: string;
+  notes?: string;
+  createdBy: string; // userId
+  createdAt: string;
+}
+
+export const MOCK_BOOKINGS: Booking[] = [
+  { id: 'bk-1', branchId: 'branch-1', seatNumber: 3, customerName: 'Aiden Cole', customerPhone: '+1555000111', date: '2026-04-10', startTime: '10:00', endTime: '12:00', status: 'upcoming', gpuPreference: 'RTX 4090', createdBy: '6', createdAt: '2026-04-08' },
+  { id: 'bk-2', branchId: 'branch-1', seatNumber: 7, customerName: 'Maya Lin', customerPhone: '+1555000222', date: '2026-04-10', startTime: '14:00', endTime: '17:00', status: 'upcoming', notes: 'VIP customer', createdBy: '6', createdAt: '2026-04-08' },
+  { id: 'bk-3', branchId: 'branch-1', seatNumber: 1, customerName: 'Derek Shaw', customerPhone: '+1555000333', date: '2026-04-09', startTime: '09:00', endTime: '11:00', status: 'completed', gpuPreference: 'RTX 4080', createdBy: '4', createdAt: '2026-04-07' },
+  { id: 'bk-4', branchId: 'branch-2', seatNumber: 5, customerName: 'Priya Nair', customerPhone: '+1555000444', date: '2026-04-11', startTime: '16:00', endTime: '19:00', status: 'upcoming', createdBy: '4', createdAt: '2026-04-08' },
+  { id: 'bk-5', branchId: 'branch-1', seatNumber: 10, customerName: 'Leo Tanaka', customerPhone: '+1555000555', date: '2026-04-08', startTime: '13:00', endTime: '15:00', status: 'cancelled', createdBy: '6', createdAt: '2026-04-06' },
+  { id: 'bk-6', branchId: 'branch-2', seatNumber: 2, customerName: 'Sara Ahmed', customerPhone: '+1555000666', date: '2026-04-09', startTime: '11:00', endTime: '14:00', status: 'no_show', createdBy: '7', createdAt: '2026-04-07' },
+];
