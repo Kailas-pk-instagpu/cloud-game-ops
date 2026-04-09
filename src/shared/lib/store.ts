@@ -184,3 +184,28 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   deleteNotification: (id) => set((s) => ({ notifications: s.notifications.filter(n => n.id !== id) })),
   deleteAllNotifications: () => set({ notifications: [] }),
 }));
+
+// Booking store
+import { Booking, MOCK_BOOKINGS } from './mock-data';
+
+interface BookingState {
+  bookings: Booking[];
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
+  cancelBooking: (id: string) => void;
+  updateBookingStatus: (id: string, status: Booking['status']) => void;
+  getBookingsByBranch: (branchId: string) => Booking[];
+}
+
+export const useBookingStore = create<BookingState>((set, get) => ({
+  bookings: [...MOCK_BOOKINGS],
+  addBooking: (booking) => set((s) => ({
+    bookings: [...s.bookings, { ...booking, id: `bk-${Date.now()}`, createdAt: new Date().toISOString().split('T')[0] }],
+  })),
+  cancelBooking: (id) => set((s) => ({
+    bookings: s.bookings.map(b => b.id === id ? { ...b, status: 'cancelled' as const } : b),
+  })),
+  updateBookingStatus: (id, status) => set((s) => ({
+    bookings: s.bookings.map(b => b.id === id ? { ...b, status } : b),
+  })),
+  getBookingsByBranch: (branchId) => get().bookings.filter(b => b.branchId === branchId),
+}));
