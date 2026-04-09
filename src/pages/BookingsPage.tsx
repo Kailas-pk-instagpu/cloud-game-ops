@@ -253,15 +253,12 @@ export default function BookingsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {booking.status === 'upcoming' && (
-                          <div className="flex items-center justify-end gap-1">
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleMarkCompleted(booking.id)}>
-                              Complete
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleMarkCompleted(booking.id)}>
+                              <UserCheck className="h-3 w-3" /> Completed
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleMarkNoShow(booking.id)}>
-                              No Show
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleCancel(booking.id)}>
-                              <X className="h-3 w-3" />
+                            <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={() => handleCancel(booking.id)}>
+                              <X className="h-3 w-3" /> Cancelled
                             </Button>
                           </div>
                         )}
