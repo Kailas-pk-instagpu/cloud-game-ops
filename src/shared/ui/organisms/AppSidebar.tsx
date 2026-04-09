@@ -3,7 +3,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { getRoutesForRole } from '@/shared/lib/rbac';
 
 import {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2, Bell, Receipt
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2, Bell
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, Receipt,
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell,
 };
 
 export function AppSidebar() {

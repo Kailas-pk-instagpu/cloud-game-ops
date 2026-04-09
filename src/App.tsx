@@ -14,7 +14,6 @@ import BranchesPage from "./pages/BranchesPage";
 import SeatsPage from "./pages/SeatsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
-import BillingPage from "./pages/BillingPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
@@ -40,7 +39,6 @@ const App = () => (
             <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
             <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />
             <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
-            <Route path="/billing" element={<BillingPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
