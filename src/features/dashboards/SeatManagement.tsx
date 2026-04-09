@@ -1,24 +1,42 @@
-import { useState } from 'react';
-import { MOCK_SEATS, MOCK_BRANCHES } from '@/shared/lib/mock-data';
+import { useState, useMemo } from 'react';
+import { MOCK_SEATS, MOCK_BRANCHES, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
+import { useBookingStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function SeatManagement() {
   const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.branchId === 'branch-1'));
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [dialogMode, setDialogMode] = useState<'checkin' | 'checkout' | 'restart' | null>(null);
   const [playerName, setPlayerName] = useState('');
+  const { bookings } = useBookingStore();
+
+  const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
+
+  // Get upcoming bookings for this branch, keyed by seat number
+  const bookedSeatMap = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const map = new Map<number, Booking>();
+    bookings
+      .filter(b => b.branchId === 'branch-1' && b.status === 'upcoming' && b.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
+      .forEach(b => {
+        if (!map.has(b.seatNumber)) map.set(b.seatNumber, b);
+      });
+    return map;
+  }, [bookings]);
 
   const occupied = seats.filter(s => s.status === 'occupied').length;
   const available = seats.filter(s => s.status === 'available').length;
   const maintenance = seats.filter(s => s.status === 'maintenance').length;
-  const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
+  const booked = seats.filter(s => s.status === 'available' && bookedSeatMap.has(s.number)).length;
 
   const handleSeatClick = (seat: Seat) => {
     setSelectedSeat(seat);
@@ -57,6 +75,9 @@ export default function SeatManagement() {
     setPlayerName('');
   };
 
+  const getSeatBooking = (seat: Seat) => bookedSeatMap.get(seat.number);
+  const isBooked = (seat: Seat) => seat.status === 'available' && bookedSeatMap.has(seat.number);
+
   return (
     <div className="space-y-6">
       <div>
@@ -65,8 +86,9 @@ export default function SeatManagement() {
       </div>
 
       {/* Quick Stats */}
-      <div className="flex items-center gap-6 text-sm">
-        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-success" /> Available: <strong>{available}</strong></span>
+      <div className="flex items-center gap-6 text-sm flex-wrap">
+        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-success" /> Available: <strong>{available - booked}</strong></span>
+        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-primary" /> Booked: <strong>{booked}</strong></span>
         <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-destructive" /> Occupied: <strong>{occupied}</strong></span>
         <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning" /> Maintenance: <strong>{maintenance}</strong></span>
         <span className="text-muted-foreground">Total: <strong>{seats.length}</strong></span>
@@ -76,28 +98,59 @@ export default function SeatManagement() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">Seat Map — Tap a seat to manage</CardTitle>
-          <CardDescription>Click on any seat to check in/out players or restart</CardDescription>
+          <CardDescription>Click on any seat to check in/out players or restart. Booked seats show upcoming reservations.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
-            {seats.map(seat => (
-              <button
-                key={seat.id}
-                onClick={() => handleSeatClick(seat)}
-                className={cn(
-                  'aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2',
-                  seat.status === 'available' && 'bg-success/10 border-success/30 text-success hover:bg-success/20',
-                  seat.status === 'occupied' && 'bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20',
-                  seat.status === 'maintenance' && 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
-                )}
-              >
-                <Monitor className="h-4 w-4" />
-                <span className="font-bold">{seat.number}</span>
-                {seat.playerName && (
-                  <span className="text-[10px] truncate max-w-full px-1">{seat.playerName}</span>
-                )}
-              </button>
-            ))}
+            {seats.map(seat => {
+              const booking = getSeatBooking(seat);
+              const seatBooked = isBooked(seat);
+
+              const seatButton = (
+                <button
+                  key={seat.id}
+                  onClick={() => handleSeatClick(seat)}
+                  className={cn(
+                    'aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2 relative',
+                    seatBooked && 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/20',
+                    !seatBooked && seat.status === 'available' && 'bg-success/10 border-success/30 text-success hover:bg-success/20',
+                    seat.status === 'occupied' && 'bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20',
+                    seat.status === 'maintenance' && 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
+                  )}
+                >
+                  {seatBooked ? (
+                    <CalendarCheck className="h-4 w-4" />
+                  ) : (
+                    <Monitor className="h-4 w-4" />
+                  )}
+                  <span className="font-bold">{seat.number}</span>
+                  {seat.playerName && (
+                    <span className="text-[10px] truncate max-w-full px-1">{seat.playerName}</span>
+                  )}
+                  {seatBooked && (
+                    <span className="text-[9px] truncate max-w-full px-0.5 opacity-80">{booking!.customerName.split(' ')[0]}</span>
+                  )}
+                </button>
+              );
+
+              if (seatBooked && booking) {
+                return (
+                  <Tooltip key={seat.id}>
+                    <TooltipTrigger asChild>
+                      {seatButton}
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs space-y-1 max-w-[200px]">
+                      <p className="font-semibold">{booking.customerName}</p>
+                      <p className="flex items-center gap-1"><Clock className="h-3 w-3" /> {booking.date} · {booking.startTime}–{booking.endTime}</p>
+                      {booking.gpuPreference && <p>GPU: {booking.gpuPreference}</p>}
+                      {booking.notes && <p className="italic text-muted-foreground">{booking.notes}</p>}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return seatButton;
+            })}
           </div>
         </CardContent>
       </Card>
@@ -114,6 +167,13 @@ export default function SeatManagement() {
                 </DialogTitle>
                 <DialogDescription>Assign a player to this seat to start their session</DialogDescription>
               </DialogHeader>
+              {selectedSeat && bookedSeatMap.has(selectedSeat.number) && (
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm space-y-1">
+                  <p className="font-medium text-primary flex items-center gap-1"><CalendarCheck className="h-4 w-4" /> This seat has a booking</p>
+                  <p><strong>Customer:</strong> {bookedSeatMap.get(selectedSeat.number)!.customerName}</p>
+                  <p><strong>Time:</strong> {bookedSeatMap.get(selectedSeat.number)!.startTime} – {bookedSeatMap.get(selectedSeat.number)!.endTime}</p>
+                </div>
+              )}
               <div className="space-y-3 py-2">
                 <div className="space-y-2">
                   <Label>Player Name</Label>
