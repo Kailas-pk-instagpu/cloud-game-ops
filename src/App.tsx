@@ -12,6 +12,7 @@ import UsersPage from "./pages/UsersPage";
 import GPUNodesPage from "./pages/GPUNodesPage";
 import BranchesPage from "./pages/BranchesPage";
 import SeatsPage from "./pages/SeatsPage";
+import BookingsPage from "./pages/BookingsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/gpu-nodes" element={<RoleGuard roles={['super_admin']}><GPUNodesPage /></RoleGuard>} />
             <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
             <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />
+            <Route path="/bookings" element={<RoleGuard roles={['cafe_owner', 'manager']}><BookingsPage /></RoleGuard>} />
             <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
