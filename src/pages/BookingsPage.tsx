@@ -74,7 +74,6 @@ export default function BookingsPage() {
     upcoming: filteredBookings.filter(b => b.status === 'upcoming').length,
     completed: filteredBookings.filter(b => b.status === 'completed').length,
     cancelled: filteredBookings.filter(b => b.status === 'cancelled').length,
-    noShow: filteredBookings.filter(b => b.status === 'no_show').length,
   }), [filteredBookings]);
 
   const resetForm = () => {
@@ -122,10 +121,6 @@ export default function BookingsPage() {
     toast.success('Booking marked as completed');
   };
 
-  const handleMarkNoShow = (id: string) => {
-    updateBookingStatus(id, 'no_show');
-    toast.warning('Booking marked as no-show');
-  };
 
   const getBranchName = (branchId: string) =>
     MOCK_BRANCHES.find(b => b.id === branchId)?.name || branchId;
@@ -145,7 +140,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground font-medium">Upcoming</p>
           <p className="text-2xl font-bold text-primary">{stats.upcoming}</p>
@@ -157,10 +152,6 @@ export default function BookingsPage() {
         <Card className="p-4">
           <p className="text-xs text-muted-foreground font-medium">Cancelled</p>
           <p className="text-2xl font-bold text-destructive">{stats.cancelled}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-muted-foreground font-medium">No Show</p>
-          <p className="text-2xl font-bold text-warning">{stats.noShow}</p>
         </Card>
       </div>
 
@@ -189,7 +180,7 @@ export default function BookingsPage() {
             <SelectItem value="upcoming">Upcoming</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="no_show">No Show</SelectItem>
+            
           </SelectContent>
         </Select>
       </div>
