@@ -93,6 +93,22 @@ export default function BookingsPage() {
       toast.error('Please fill all required fields');
       return;
     }
+
+    // Conflict detection: check for overlapping bookings on the same seat, branch, and date
+    const seatNum = parseInt(formSeat);
+    const conflict = bookings.find(b =>
+      b.branchId === formBranch &&
+      b.seatNumber === seatNum &&
+      b.date === formDate &&
+      b.status === 'upcoming' &&
+      formStartTime < b.endTime &&
+      formEndTime > b.startTime
+    );
+    if (conflict) {
+      toast.error(`Seat ${seatNum} is already booked on ${formDate} from ${conflict.startTime} to ${conflict.endTime} by ${conflict.customerName}`);
+      return;
+    }
+
     addBooking({
       branchId: formBranch,
       seatNumber: parseInt(formSeat),
