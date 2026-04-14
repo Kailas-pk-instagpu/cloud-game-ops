@@ -94,6 +94,11 @@ export default function BookingsPage() {
       return;
     }
 
+    if (formEndTime <= formStartTime) {
+      toast.error('End time must be after start time');
+      return;
+    }
+
     // Conflict detection: check for overlapping bookings on the same seat, branch, and date
     const seatNum = parseInt(formSeat);
     const conflict = bookings.find(b =>
