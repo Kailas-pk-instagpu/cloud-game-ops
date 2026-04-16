@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck } from 'lucide-react';
+import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck, CalendarDays, List } from 'lucide-react';
+import BookingCalendarView from '@/features/bookings/BookingCalendarView';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -29,6 +30,7 @@ export default function BookingsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [viewTab, setViewTab] = useState<'list' | 'calendar'>('list');
 
   // Form state
   const [formBranch, setFormBranch] = useState('');
@@ -176,37 +178,54 @@ export default function BookingsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-[180px] h-9">
-              <SelectValue placeholder="All Branches" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Branches</SelectItem>
-              {accessibleBranches.map(b => (
-                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Filters & View Toggle */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Branches</SelectItem>
+                {accessibleBranches.map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {viewTab === 'list' && (
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[150px] h-9">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[150px] h-9">
-            <SelectValue placeholder="All Statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="upcoming">Upcoming</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1 border border-border rounded-md p-0.5">
+          <Button variant={viewTab === 'list' ? 'secondary' : 'ghost'} size="sm" className="h-7 text-xs gap-1.5" onClick={() => setViewTab('list')}>
+            <List className="h-3.5 w-3.5" /> List
+          </Button>
+          <Button variant={viewTab === 'calendar' ? 'secondary' : 'ghost'} size="sm" className="h-7 text-xs gap-1.5" onClick={() => setViewTab('calendar')}>
+            <CalendarDays className="h-3.5 w-3.5" /> Calendar
+          </Button>
+        </div>
       </div>
 
+      {/* Calendar View */}
+      {viewTab === 'calendar' && (
+        <BookingCalendarView bookings={bookings} branchFilter={selectedBranch} />
+      )}
+
       {/* Bookings Table */}
+      {viewTab === 'list' && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">Bookings</CardTitle>
@@ -283,8 +302,8 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
-      {/* Create Booking Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
