@@ -30,6 +30,7 @@ export default function BookingsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [viewTab, setViewTab] = useState<'list' | 'calendar'>('list');
 
   // Form state
   const [formBranch, setFormBranch] = useState('');
