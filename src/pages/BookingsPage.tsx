@@ -302,8 +302,8 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
-      {/* Create Booking Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
