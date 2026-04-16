@@ -178,35 +178,51 @@ export default function BookingsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-[180px] h-9">
-              <SelectValue placeholder="All Branches" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Branches</SelectItem>
-              {accessibleBranches.map(b => (
-                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Filters & View Toggle */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Branches</SelectItem>
+                {accessibleBranches.map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {viewTab === 'list' && (
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[150px] h-9">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[150px] h-9">
-            <SelectValue placeholder="All Statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="upcoming">Upcoming</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1 border border-border rounded-md p-0.5">
+          <Button variant={viewTab === 'list' ? 'secondary' : 'ghost'} size="sm" className="h-7 text-xs gap-1.5" onClick={() => setViewTab('list')}>
+            <List className="h-3.5 w-3.5" /> List
+          </Button>
+          <Button variant={viewTab === 'calendar' ? 'secondary' : 'ghost'} size="sm" className="h-7 text-xs gap-1.5" onClick={() => setViewTab('calendar')}>
+            <CalendarDays className="h-3.5 w-3.5" /> Calendar
+          </Button>
+        </div>
       </div>
+
+      {/* Calendar View */}
+      {viewTab === 'calendar' && (
+        <BookingCalendarView bookings={bookings} branchFilter={selectedBranch} />
+      )}
 
       {/* Bookings Table */}
       <Card>
