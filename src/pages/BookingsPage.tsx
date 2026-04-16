@@ -225,6 +225,7 @@ export default function BookingsPage() {
       )}
 
       {/* Bookings Table */}
+      {viewTab === 'list' && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">Bookings</CardTitle>
