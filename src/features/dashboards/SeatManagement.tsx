@@ -4,23 +4,37 @@ import { Seat } from '@/shared/lib/mock-data';
 import { useBookingStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
+
+function addMinutesToTime(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  const newH = Math.floor(total / 60) % 24;
+  const newM = total % 60;
+  return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+}
+
+function getCurrentTime(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+}
 
 export default function SeatManagement() {
   const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.branchId === 'branch-1'));
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
-  const [dialogMode, setDialogMode] = useState<'checkin' | 'checkout' | 'restart' | null>(null);
+  const [dialogMode, setDialogMode] = useState<'checkin' | 'checkout' | 'restart' | 'extend' | null>(null);
   const [playerName, setPlayerName] = useState('');
+  const [sessionDuration, setSessionDuration] = useState('60');
+  const [extendMinutes, setExtendMinutes] = useState('30');
   const { bookings } = useBookingStore();
 
   const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
 
-  // Get upcoming bookings for this branch, keyed by seat number
   const bookedSeatMap = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const map = new Map<number, Booking>();
@@ -47,8 +61,11 @@ export default function SeatManagement() {
 
   const handleCheckIn = () => {
     if (!selectedSeat || !playerName.trim()) return;
+    const duration = parseInt(sessionDuration) || 60;
+    const now = getCurrentTime();
+    const end = addMinutesToTime(now, duration);
     setSeats(prev => prev.map(s =>
-      s.id === selectedSeat.id ? { ...s, status: 'occupied' as const, playerName: playerName.trim(), startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } : s
+      s.id === selectedSeat.id ? { ...s, status: 'occupied' as const, playerName: playerName.trim(), startTime: now, endTime: end } : s
     ));
     closeDialog();
   };
@@ -56,7 +73,7 @@ export default function SeatManagement() {
   const handleCheckOut = () => {
     if (!selectedSeat) return;
     setSeats(prev => prev.map(s =>
-      s.id === selectedSeat.id ? { ...s, status: 'available' as const, playerName: undefined, startTime: undefined } : s
+      s.id === selectedSeat.id ? { ...s, status: 'available' as const, playerName: undefined, startTime: undefined, endTime: undefined } : s
     ));
     closeDialog();
   };
@@ -69,10 +86,27 @@ export default function SeatManagement() {
     closeDialog();
   };
 
+  const handleExtendSession = () => {
+    if (!selectedSeat || !selectedSeat.endTime) return;
+    const mins = parseInt(extendMinutes);
+    if (!mins || mins <= 0) {
+      toast.error('Please enter a valid duration');
+      return;
+    }
+    const newEnd = addMinutesToTime(selectedSeat.endTime, mins);
+    setSeats(prev => prev.map(s =>
+      s.id === selectedSeat.id ? { ...s, endTime: newEnd } : s
+    ));
+    toast.success(`Session extended by ${mins} minutes (new end: ${newEnd})`);
+    closeDialog();
+  };
+
   const closeDialog = () => {
     setSelectedSeat(null);
     setDialogMode(null);
     setPlayerName('');
+    setSessionDuration('60');
+    setExtendMinutes('30');
   };
 
   const getSeatBooking = (seat: Seat) => bookedSeatMap.get(seat.number);
@@ -98,7 +132,7 @@ export default function SeatManagement() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">Seat Map — Tap a seat to manage</CardTitle>
-          <CardDescription>Click on any seat to check in/out players or restart. Booked seats show upcoming reservations.</CardDescription>
+          <CardDescription>Click on any seat to check in/out players, extend sessions, or restart.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
@@ -126,6 +160,11 @@ export default function SeatManagement() {
                   <span className="font-bold">{seat.number}</span>
                   {seat.playerName && (
                     <span className="text-[10px] truncate max-w-full px-1">{seat.playerName}</span>
+                  )}
+                  {seat.endTime && seat.status === 'occupied' && (
+                    <span className="text-[9px] truncate max-w-full px-0.5 opacity-70 flex items-center gap-0.5">
+                      <Clock className="h-2.5 w-2.5" />{seat.endTime}
+                    </span>
                   )}
                   {seatBooked && (
                     <span className="text-[9px] truncate max-w-full px-0.5 opacity-80">{booking!.customerName.split(' ')[0]}</span>
@@ -179,6 +218,10 @@ export default function SeatManagement() {
                   <Label>Player Name</Label>
                   <Input placeholder="Enter player's name" value={playerName} onChange={e => setPlayerName(e.target.value)} autoFocus />
                 </div>
+                <div className="space-y-2">
+                  <Label>Session Duration (minutes)</Label>
+                  <Input type="number" min="15" step="15" placeholder="60" value={sessionDuration} onChange={e => setSessionDuration(e.target.value)} />
+                </div>
                 <p className="text-xs text-muted-foreground">GPU: {selectedSeat?.gpuModel}</p>
               </div>
               <DialogFooter>
@@ -196,16 +239,54 @@ export default function SeatManagement() {
                 </DialogTitle>
                 <DialogDescription>End the session for {selectedSeat?.playerName}</DialogDescription>
               </DialogHeader>
-              <div className="py-2 space-y-2">
-                <div className="p-3 rounded-lg bg-muted/50">
+              <div className="py-2 space-y-3">
+                <div className="p-3 rounded-lg bg-muted/50 space-y-1">
                   <p className="text-sm"><strong>Player:</strong> {selectedSeat?.playerName}</p>
                   <p className="text-sm"><strong>Started:</strong> {selectedSeat?.startTime}</p>
+                  <p className="text-sm"><strong>Ends:</strong> {selectedSeat?.endTime || '—'}</p>
                   <p className="text-sm"><strong>GPU:</strong> {selectedSeat?.gpuModel}</p>
                 </div>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => setDialogMode('extend')}
+                >
+                  <TimerReset className="h-4 w-4" /> Extend Session
+                </Button>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
                 <Button onClick={handleCheckOut} variant="destructive">End Session</Button>
+              </DialogFooter>
+            </>
+          )}
+          {dialogMode === 'extend' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <TimerReset className="h-5 w-5 text-primary" />
+                  Extend Session — Seat {selectedSeat?.number}
+                </DialogTitle>
+                <DialogDescription>Extend the session for {selectedSeat?.playerName}</DialogDescription>
+              </DialogHeader>
+              <div className="py-2 space-y-3">
+                <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                  <p className="text-sm"><strong>Player:</strong> {selectedSeat?.playerName}</p>
+                  <p className="text-sm"><strong>Current End Time:</strong> {selectedSeat?.endTime || '—'}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Extend by (minutes)</Label>
+                  <Input type="number" min="15" step="15" placeholder="30" value={extendMinutes} onChange={e => setExtendMinutes(e.target.value)} autoFocus />
+                  {selectedSeat?.endTime && extendMinutes && parseInt(extendMinutes) > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      New end time: <strong>{addMinutesToTime(selectedSeat.endTime, parseInt(extendMinutes))}</strong>
+                    </p>
+                  )}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogMode('checkout')}>Back</Button>
+                <Button onClick={handleExtendSession}>Extend Session</Button>
               </DialogFooter>
             </>
           )}

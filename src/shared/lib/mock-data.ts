@@ -37,6 +37,7 @@ export interface Seat {
   status: 'available' | 'occupied' | 'maintenance';
   playerName?: string;
   startTime?: string;
+  endTime?: string;
   gpuModel: string;
 }
 
