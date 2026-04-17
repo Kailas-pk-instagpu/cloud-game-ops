@@ -151,7 +151,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
 
               {/* Booking blocks overlay */}
               <TooltipProvider delayDuration={200}>
-                <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `60px repeat(${viewDays.length}, 1fr)` }}>
+                <div className="absolute inset-0 grid pointer-events-none" style={{ gridTemplateColumns: `60px repeat(${viewDays.length}, 1fr)` }}>
                   <div /> {/* spacer for time column */}
                   {viewDays.map((day, dayIdx) => {
                     const key = formatDateKey(day);
