@@ -221,7 +221,20 @@ export default function BookingsPage() {
 
       {/* Calendar View */}
       {viewTab === 'calendar' && (
-        <BookingCalendarView bookings={bookings} branchFilter={selectedBranch} />
+        <BookingCalendarView
+          bookings={bookings}
+          branchFilter={selectedBranch}
+          onSlotClick={(date, startTime) => {
+            resetForm();
+            setFormDate(date);
+            setFormStartTime(startTime);
+            const [h, m] = startTime.split(':').map(Number);
+            const endH = Math.min(h + 1, 23);
+            setFormEndTime(`${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+            if (selectedBranch !== 'all') setFormBranch(selectedBranch);
+            setShowCreateDialog(true);
+          }}
+        />
       )}
 
       {/* Bookings Table */}
