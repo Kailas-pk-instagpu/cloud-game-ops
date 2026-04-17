@@ -133,8 +133,17 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
                   {viewDays.map(day => {
                     const key = formatDateKey(day);
                     const isToday = key === todayKey;
+                    const timeStr = `${String(hour).padStart(2, '0')}:00`;
                     return (
-                      <div key={key} className={cn("border-r border-border/30 last:border-r-0 relative", isToday && "bg-primary/[0.02]")} />
+                      <div
+                        key={key}
+                        onClick={() => onSlotClick?.(key, timeStr)}
+                        className={cn(
+                          "border-r border-border/30 last:border-r-0 relative transition-colors",
+                          isToday && "bg-primary/[0.02]",
+                          onSlotClick && "cursor-pointer hover:bg-primary/10"
+                        )}
+                      />
                     );
                   })}
                 </div>
