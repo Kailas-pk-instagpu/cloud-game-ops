@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 interface Props {
   bookings: Booking[];
   branchFilter: string;
+  onSlotClick?: (date: string, startTime: string) => void;
 }
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7 AM to 9 PM
