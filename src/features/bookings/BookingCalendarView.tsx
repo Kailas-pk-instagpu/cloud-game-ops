@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 interface Props {
   bookings: Booking[];
   branchFilter: string;
+  onSlotClick?: (date: string, startTime: string) => void;
 }
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7 AM to 9 PM
@@ -41,7 +42,7 @@ function timeToHour(time: string): number {
   return h + m / 60;
 }
 
-export default function BookingCalendarView({ bookings, branchFilter }: Props) {
+export default function BookingCalendarView({ bookings, branchFilter, onSlotClick }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
 
@@ -132,8 +133,17 @@ export default function BookingCalendarView({ bookings, branchFilter }: Props) {
                   {viewDays.map(day => {
                     const key = formatDateKey(day);
                     const isToday = key === todayKey;
+                    const timeStr = `${String(hour).padStart(2, '0')}:00`;
                     return (
-                      <div key={key} className={cn("border-r border-border/30 last:border-r-0 relative", isToday && "bg-primary/[0.02]")} />
+                      <div
+                        key={key}
+                        onClick={() => onSlotClick?.(key, timeStr)}
+                        className={cn(
+                          "border-r border-border/30 last:border-r-0 relative transition-colors",
+                          isToday && "bg-primary/[0.02]",
+                          onSlotClick && "cursor-pointer hover:bg-primary/10"
+                        )}
+                      />
                     );
                   })}
                 </div>
