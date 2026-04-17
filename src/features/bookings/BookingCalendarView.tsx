@@ -42,7 +42,7 @@ function timeToHour(time: string): number {
   return h + m / 60;
 }
 
-export default function BookingCalendarView({ bookings, branchFilter }: Props) {
+export default function BookingCalendarView({ bookings, branchFilter, onSlotClick }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
 
