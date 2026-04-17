@@ -151,7 +151,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
 
               {/* Booking blocks overlay */}
               <TooltipProvider delayDuration={200}>
-                <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `60px repeat(${viewDays.length}, 1fr)` }}>
+                <div className="absolute inset-0 grid pointer-events-none" style={{ gridTemplateColumns: `60px repeat(${viewDays.length}, 1fr)` }}>
                   <div /> {/* spacer for time column */}
                   {viewDays.map((day, dayIdx) => {
                     const key = formatDateKey(day);
@@ -170,7 +170,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
                               <TooltipTrigger asChild>
                                 <div
                                   className={cn(
-                                    'absolute left-0.5 right-0.5 rounded-md border px-1.5 py-0.5 cursor-pointer transition-opacity hover:opacity-90 overflow-hidden z-10',
+                                    'absolute left-0.5 right-0.5 rounded-md border px-1.5 py-0.5 cursor-pointer transition-opacity hover:opacity-90 overflow-hidden z-10 pointer-events-auto',
                                     STATUS_COLORS[booking.status]
                                   )}
                                   style={{ top: `${top}px`, height: `${height}px` }}
