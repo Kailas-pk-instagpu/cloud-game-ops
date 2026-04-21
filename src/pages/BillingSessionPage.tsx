@@ -2,26 +2,37 @@ import { useMemo, useState } from 'react';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
 import { useAuthStore, useBranchStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, IndianRupee, Lock } from 'lucide-react';
+import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
-  const canManage = user?.role === 'cafe_owner';
+  // Cafe owners and managers manage user billing; admins/super-admins view-only
+  const canManage = user?.role === 'cafe_owner' || user?.role === 'manager';
 
   const visibleBranches = useMemo(() => {
     if (!user) return [];
     if (user.role === 'cafe_owner') return branches.filter((b) => b.cafeOwnerId === user.id);
     if (user.role === 'manager') return branches.filter((b) => b.managerId === user.id);
     if (user.role === 'admin') return branches.filter((b) => b.adminId === user.id);
-    return branches; // super_admin
+    return branches;
   }, [branches, user]);
 
   const [branchId, setBranchId] = useState<string>(visibleBranches[0]?.id ?? '');
   const branch = visibleBranches.find((b) => b.id === branchId) ?? visibleBranches[0];
+
+  const branchCustomers = useMemo(
+    () => MOCK_CUSTOMER_WALLETS.filter((c) => c.branchId === branch?.id),
+    [branch?.id]
+  );
+
+  const [customerId, setCustomerId] = useState<string>(branchCustomers[0]?.id ?? '');
+  const customer =
+    branchCustomers.find((c) => c.id === customerId) ?? branchCustomers[0];
 
   if (!branch) {
     return (
@@ -39,18 +50,25 @@ export default function BillingSessionPage() {
           <Eye className="h-4 w-4" />
           <AlertTitle>View-only access</AlertTitle>
           <AlertDescription>
-            Billing sessions are managed by the cafe owner. You can view live bills but cannot end sessions.
+            User billing is managed by cafe owners and managers. You can view live bills but cannot end sessions.
           </AlertDescription>
         </Alert>
       )}
 
       <Card>
-        <CardContent className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <CardContent className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
               <Building2 className="h-3.5 w-3.5" /> Branch
             </Label>
-            <Select value={branch.id} onValueChange={setBranchId}>
+            <Select
+              value={branch.id}
+              onValueChange={(v) => {
+                setBranchId(v);
+                const first = MOCK_CUSTOMER_WALLETS.find((c) => c.branchId === v);
+                setCustomerId(first?.id ?? '');
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -63,28 +81,67 @@ export default function BillingSessionPage() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+              <UserIcon className="h-3.5 w-3.5" /> Customer
+            </Label>
+            {branchCustomers.length > 0 ? (
+              <Select value={customer?.id} onValueChange={setCustomerId}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {branchCustomers.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} · ₹{c.balance}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-muted-foreground">No customers</p>
+            )}
+          </div>
+
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
               <IndianRupee className="h-3.5 w-3.5" /> Branch Rate
             </div>
-            <p className="font-mono text-xl font-bold">₹{branch.billing.costPerMinute.toFixed(2)} <span className="text-xs text-muted-foreground font-normal">/ min</span></p>
+            <p className="font-mono text-xl font-bold">
+              ₹{branch.billing.costPerMinute.toFixed(2)}{' '}
+              <span className="text-xs text-muted-foreground font-normal">/ min</span>
+            </p>
           </div>
+
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-              <Lock className="h-3.5 w-3.5" /> Default Lock
+              <Wallet className="h-3.5 w-3.5" /> Wallet Balance
             </div>
-            <p className="font-mono text-xl font-bold">₹{branch.billing.lockedAmount.toFixed(2)}</p>
+            <p className="font-mono text-xl font-bold">
+              ₹{(customer?.balance ?? 0).toFixed(2)}
+            </p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Lock className="h-3 w-3" /> Locked ₹{(customer?.lockedAmount ?? branch.billing.lockedAmount).toFixed(2)}
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <ActiveSessionDashboard
-        key={branch.id}
-        readOnly={!canManage}
-        lockedAmount={branch.billing.lockedAmount}
-        costPerMinute={branch.billing.costPerMinute}
-        branchName={branch.name}
-      />
+      {customer ? (
+        <ActiveSessionDashboard
+          key={`${branch.id}-${customer.id}`}
+          readOnly={!canManage}
+          lockedAmount={customer.lockedAmount}
+          costPerMinute={branch.billing.costPerMinute}
+          branchName={`${branch.name} · ${customer.name}`}
+        />
+      ) : (
+        <Alert>
+          <AlertTitle>No active customer</AlertTitle>
+          <AlertDescription>This branch has no customers with a wallet yet.</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
