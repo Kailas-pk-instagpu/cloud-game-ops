@@ -35,6 +35,20 @@ export default function SeatManagement() {
   const [sessionDuration, setSessionDuration] = useState('60');
   const [extendMinutes, setExtendMinutes] = useState('30');
   const { bookings } = useBookingStore();
+  const navigate = useNavigate();
+
+  const seatWallet = useMemo(() => {
+    if (!selectedSeat?.playerName) return undefined;
+    const branchCustomers = MOCK_CUSTOMER_WALLETS.filter(c => c.branchId === selectedSeat.branchId);
+    const name = selectedSeat.playerName.toLowerCase();
+    return (
+      branchCustomers.find(c => c.name.toLowerCase() === name) ||
+      branchCustomers.find(c => c.name.toLowerCase().split(' ')[0] === name.split(' ')[0]) ||
+      branchCustomers[0]
+    );
+  }, [selectedSeat]);
+  const remaining = seatWallet ? seatWallet.balance - seatWallet.lockedAmount : 0;
+  const isLowBalance = seatWallet ? remaining <= LOW_BALANCE_THRESHOLD : false;
 
   const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
 
