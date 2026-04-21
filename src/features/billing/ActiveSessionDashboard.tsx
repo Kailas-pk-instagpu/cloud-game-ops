@@ -10,6 +10,7 @@ interface ActiveSessionDashboardProps {
   startTime?: Date;
   lockedAmount?: number;
   costPerMinute?: number;
+  readOnly?: boolean;
   onEndSession?: (summary: { durationSec: number; usageCost: number; refund: number }) => void;
 }
 
@@ -25,6 +26,7 @@ export function ActiveSessionDashboard({
   startTime = useMemo(() => new Date(), []),
   lockedAmount = 100,
   costPerMinute = 2,
+  readOnly = false,
   onEndSession,
 }: ActiveSessionDashboardProps) {
   const [now, setNow] = useState<Date>(new Date());
@@ -182,11 +184,12 @@ export function ActiveSessionDashboard({
                 size="lg"
                 variant="destructive"
                 onClick={handleEnd}
-                disabled={ended}
+                disabled={ended || readOnly}
                 className="shadow-[0_0_25px_hsl(var(--destructive)/0.4)]"
+                title={readOnly ? 'Only cafe owner can end the session' : undefined}
               >
                 <Power className="h-4 w-4" />
-                {ended ? 'Session Ended' : 'End Session'}
+                {ended ? 'Session Ended' : readOnly ? 'View Only' : 'End Session'}
               </Button>
             </div>
           </CardContent>
