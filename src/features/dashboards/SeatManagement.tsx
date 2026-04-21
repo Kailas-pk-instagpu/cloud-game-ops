@@ -263,6 +263,57 @@ export default function SeatManagement() {
                   <p className="text-sm"><strong>Ends:</strong> {selectedSeat?.endTime || '—'}</p>
                   <p className="text-sm"><strong>GPU:</strong> {selectedSeat?.gpuModel}</p>
                 </div>
+
+                {seatWallet && (
+                  <div
+                    className={cn(
+                      'p-3 rounded-lg border space-y-2',
+                      isLowBalance
+                        ? 'bg-destructive/10 border-destructive/30'
+                        : 'bg-success/10 border-success/30'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold flex items-center gap-1.5">
+                        <Wallet className={cn('h-4 w-4', isLowBalance ? 'text-destructive' : 'text-success')} />
+                        Wallet · {seatWallet.name}
+                      </p>
+                      {isLowBalance && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" /> Low balance
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Balance</p>
+                        <p className="font-mono font-bold text-sm">₹{seatWallet.balance}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Locked</p>
+                        <p className="font-mono font-bold text-sm">₹{seatWallet.lockedAmount}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Remaining</p>
+                        <p className={cn('font-mono font-bold text-sm', isLowBalance ? 'text-destructive' : 'text-success')}>
+                          ₹{remaining}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        navigate(`/billing/session?branchId=${seatWallet.branchId}&customerId=${seatWallet.id}`);
+                        closeDialog();
+                      }}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" /> Open Billing for {seatWallet.name}
+                    </Button>
+                  </div>
+                )}
+
                 <Button
                   variant="outline"
                   className="w-full gap-2"
