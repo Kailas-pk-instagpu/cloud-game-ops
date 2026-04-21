@@ -23,7 +23,11 @@ export default function BillingSessionPage() {
     return branches;
   }, [branches, user]);
 
-  const [branchId, setBranchId] = useState<string>(visibleBranches[0]?.id ?? '');
+  const [searchParams] = useSearchParams();
+  const urlBranchId = searchParams.get('branchId');
+  const urlCustomerId = searchParams.get('customerId');
+
+  const [branchId, setBranchId] = useState<string>(urlBranchId ?? visibleBranches[0]?.id ?? '');
   const branch = visibleBranches.find((b) => b.id === branchId) ?? visibleBranches[0];
 
   const branchCustomers = useMemo(
@@ -31,9 +35,15 @@ export default function BillingSessionPage() {
     [branch?.id]
   );
 
-  const [customerId, setCustomerId] = useState<string>(branchCustomers[0]?.id ?? '');
+  const [customerId, setCustomerId] = useState<string>(urlCustomerId ?? branchCustomers[0]?.id ?? '');
   const customer =
     branchCustomers.find((c) => c.id === customerId) ?? branchCustomers[0];
+
+  useEffect(() => {
+    if (urlBranchId && urlBranchId !== branchId) setBranchId(urlBranchId);
+    if (urlCustomerId && urlCustomerId !== customerId) setCustomerId(urlCustomerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlBranchId, urlCustomerId]);
 
   if (!branch) {
     return (
