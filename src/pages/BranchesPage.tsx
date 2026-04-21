@@ -114,6 +114,7 @@ export default function BranchesPage() {
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
+      billing: { costPerMinute: 2, lockedAmount: 100, currency: 'INR' },
     });
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
