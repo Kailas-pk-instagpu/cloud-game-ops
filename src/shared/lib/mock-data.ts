@@ -131,6 +131,26 @@ export interface Booking {
   createdAt: string;
 }
 
+export interface CustomerWallet {
+  id: string;
+  name: string;
+  phone: string;
+  branchId: string;
+  balance: number; // total wallet balance in INR
+  lockedAmount: number; // currently reserved for an active session
+}
+
+export const MOCK_CUSTOMER_WALLETS: CustomerWallet[] = [
+  { id: 'cw-1', name: 'Aiden Cole', phone: '+1555000111', branchId: 'branch-1', balance: 500, lockedAmount: 100 },
+  { id: 'cw-2', name: 'Maya Lin', phone: '+1555000222', branchId: 'branch-1', balance: 1200, lockedAmount: 200 },
+  { id: 'cw-3', name: 'Derek Shaw', phone: '+1555000333', branchId: 'branch-1', balance: 320, lockedAmount: 80 },
+  { id: 'cw-4', name: 'Priya Nair', phone: '+1555000444', branchId: 'branch-2', balance: 750, lockedAmount: 150 },
+  { id: 'cw-5', name: 'Leo Tanaka', phone: '+1555000555', branchId: 'branch-2', balance: 250, lockedAmount: 100 },
+  { id: 'cw-6', name: 'Sara Ahmed', phone: '+1555000666', branchId: 'branch-3', balance: 900, lockedAmount: 120 },
+  { id: 'cw-7', name: 'Omar Hassan', phone: '+1555000777', branchId: 'branch-3', balance: 450, lockedAmount: 100 },
+  { id: 'cw-8', name: 'Nina Park', phone: '+1555000888', branchId: 'branch-4', balance: 600, lockedAmount: 80 },
+];
+
 export const MOCK_BOOKINGS: Booking[] = [
   { id: 'bk-1', branchId: 'branch-1', seatNumber: 3, customerName: 'Aiden Cole', customerPhone: '+1555000111', date: '2026-04-10', startTime: '10:00', endTime: '12:00', status: 'upcoming', gpuPreference: 'RTX 4090', createdBy: '6', createdAt: '2026-04-08' },
   { id: 'bk-2', branchId: 'branch-1', seatNumber: 7, customerName: 'Maya Lin', customerPhone: '+1555000222', date: '2026-04-10', startTime: '14:00', endTime: '17:00', status: 'upcoming', notes: 'VIP customer', createdBy: '6', createdAt: '2026-04-08' },
