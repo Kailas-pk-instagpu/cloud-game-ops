@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react';
-import { MOCK_SEATS, MOCK_BRANCHES, Booking } from '@/shared/lib/mock-data';
+import { useNavigate } from 'react-router-dom';
+import { MOCK_SEATS, MOCK_BRANCHES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
 import { useBookingStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+
+const LOW_BALANCE_THRESHOLD = 150; // INR — flag wallets at/below this
 
 function addMinutesToTime(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
