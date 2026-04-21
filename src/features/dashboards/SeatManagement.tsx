@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react';
-import { MOCK_SEATS, MOCK_BRANCHES, Booking } from '@/shared/lib/mock-data';
+import { useNavigate } from 'react-router-dom';
+import { MOCK_SEATS, MOCK_BRANCHES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
 import { useBookingStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+
+const LOW_BALANCE_THRESHOLD = 150; // INR — flag wallets at/below this
 
 function addMinutesToTime(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
@@ -32,6 +35,20 @@ export default function SeatManagement() {
   const [sessionDuration, setSessionDuration] = useState('60');
   const [extendMinutes, setExtendMinutes] = useState('30');
   const { bookings } = useBookingStore();
+  const navigate = useNavigate();
+
+  const seatWallet = useMemo(() => {
+    if (!selectedSeat?.playerName) return undefined;
+    const branchCustomers = MOCK_CUSTOMER_WALLETS.filter(c => c.branchId === selectedSeat.branchId);
+    const name = selectedSeat.playerName.toLowerCase();
+    return (
+      branchCustomers.find(c => c.name.toLowerCase() === name) ||
+      branchCustomers.find(c => c.name.toLowerCase().split(' ')[0] === name.split(' ')[0]) ||
+      branchCustomers[0]
+    );
+  }, [selectedSeat]);
+  const remaining = seatWallet ? seatWallet.balance - seatWallet.lockedAmount : 0;
+  const isLowBalance = seatWallet ? remaining <= LOW_BALANCE_THRESHOLD : false;
 
   const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
 
@@ -246,6 +263,57 @@ export default function SeatManagement() {
                   <p className="text-sm"><strong>Ends:</strong> {selectedSeat?.endTime || '—'}</p>
                   <p className="text-sm"><strong>GPU:</strong> {selectedSeat?.gpuModel}</p>
                 </div>
+
+                {seatWallet && (
+                  <div
+                    className={cn(
+                      'p-3 rounded-lg border space-y-2',
+                      isLowBalance
+                        ? 'bg-destructive/10 border-destructive/30'
+                        : 'bg-success/10 border-success/30'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold flex items-center gap-1.5">
+                        <Wallet className={cn('h-4 w-4', isLowBalance ? 'text-destructive' : 'text-success')} />
+                        Wallet · {seatWallet.name}
+                      </p>
+                      {isLowBalance && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" /> Low balance
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Balance</p>
+                        <p className="font-mono font-bold text-sm">₹{seatWallet.balance}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Locked</p>
+                        <p className="font-mono font-bold text-sm">₹{seatWallet.lockedAmount}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase text-muted-foreground">Remaining</p>
+                        <p className={cn('font-mono font-bold text-sm', isLowBalance ? 'text-destructive' : 'text-success')}>
+                          ₹{remaining}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        navigate(`/billing/session?branchId=${seatWallet.branchId}&customerId=${seatWallet.id}`);
+                        closeDialog();
+                      }}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" /> Open Billing for {seatWallet.name}
+                    </Button>
+                  </div>
+                )}
+
                 <Button
                   variant="outline"
                   className="w-full gap-2"
