@@ -365,17 +365,6 @@ export default function SeatManagement() {
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2"
-                      onClick={() => {
-                        navigate(`/billing/session?branchId=${seatWallet.branchId}&customerId=${seatWallet.id}`);
-                        closeDialog();
-                      }}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" /> Open Billing for {seatWallet.name}
-                    </Button>
                   </div>
                 )}
 
@@ -389,7 +378,7 @@ export default function SeatManagement() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckOut} variant="destructive">End Session</Button>
+                <Button onClick={handleCheckOut} variant="destructive">End Billing</Button>
               </DialogFooter>
             </>
           )}
