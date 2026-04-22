@@ -18,6 +18,7 @@ import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BillingSessionPage from "./pages/BillingSessionPage";
+import SettlementsPage from "./pages/SettlementsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/billing/session" element={<BillingSessionPage />} />
+            <Route path="/billing/settlements" element={<RoleGuard roles={['cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
