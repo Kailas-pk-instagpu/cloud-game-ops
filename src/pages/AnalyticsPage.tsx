@@ -138,8 +138,8 @@ export default function AnalyticsPage() {
       {/* Summary Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Total Revenue', value: `$${(totalRevenue / 1000).toFixed(0)}k`, sub: period === 'monthly' ? '6 months' : '6 years', icon: BarChart3, color: 'text-primary' },
-          { label: 'Net Profit', value: `$${(totalProfit / 1000).toFixed(0)}k`, sub: `${Math.round((totalProfit / totalRevenue) * 100)}% margin`, icon: ArrowUpRight, color: 'text-emerald-500' },
+          { label: 'Total Revenue', value: `RM ${(totalRevenue / 1000).toFixed(0)}k`, sub: period === 'monthly' ? '6 months' : '6 years', icon: BarChart3, color: 'text-primary' },
+          { label: 'Net Profit', value: `RM ${(totalProfit / 1000).toFixed(0)}k`, sub: `${Math.round((totalProfit / totalRevenue) * 100)}% margin`, icon: ArrowUpRight, color: 'text-emerald-500' },
           { label: 'Avg Growth', value: `${avgGrowth}%`, sub: 'period over period', icon: avgGrowth >= 0 ? ArrowUpRight : ArrowDownRight, color: avgGrowth >= 0 ? 'text-emerald-500' : 'text-red-500' },
           { label: 'Retention Rate', value: `${retentionRate}%`, sub: 'returning users', icon: Percent, color: 'text-primary' },
         ].map((m) => (
@@ -172,8 +172,8 @@ export default function AnalyticsPage() {
                 <ComposedChart data={profitData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" tick={tickStyle} />
-                  <YAxis tick={tickStyle} tickFormatter={v => `$${v / 1000}k`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`$${v.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]} />
+                  <YAxis tick={tickStyle} tickFormatter={v => `RM ${v / 1000}k`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`RM ${v.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]} />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
                   <Bar dataKey="costs" fill="hsl(0, 70%, 60%)" radius={[4, 4, 0, 0]} opacity={0.7} name="Costs" />
                   <Bar dataKey="profit" fill="hsl(152, 69%, 45%)" radius={[4, 4, 0, 0]} name="Profit" />
@@ -204,7 +204,7 @@ export default function AnalyticsPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" tick={tickStyle} />
-                  <YAxis yAxisId="rev" tick={tickStyle} tickFormatter={v => `$${v / 1000}k`} />
+                  <YAxis yAxisId="rev" tick={tickStyle} tickFormatter={v => `RM ${v / 1000}k`} />
                   <YAxis yAxisId="growth" orientation="right" tick={tickStyle} tickFormatter={v => `${v}%`} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
@@ -232,9 +232,9 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_EFFICIENCY} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis type="number" tick={tickStyle} tickFormatter={v => `$${v}`} />
+                  <XAxis type="number" tick={tickStyle} tickFormatter={v => `RM ${v}`} />
                   <YAxis type="category" dataKey="name" tick={tickStyle} width={90} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenuePerSeat' ? `$${v}` : `${v}%`, name === 'revenuePerSeat' ? '$/Seat' : 'Occupancy']} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenuePerSeat' ? `RM ${v}` : `${v}%`, name === 'revenuePerSeat' ? '$/Seat' : 'Occupancy']} />
                   <Bar dataKey="revenuePerSeat" fill="hsl(234, 89%, 64%)" radius={[0, 4, 4, 0]} name="$/Seat" />
                 </BarChart>
               </ResponsiveContainer>

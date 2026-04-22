@@ -12,7 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  Receipt, Search, Building2, IndianRupee, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download,
+  Receipt, Search, Building2, Banknote, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download,
 } from 'lucide-react';
 
 function formatDuration(totalSec: number) {
@@ -142,7 +142,7 @@ export default function SettlementsPage() {
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary mb-2">
               <Lock className="h-3.5 w-3.5" /> Locked Sum
             </div>
-            <p className="font-mono text-2xl font-bold tabular-nums">₹{totals.locked.toFixed(2)}</p>
+            <p className="font-mono text-2xl font-bold tabular-nums">RM {totals.locked.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="border-destructive/30 bg-destructive/5">
@@ -151,7 +151,7 @@ export default function SettlementsPage() {
               <TrendingDown className="h-3.5 w-3.5" /> Usage Collected
             </div>
             <p className="font-mono text-2xl font-bold tabular-nums text-destructive">
-              ₹{totals.usage.toFixed(2)}
+              RM {totals.usage.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -161,7 +161,7 @@ export default function SettlementsPage() {
               <Wallet className="h-3.5 w-3.5" /> Refunded
             </div>
             <p className="font-mono text-2xl font-bold tabular-nums text-success">
-              ₹{totals.refund.toFixed(2)}
+              RM {totals.refund.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -241,12 +241,12 @@ export default function SettlementsPage() {
                         <div className="text-xs text-muted-foreground">{s.customerName}</div>
                       </TableCell>
                       <TableCell className="font-mono">{formatDuration(s.durationSec)}</TableCell>
-                      <TableCell className="text-right font-mono">₹{s.lockedAmount.toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-mono">RM {s.lockedAmount.toFixed(2)}</TableCell>
                       <TableCell className="text-right font-mono text-destructive">
-                        ₹{s.usageCost.toFixed(2)}
+                        RM {s.usageCost.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-success">
-                        ₹{s.refund.toFixed(2)}
+                        RM {s.refund.toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="border-success/30 text-success bg-success/10">
@@ -327,14 +327,14 @@ export default function SettlementsPage() {
                     <div className="text-[11px] uppercase tracking-wider text-primary flex items-center gap-1">
                       <Lock className="h-3 w-3" /> Locked
                     </div>
-                    <div className="font-mono text-lg font-bold">₹{selected.lockedAmount.toFixed(2)}</div>
+                    <div className="font-mono text-lg font-bold">RM {selected.lockedAmount.toFixed(2)}</div>
                   </div>
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                     <div className="text-[11px] uppercase tracking-wider text-destructive flex items-center gap-1">
                       <TrendingDown className="h-3 w-3" /> Usage
                     </div>
                     <div className="font-mono text-lg font-bold text-destructive">
-                      ₹{selected.usageCost.toFixed(2)}
+                      RM {selected.usageCost.toFixed(2)}
                     </div>
                   </div>
                   <div className="rounded-lg border border-success/30 bg-success/5 p-3">
@@ -342,17 +342,17 @@ export default function SettlementsPage() {
                       <Wallet className="h-3 w-3" /> Refund
                     </div>
                     <div className="font-mono text-lg font-bold text-success">
-                      ₹{selected.refund.toFixed(2)}
+                      RM {selected.refund.toFixed(2)}
                     </div>
                   </div>
                 </div>
 
                 <div className="rounded-lg border bg-muted/30 p-3 text-sm flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                    <Banknote className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Rate</span>
                   </div>
-                  <span className="font-mono">₹{selected.costPerMinute.toFixed(2)} / min</span>
+                  <span className="font-mono">RM {selected.costPerMinute.toFixed(2)} / min</span>
                 </div>
 
                 <div className="rounded-lg border bg-muted/30 p-3 text-sm flex items-center justify-between">

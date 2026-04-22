@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner';
 import { EndSessionConfirmDialog } from '@/features/billing/EndSessionConfirmDialog';
 
-const LOW_BALANCE_THRESHOLD = 150; // INR — flag wallets at/below this
+const LOW_BALANCE_THRESHOLD = 150; // RM — flag wallets at/below this
 
 function addMinutesToTime(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
@@ -145,7 +145,7 @@ export default function SeatManagement() {
         settledBy: user.id,
         settledByRole: user.role as 'cafe_owner' | 'manager',
       });
-      toast.success(`Settled ${seatWallet.name} · Usage ₹${sessionTotals.usageCost.toFixed(2)} · Refund ₹${sessionTotals.refund.toFixed(2)}`);
+      toast.success(`Settled ${seatWallet.name} · Usage RM ${sessionTotals.usageCost.toFixed(2)} · Refund RM ${sessionTotals.refund.toFixed(2)}`);
     } else {
       toast.success('Session ended');
     }
@@ -352,16 +352,16 @@ export default function SeatManagement() {
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
                         <p className="text-[10px] uppercase text-muted-foreground">Balance</p>
-                        <p className="font-mono font-bold text-sm">₹{seatWallet.balance}</p>
+                        <p className="font-mono font-bold text-sm">RM {seatWallet.balance}</p>
                       </div>
                       <div>
                         <p className="text-[10px] uppercase text-muted-foreground">Locked</p>
-                        <p className="font-mono font-bold text-sm">₹{seatWallet.lockedAmount}</p>
+                        <p className="font-mono font-bold text-sm">RM {seatWallet.lockedAmount}</p>
                       </div>
                       <div>
                         <p className="text-[10px] uppercase text-muted-foreground">Remaining</p>
                         <p className={cn('font-mono font-bold text-sm', isLowBalance ? 'text-destructive' : 'text-success')}>
-                          ₹{remaining}
+                          RM {remaining}
                         </p>
                       </div>
                     </div>

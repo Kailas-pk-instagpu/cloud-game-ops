@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Clock, IndianRupee, Lock, Power, TrendingDown, Wallet } from 'lucide-react';
+import { AlertTriangle, Clock, Banknote, Lock, Power, TrendingDown, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EndSessionConfirmDialogProps {
@@ -65,10 +65,10 @@ export function EndSessionConfirmDialog({
             </div>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                <IndianRupee className="h-3 w-3" /> Rate
+                <Banknote className="h-3 w-3" /> Rate
               </div>
               <p className="font-mono text-lg font-bold tabular-nums">
-                ₹{(costPerMinute ?? 0).toFixed(2)}<span className="text-xs text-muted-foreground font-normal"> /min</span>
+                RM {(costPerMinute ?? 0).toFixed(2)}<span className="text-xs text-muted-foreground font-normal"> /min</span>
               </p>
             </div>
           </div>
@@ -78,27 +78,27 @@ export function EndSessionConfirmDialog({
               <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-primary mb-1">
                 <Lock className="h-3 w-3" /> Locked
               </div>
-              <p className="font-mono text-base font-bold tabular-nums">₹{lockedAmount.toFixed(2)}</p>
+              <p className="font-mono text-base font-bold tabular-nums">RM {lockedAmount.toFixed(2)}</p>
             </div>
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
               <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-destructive mb-1">
                 <TrendingDown className="h-3 w-3" /> Usage
               </div>
               <p className={cn('font-mono text-base font-bold tabular-nums text-destructive')}>
-                ₹{usageCost.toFixed(2)}
+                RM {usageCost.toFixed(2)}
               </p>
             </div>
             <div className="rounded-lg border border-success/30 bg-success/5 p-3">
               <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-success mb-1">
                 <Wallet className="h-3 w-3" /> Refund
               </div>
-              <p className="font-mono text-base font-bold tabular-nums text-success">₹{refund.toFixed(2)}</p>
+              <p className="font-mono text-base font-bold tabular-nums text-success">RM {refund.toFixed(2)}</p>
             </div>
           </div>
 
           <div className="flex items-start gap-2 text-xs text-warning">
             <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-            <span>Refund of ₹{refund.toFixed(2)} will be returned to the customer's wallet.</span>
+            <span>Refund of RM {refund.toFixed(2)} will be returned to the customer's wallet.</span>
           </div>
         </div>
 
