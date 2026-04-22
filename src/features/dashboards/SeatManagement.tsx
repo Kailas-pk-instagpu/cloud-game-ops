@@ -269,7 +269,7 @@ export default function SeatManagement() {
       </Card>
 
       {/* Dialogs */}
-      <Dialog open={dialogMode !== null} onOpenChange={() => closeDialog()}>
+      <Dialog open={dialogMode !== null} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent className="sm:max-w-md">
           {dialogMode === 'checkin' && (
             <>
