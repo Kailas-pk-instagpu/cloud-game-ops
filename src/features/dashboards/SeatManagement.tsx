@@ -378,7 +378,7 @@ export default function SeatManagement() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckOut} variant="destructive">End Session</Button>
+                <Button onClick={handleCheckOut} variant="destructive">End Billing</Button>
               </DialogFooter>
             </>
           )}
