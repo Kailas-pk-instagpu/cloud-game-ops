@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis type="number" tick={tickStyle} tickFormatter={v => `RM ${v}`} />
                   <YAxis type="category" dataKey="name" tick={tickStyle} width={90} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenuePerSeat' ? `RM ${v}` : `${v}%`, name === 'revenuePerSeat' ? '$/Seat' : 'Occupancy']} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === 'revenuePerSeat' ? `RM ${v}` : `${v}%`, name === 'revenuePerSeat' ? 'RM/Seat' : 'Occupancy']} />
                   <Bar dataKey="revenuePerSeat" fill="hsl(234, 89%, 64%)" radius={[0, 4, 4, 0]} name="$/Seat" />
                 </BarChart>
               </ResponsiveContainer>
