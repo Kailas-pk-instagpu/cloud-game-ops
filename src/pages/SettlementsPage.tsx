@@ -9,11 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Receipt, Search, Building2, IndianRupee, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download,
+  Receipt, Search, Building2, IndianRupee, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download, Power,
 } from 'lucide-react';
+import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
+import { EndSessionConfirmDialog } from '@/features/billing/EndSessionConfirmDialog';
+import { toast } from '@/hooks/use-toast';
 
 function formatDuration(totalSec: number) {
   const h = Math.floor(totalSec / 3600);
