@@ -14,6 +14,8 @@ import { toast } from '@/hooks/use-toast';
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
+  const addSettlement = useSettlementStore((s) => s.addSettlement);
+  const navigate = useNavigate();
   // Cafe owners and managers manage user billing; admins/super-admins view-only
   const canManage = user?.role === 'cafe_owner' || user?.role === 'manager';
 
@@ -46,6 +48,45 @@ export default function BillingSessionPage() {
     if (urlCustomerId && urlCustomerId !== customerId) setCustomerId(urlCustomerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlBranchId, urlCustomerId]);
+
+  // Stable session id + start time per (branch, customer) pair so settlement records are consistent
+  const sessionMetaRef = useRef<Record<string, { sessionId: string; startTime: Date }>>({});
+  const sessionKey = `${branch?.id ?? ''}-${customer?.id ?? ''}`;
+  if (sessionKey && !sessionMetaRef.current[sessionKey]) {
+    sessionMetaRef.current[sessionKey] = {
+      sessionId: crypto.randomUUID(),
+      startTime: new Date(),
+    };
+  }
+  const sessionMeta = sessionMetaRef.current[sessionKey];
+
+  const handleEndSession = (summary: { durationSec: number; usageCost: number; refund: number }) => {
+    if (!user || !branch || !customer || !canManage) return;
+    if (user.role !== 'cafe_owner' && user.role !== 'manager') return;
+    const settlement = addSettlement({
+      sessionId: sessionMeta.sessionId,
+      branchId: branch.id,
+      branchName: branch.name,
+      customerId: customer.id,
+      customerName: customer.name,
+      startTime: sessionMeta.startTime.toISOString(),
+      endTime: new Date().toISOString(),
+      durationSec: summary.durationSec,
+      costPerMinute: branch.billing.costPerMinute,
+      lockedAmount: customer.lockedAmount,
+      usageCost: summary.usageCost,
+      refund: summary.refund,
+      settledBy: user.id,
+      settledByRole: user.role,
+    });
+    toast({
+      title: 'Session settled',
+      description: `${customer.name} · Usage ₹${summary.usageCost.toFixed(2)} · Refund ₹${summary.refund.toFixed(2)}`,
+    });
+    // Reset stable meta so next session for same pair gets a fresh id
+    delete sessionMetaRef.current[sessionKey];
+    void settlement;
+  };
 
   if (!branch) {
     return (
