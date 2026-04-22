@@ -34,6 +34,7 @@ export default function SettlementsPage() {
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
   const settlements = useSettlementStore((s) => s.settlements);
+  const addSettlement = useSettlementStore((s) => s.addSettlement);
 
   const visibleBranches = useMemo(() => {
     if (!user) return [];
@@ -52,6 +53,70 @@ export default function SettlementsPage() {
   const [branchFilter, setBranchFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Settlement | null>(null);
+
+  // End-active-session flow
+  const [endPickerOpen, setEndPickerOpen] = useState(false);
+  const [endBranchId, setEndBranchId] = useState<string>('');
+  const [endCustomerId, setEndCustomerId] = useState<string>('');
+  const [endStartTime] = useState<Date>(() => new Date());
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+
+  const endBranch = visibleBranches.find((b) => b.id === endBranchId);
+  const endBranchCustomers = useMemo(
+    () => MOCK_CUSTOMER_WALLETS.filter((c) => c.branchId === endBranchId),
+    [endBranchId]
+  );
+  const endCustomer = endBranchCustomers.find((c) => c.id === endCustomerId);
+
+  const endTotals = useMemo(() => {
+    if (!endBranch || !endCustomer) {
+      return { durationSec: 0, usageCost: 0, refund: 0, lockedAmount: 0 };
+    }
+    const durationSec = Math.max(0, Math.floor((Date.now() - endStartTime.getTime()) / 1000));
+    const lockedAmount = endCustomer.lockedAmount;
+    const usageCost = Math.min(lockedAmount, +(durationSec / 60 * endBranch.billing.costPerMinute).toFixed(2));
+    const refund = +(lockedAmount - usageCost).toFixed(2);
+    return { durationSec, usageCost, refund, lockedAmount };
+  }, [endBranch, endCustomer, endStartTime, confirmEndOpen]);
+
+  const openEndPicker = () => {
+    const firstBranch = visibleBranches[0];
+    setEndBranchId(firstBranch?.id ?? '');
+    const firstCustomer = MOCK_CUSTOMER_WALLETS.find((c) => c.branchId === firstBranch?.id);
+    setEndCustomerId(firstCustomer?.id ?? '');
+    setEndPickerOpen(true);
+  };
+
+  const handleProceedToConfirm = () => {
+    if (!endBranch || !endCustomer) return;
+    setEndPickerOpen(false);
+    setConfirmEndOpen(true);
+  };
+
+  const handleConfirmEndActive = () => {
+    if (!user || !endBranch || !endCustomer) return;
+    addSettlement({
+      sessionId: `set-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      branchId: endBranch.id,
+      branchName: endBranch.name,
+      customerId: endCustomer.id,
+      customerName: endCustomer.name,
+      startTime: endStartTime.toISOString(),
+      endTime: new Date().toISOString(),
+      durationSec: endTotals.durationSec,
+      costPerMinute: endBranch.billing.costPerMinute,
+      lockedAmount: endTotals.lockedAmount,
+      usageCost: endTotals.usageCost,
+      refund: endTotals.refund,
+      settledBy: user.id,
+      settledByRole: user.role as 'cafe_owner' | 'manager',
+    });
+    toast({
+      title: 'Session settled',
+      description: `${endCustomer.name} · Usage ₹${endTotals.usageCost.toFixed(2)} · Refund ₹${endTotals.refund.toFixed(2)}`,
+    });
+    setConfirmEndOpen(false);
+  };
 
   const filtered = useMemo(() => {
     return scoped.filter((s) => {
