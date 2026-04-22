@@ -431,6 +431,19 @@ export default function SeatManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      <EndSessionConfirmDialog
+        open={confirmEndOpen}
+        onOpenChange={setConfirmEndOpen}
+        onConfirm={handleConfirmEndSession}
+        customerName={seatWallet?.name ?? selectedSeat?.playerName}
+        branchName={branch?.name}
+        durationSec={sessionTotals.durationSec}
+        lockedAmount={sessionTotals.lockedAmount}
+        usageCost={sessionTotals.usageCost}
+        refund={sessionTotals.refund}
+        costPerMinute={branch?.billing.costPerMinute}
+      />
     </div>
   );
 }
