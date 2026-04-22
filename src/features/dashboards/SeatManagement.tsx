@@ -149,7 +149,11 @@ export default function SeatManagement() {
       s.id === selectedSeat.id ? { ...s, status: 'available' as const, playerName: undefined, startTime: undefined, endTime: undefined } : s
     ));
     setConfirmEndOpen(false);
-    closeDialog();
+    setSelectedSeat(null);
+    setDialogMode(null);
+    setPlayerName('');
+    setSessionDuration('60');
+    setExtendMinutes('30');
   };
 
   const handleRestart = () => {
