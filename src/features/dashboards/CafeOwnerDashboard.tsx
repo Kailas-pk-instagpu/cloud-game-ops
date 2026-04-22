@@ -1,7 +1,7 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MOCK_BRANCHES, MOCK_USERS, MOCK_SEATS, REVENUE_DATA } from '@/shared/lib/mock-data';
-import { Building2, DollarSign, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar } from 'lucide-react';
+import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -20,7 +20,7 @@ const CUSTOMER_STATS = {
   avgSessionTime: '2.4 hrs',
   repeatRate: '62%',
   peakTime: '6:00 PM',
-  avgSpend: '$14.50',
+  avgSpend: 'RM 14.50',
   satisfaction: 4.6,
 };
 
@@ -46,7 +46,7 @@ export default function CafeOwnerDashboard() {
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        <StatCard title="This Week's Earnings" value="$12,400" icon={DollarSign} trend={{ value: 8, positive: true }} iconClassName="bg-success/10 text-success" />
+        <StatCard title="This Week's Earnings" value="RM 12,400" icon={Banknote} trend={{ value: 8, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="My Branches" value={myBranches.length} icon={Building2} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Seat Occupancy" value={`${occupancy}%`} subtitle={`${activeSeats}/${totalSeats} seats`} icon={Users} iconClassName="bg-info/10 text-info" />
         <StatCard title="My Managers" value={myManagers.length} subtitle="Active staff" icon={UserCheck} iconClassName="bg-warning/10 text-warning" />
@@ -73,7 +73,7 @@ export default function CafeOwnerDashboard() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `RM ${v}`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(152, 69%, 41%)" fill="url(#ownerRevGrad)" strokeWidth={2} />
                 </AreaChart>

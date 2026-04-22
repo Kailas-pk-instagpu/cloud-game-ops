@@ -1,6 +1,6 @@
 import { MOCK_SEATS, MOCK_BRANCHES, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, Monitor, Users, Clock, AlertCircle, Zap, Timer } from 'lucide-react';
+import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer } from 'lucide-react';
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -44,7 +44,7 @@ export default function ManagerDashboardHome() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        <StatCard title="Today's Earnings" value={`$${todayEarnings}`} icon={DollarSign} iconClassName="bg-success/10 text-success" />
+        <StatCard title="Today's Earnings" value={`RM ${todayEarnings}`} icon={Banknote} iconClassName="bg-success/10 text-success" />
         <StatCard title="Occupied" value={occupied} subtitle={`of ${seats.length}`} icon={Users} iconClassName="bg-destructive/10 text-destructive" />
         <StatCard title="Available" value={available} icon={Monitor} iconClassName="bg-success/10 text-success" />
         <StatCard title="Maintenance" value={maintenance} icon={AlertCircle} iconClassName="bg-warning/10 text-warning" />
@@ -111,7 +111,7 @@ export default function ManagerDashboardHome() {
             {[
               { label: 'Total Check-ins', value: '42', icon: '✅' },
               { label: 'Total Check-outs', value: '28', icon: '🚪' },
-              { label: 'Revenue Collected', value: `$${todayEarnings}`, icon: '💰' },
+              { label: 'Revenue Collected', value: `RM ${todayEarnings}`, icon: '💰' },
               { label: 'Avg Wait Time', value: '3 min', icon: '⏱️' },
               { label: 'Issues Reported', value: '2', icon: '⚠️' },
               { label: 'Customer Complaints', value: '0', icon: '😊' },
@@ -140,7 +140,7 @@ export default function ManagerDashboardHome() {
               <LineChart data={REVENUE_DATA}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                <YAxis yAxisId="left" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                <YAxis yAxisId="left" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `RM ${v}`} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                 <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />

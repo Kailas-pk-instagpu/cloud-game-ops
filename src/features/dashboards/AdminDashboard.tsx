@@ -1,7 +1,7 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MOCK_USERS, MOCK_BRANCHES, REVENUE_DATA } from '@/shared/lib/mock-data';
-import { Building2, DollarSign, Users, TrendingUp, UserCheck, AlertCircle, Activity, Star, ArrowUpRight } from 'lucide-react';
+import { Building2, Banknote, Users, TrendingUp, UserCheck, AlertCircle, Activity, Star, ArrowUpRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Progress } from '@/components/ui/progress';
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        <StatCard title="Portfolio Revenue" value="$95,200" icon={DollarSign} trend={{ value: 15, positive: true }} iconClassName="bg-success/10 text-success" />
+        <StatCard title="Portfolio Revenue" value="RM 95,200" icon={Banknote} trend={{ value: 15, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Cafe Owners" value={cafeOwners.length} icon={Users} subtitle="Active operators" iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Branches" value={MOCK_BRANCHES.length} icon={Building2} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} iconClassName="bg-info/10 text-info" />
         <StatCard title="Managers" value={managers.length} icon={UserCheck} subtitle="On-ground staff" iconClassName="bg-warning/10 text-warning" />
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `$${v}`} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `RM ${v}`} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Bar dataKey="revenue" fill="hsl(234, 89%, 64%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -84,9 +84,9 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_REVENUE} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={v => `$${v/1000}k`} />
+                  <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={v => `RM ${v/1000}k`} />
                   <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} width={70} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(v: number) => [`RM ${v.toLocaleString()}`, 'Revenue']} />
                   <Bar dataKey="revenue" fill="hsl(var(--info))" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>

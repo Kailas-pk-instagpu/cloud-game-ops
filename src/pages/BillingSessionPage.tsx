@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
+import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -85,7 +85,7 @@ export default function BillingSessionPage() {
     });
     toast({
       title: 'Session settled',
-      description: `${customer.name} · Usage ₹${summary.usageCost.toFixed(2)} · Refund ₹${summary.refund.toFixed(2)}`,
+      description: `${customer.name} · Usage RM ${summary.usageCost.toFixed(2)} · Refund RM ${summary.refund.toFixed(2)}`,
     });
     // Reset stable meta so next session for same pair gets a fresh id
     delete sessionMetaRef.current[sessionKey];
@@ -165,7 +165,7 @@ export default function BillingSessionPage() {
                 <SelectContent>
                   {branchCustomers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name} · ₹{c.balance}
+                      {c.name} · RM {c.balance}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -177,10 +177,10 @@ export default function BillingSessionPage() {
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-              <IndianRupee className="h-3.5 w-3.5" /> Branch Rate
+              <Banknote className="h-3.5 w-3.5" /> Branch Rate
             </div>
             <p className="font-mono text-xl font-bold">
-              ₹{branch.billing.costPerMinute.toFixed(2)}{' '}
+              RM {branch.billing.costPerMinute.toFixed(2)}{' '}
               <span className="text-xs text-muted-foreground font-normal">/ min</span>
             </p>
           </div>
@@ -190,10 +190,10 @@ export default function BillingSessionPage() {
               <Wallet className="h-3.5 w-3.5" /> Wallet Balance
             </div>
             <p className="font-mono text-xl font-bold">
-              ₹{(customer?.balance ?? 0).toFixed(2)}
+              RM {(customer?.balance ?? 0).toFixed(2)}
             </p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Lock className="h-3 w-3" /> Locked ₹{(customer?.lockedAmount ?? branch.billing.lockedAmount).toFixed(2)}
+              <Lock className="h-3 w-3" /> Locked RM {(customer?.lockedAmount ?? branch.billing.lockedAmount).toFixed(2)}
             </p>
           </div>
         </CardContent>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Activity, Clock, Hash, IndianRupee, Lock, TrendingDown, Wallet, AlertTriangle, Power } from 'lucide-react';
+import { Activity, Clock, Hash, Banknote, Lock, TrendingDown, Wallet, AlertTriangle, Power } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EndSessionConfirmDialog } from './EndSessionConfirmDialog';
 
@@ -119,9 +119,9 @@ export function ActiveSessionDashboard({
           <Card className="border-border/50">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wider mb-2">
-                <IndianRupee className="h-3.5 w-3.5" /> Cost / Minute
+                <Banknote className="h-3.5 w-3.5" /> Cost / Minute
               </div>
-              <p className="font-mono text-2xl font-bold tabular-nums">₹{costPerMinute.toFixed(2)}</p>
+              <p className="font-mono text-2xl font-bold tabular-nums">RM {costPerMinute.toFixed(2)}</p>
             </CardContent>
           </Card>
         </div>
@@ -142,7 +142,7 @@ export function ActiveSessionDashboard({
                 <div className="flex items-center gap-2 text-primary text-xs uppercase tracking-wider mb-3">
                   <Lock className="h-3.5 w-3.5" /> Locked Amount
                 </div>
-                <p className="font-mono text-3xl font-bold tabular-nums">₹{lockedAmount.toFixed(2)}</p>
+                <p className="font-mono text-3xl font-bold tabular-nums">RM {lockedAmount.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground mt-1">Reserved from wallet</p>
               </div>
 
@@ -152,7 +152,7 @@ export function ActiveSessionDashboard({
                   <TrendingDown className="h-3.5 w-3.5" /> Current Usage
                 </div>
                 <p className="font-mono text-3xl font-bold tabular-nums text-destructive">
-                  ₹{usageCost.toFixed(2)}
+                  RM {usageCost.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Updates every second</p>
               </div>
@@ -163,7 +163,7 @@ export function ActiveSessionDashboard({
                   <Wallet className="h-3.5 w-3.5" /> Remaining Balance
                 </div>
                 <p className="font-mono text-3xl font-bold tabular-nums text-success">
-                  ₹{remaining.toFixed(2)}
+                  RM {remaining.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Refundable on end</p>
               </div>

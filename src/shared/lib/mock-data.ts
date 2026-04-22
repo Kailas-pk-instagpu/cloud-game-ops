@@ -18,9 +18,9 @@ export const MOCK_CREDENTIALS: Record<string, { password: string; userId: string
 };
 
 export interface BranchBilling {
-  costPerMinute: number; // in INR
+  costPerMinute: number; // in MYR (RM)
   lockedAmount: number; // default reserved amount
-  currency: 'INR';
+  currency: 'MYR';
 }
 
 export interface Branch {
@@ -61,10 +61,10 @@ export interface GPUNode {
 }
 
 export const MOCK_BRANCHES: Branch[] = [
-  { id: 'branch-1', name: 'Downtown Hub', cafeId: 'cafe-1', address: '123 Main St', totalSeats: 20, activeSeats: 14, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '6', billing: { costPerMinute: 2, lockedAmount: 100, currency: 'INR' } },
-  { id: 'branch-2', name: 'Uptown Arena', cafeId: 'cafe-1', address: '456 High St', totalSeats: 15, activeSeats: 10, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '7', billing: { costPerMinute: 3, lockedAmount: 150, currency: 'INR' } },
-  { id: 'branch-3', name: 'Westside Lounge', cafeId: 'cafe-2', address: '789 West Blvd', totalSeats: 25, activeSeats: 18, status: 'active', adminId: '2', cafeOwnerId: '5', billing: { costPerMinute: 2.5, lockedAmount: 120, currency: 'INR' } },
-  { id: 'branch-4', name: 'Eastside Den', cafeId: 'cafe-2', address: '321 East Ave', totalSeats: 12, activeSeats: 8, status: 'maintenance', adminId: '3', billing: { costPerMinute: 1.5, lockedAmount: 80, currency: 'INR' } },
+  { id: 'branch-1', name: 'Downtown Hub', cafeId: 'cafe-1', address: '123 Main St', totalSeats: 20, activeSeats: 14, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '6', billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } },
+  { id: 'branch-2', name: 'Uptown Arena', cafeId: 'cafe-1', address: '456 High St', totalSeats: 15, activeSeats: 10, status: 'active', adminId: '2', cafeOwnerId: '4', managerId: '7', billing: { costPerMinute: 3, lockedAmount: 150, currency: 'MYR' } },
+  { id: 'branch-3', name: 'Westside Lounge', cafeId: 'cafe-2', address: '789 West Blvd', totalSeats: 25, activeSeats: 18, status: 'active', adminId: '2', cafeOwnerId: '5', billing: { costPerMinute: 2.5, lockedAmount: 120, currency: 'MYR' } },
+  { id: 'branch-4', name: 'Eastside Den', cafeId: 'cafe-2', address: '321 East Ave', totalSeats: 12, activeSeats: 8, status: 'maintenance', adminId: '3', billing: { costPerMinute: 1.5, lockedAmount: 80, currency: 'MYR' } },
 ];
 
 function generateSeatsForBranch(branchId: string, total: number, activeCount: number): Seat[] {
@@ -136,7 +136,7 @@ export interface CustomerWallet {
   name: string;
   phone: string;
   branchId: string;
-  balance: number; // total wallet balance in INR
+  balance: number; // total wallet balance in MYR (RM)
   lockedAmount: number; // currently reserved for an active session
 }
 

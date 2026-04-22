@@ -2,7 +2,7 @@ import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MOCK_GPU_NODES, MOCK_USERS, MOCK_BRANCHES, MOCK_SEATS, REVENUE_DATA, MONTHLY_REVENUE } from '@/shared/lib/mock-data';
-import { Cpu, DollarSign, Users, Zap, AlertTriangle, TrendingUp, Building2, Shield, Activity, Server, HardDrive, Clock, UserCheck, UserX, Globe } from 'lucide-react';
+import { Cpu, Banknote, Users, Zap, AlertTriangle, TrendingUp, Building2, Shield, Activity, Server, HardDrive, Clock, UserCheck, UserX, Globe } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ export default function SuperAdminDashboard() {
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        <StatCard title="Total Revenue" value="$138,400" icon={DollarSign} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
+        <StatCard title="Total Revenue" value="RM 138,400" icon={Banknote} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Active Sessions" value="186" icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
         <StatCard title="GPU Nodes" value={`${onlineNodes}/${MOCK_GPU_NODES.length}`} subtitle={`Avg ${avgUtilization}% util`} icon={Cpu} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Total Users" value={MOCK_USERS.length} subtitle="Across all roles" icon={Users} iconClassName="bg-warning/10 text-warning" />
@@ -78,8 +78,8 @@ export default function SuperAdminDashboard() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                  <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `$${v/1000}k`} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']} />
+                  <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `RM ${v/1000}k`} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={(value: number) => [`RM ${value.toLocaleString()}`, 'Revenue']} />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(234, 89%, 64%)" fill="url(#revenueGrad)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
