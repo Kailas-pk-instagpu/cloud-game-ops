@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
-import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet } from 'lucide-react';
+import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
+import { toast } from '@/hooks/use-toast';
 
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
