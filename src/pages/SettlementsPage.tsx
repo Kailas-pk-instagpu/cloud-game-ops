@@ -187,9 +187,18 @@ export default function SettlementsPage() {
             Records of every ended billing session for your branches.
           </p>
         </div>
-        <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="destructive"
+            onClick={openEndPicker}
+            disabled={visibleBranches.length === 0}
+          >
+            <Power className="h-4 w-4" /> End Session
+          </Button>
+          <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Summary stats */}
