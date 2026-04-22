@@ -175,8 +175,8 @@ export default function SeatManagement() {
     closeDialog();
   };
 
-  const closeDialog = (opts?: { keepSeat?: boolean }) => {
-    if (!opts?.keepSeat) setSelectedSeat(null);
+  const closeDialog = () => {
+    if (!confirmEndOpen) setSelectedSeat(null);
     setDialogMode(null);
     setPlayerName('');
     setSessionDuration('60');
