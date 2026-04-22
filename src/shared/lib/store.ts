@@ -209,3 +209,48 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   })),
   getBookingsByBranch: (branchId) => get().bookings.filter(b => b.branchId === branchId),
 }));
+
+// Settlement store - records each ended billing session
+export interface Settlement {
+  id: string;
+  sessionId: string;
+  branchId: string;
+  branchName: string;
+  customerId: string;
+  customerName: string;
+  startTime: string; // ISO
+  endTime: string; // ISO
+  durationSec: number;
+  costPerMinute: number;
+  lockedAmount: number;
+  usageCost: number;
+  refund: number;
+  settledBy: string; // userId
+  settledByRole: 'cafe_owner' | 'manager';
+  status: 'settled';
+}
+
+interface SettlementState {
+  settlements: Settlement[];
+  addSettlement: (s: Omit<Settlement, 'id' | 'status'>) => Settlement;
+  getByBranch: (branchId: string) => Settlement[];
+}
+
+export const useSettlementStore = create<SettlementState>()(
+  persist(
+    (set, get) => ({
+      settlements: [],
+      addSettlement: (s) => {
+        const settlement: Settlement = {
+          ...s,
+          id: `stl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          status: 'settled',
+        };
+        set((state) => ({ settlements: [settlement, ...state.settlements] }));
+        return settlement;
+      },
+      getByBranch: (branchId) => get().settlements.filter((x) => x.branchId === branchId),
+    }),
+    { name: 'gpu-cloud-settlements' }
+  )
+);
