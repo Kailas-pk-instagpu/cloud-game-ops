@@ -11,12 +11,20 @@ import { Button } from '@/components/ui/button';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 import { toast } from '@/hooks/use-toast';
 
+import SettlementsPage from './SettlementsPage';
+
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
   const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
-  // Cafe owners and managers manage user billing; admins/super-admins view-only
+
+  // Super admins and admins only view/download settlements — render that page directly.
+  if (user?.role === 'super_admin' || user?.role === 'admin') {
+    return <SettlementsPage />;
+  }
+
+  // Cafe owners and managers manage user billing
   const canManage = user?.role === 'cafe_owner' || user?.role === 'manager';
 
   const visibleBranches = useMemo(() => {
