@@ -92,6 +92,11 @@ export default function BillingSessionPage() {
     void settlement;
   };
 
+  // Super admins and admins are restricted to viewing/downloading settlements only.
+  if (isSettlementViewer) {
+    return <SettlementsPage />;
+  }
+
   if (!branch) {
     return (
       <Alert>
