@@ -99,6 +99,14 @@ export default function BillingSessionPage() {
 
   return (
     <div className="space-y-4">
+      {canManage && (
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
+            <Receipt className="h-4 w-4" /> View Settlements
+          </Button>
+        </div>
+      )}
+
       {!canManage && (
         <Alert className="border-primary/30 bg-primary/5">
           <Eye className="h-4 w-4" />
@@ -184,11 +192,14 @@ export default function BillingSessionPage() {
 
       {customer ? (
         <ActiveSessionDashboard
-          key={`${branch.id}-${customer.id}`}
+          key={sessionKey}
+          sessionId={sessionMeta.sessionId}
+          startTime={sessionMeta.startTime}
           readOnly={!canManage}
           lockedAmount={customer.lockedAmount}
           costPerMinute={branch.billing.costPerMinute}
           branchName={`${branch.name} · ${customer.name}`}
+          onEndSession={handleEndSession}
         />
       ) : (
         <Alert>
