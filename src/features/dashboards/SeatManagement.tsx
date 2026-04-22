@@ -109,7 +109,8 @@ export default function SeatManagement() {
 
   const handleCheckOut = () => {
     if (!selectedSeat) return;
-    // Open confirmation step before settling
+    // Close the checkout dialog first, then open confirmation step
+    setDialogMode(null);
     setConfirmEndOpen(true);
   };
 
