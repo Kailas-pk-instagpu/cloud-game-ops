@@ -118,11 +118,18 @@ export default function SeatManagement() {
     // Record settlement if a wallet is matched and current user can settle
     if (seatWallet && user && (user.role === 'cafe_owner' || user.role === 'manager')) {
       const startIso = (() => {
-        if (!selectedSeat.startTime) return new Date().toISOString();
-        const [sh, sm] = selectedSeat.startTime.split(':').map(Number);
-        const d = new Date();
-        d.setHours(sh, sm, 0, 0);
-        return d.toISOString();
+        try {
+          if (!selectedSeat.startTime || !/^\d{1,2}:\d{2}$/.test(selectedSeat.startTime)) {
+            return new Date().toISOString();
+          }
+          const [sh, sm] = selectedSeat.startTime.split(':').map(Number);
+          const d = new Date();
+          d.setHours(sh, sm, 0, 0);
+          if (isNaN(d.getTime())) return new Date().toISOString();
+          return d.toISOString();
+        } catch {
+          return new Date().toISOString();
+        }
       })();
       addSettlement({
         sessionId: `seat-${selectedSeat.id}-${Date.now()}`,
