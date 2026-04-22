@@ -109,9 +109,13 @@ export default function SeatManagement() {
 
   const handleCheckOut = () => {
     if (!selectedSeat) return;
-    // Close the checkout dialog first, then open confirmation step
-    setDialogMode(null);
-    setConfirmEndOpen(true);
+    // Redirect to the billing page for this customer; settlement happens there.
+    if (seatWallet) {
+      navigate(`/billing/session?branchId=${seatWallet.branchId}&customerId=${seatWallet.id}`);
+    } else {
+      navigate('/billing/session');
+    }
+    closeDialog();
   };
 
   const handleConfirmEndSession = () => {
