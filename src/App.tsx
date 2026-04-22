@@ -46,7 +46,7 @@ const App = () => (
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/billing/session" element={<BillingSessionPage />} />
-            <Route path="/billing/settlements" element={<RoleGuard roles={['cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
+            <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
