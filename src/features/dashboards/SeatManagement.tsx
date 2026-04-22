@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MOCK_SEATS, MOCK_BRANCHES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
-import { useAuthStore, useBookingStore, useSettlementStore } from '@/shared/lib/store';
+import { useBookingStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { EndSessionConfirmDialog } from '@/features/billing/EndSessionConfirmDialog';
 
 const LOW_BALANCE_THRESHOLD = 150; // INR — flag wallets at/below this
 
@@ -36,10 +35,7 @@ export default function SeatManagement() {
   const [sessionDuration, setSessionDuration] = useState('60');
   const [extendMinutes, setExtendMinutes] = useState('30');
   const { bookings } = useBookingStore();
-  const { user } = useAuthStore();
-  const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
-  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   const seatWallet = useMemo(() => {
     if (!selectedSeat?.playerName) return undefined;
@@ -55,22 +51,6 @@ export default function SeatManagement() {
   const isLowBalance = seatWallet ? remaining <= LOW_BALANCE_THRESHOLD : false;
 
   const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
-
-  // Compute end-session totals for the currently-selected occupied seat
-  const sessionTotals = useMemo(() => {
-    if (!selectedSeat || selectedSeat.status !== 'occupied' || !selectedSeat.startTime) {
-      return { durationSec: 0, usageCost: 0, refund: 0, lockedAmount: 0 };
-    }
-    const [sh, sm] = selectedSeat.startTime.split(':').map(Number);
-    const start = new Date();
-    start.setHours(sh, sm, 0, 0);
-    const durationSec = Math.max(0, Math.floor((Date.now() - start.getTime()) / 1000));
-    const costPerMinute = branch?.billing.costPerMinute ?? 0;
-    const lockedAmount = seatWallet?.lockedAmount ?? branch?.billing.lockedAmount ?? 0;
-    const usageCost = Math.min(lockedAmount, +(durationSec / 60 * costPerMinute).toFixed(2));
-    const refund = +(lockedAmount - usageCost).toFixed(2);
-    return { durationSec, usageCost, refund, lockedAmount };
-  }, [selectedSeat, branch, seatWallet, confirmEndOpen]);
 
   const bookedSeatMap = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -109,45 +89,9 @@ export default function SeatManagement() {
 
   const handleCheckOut = () => {
     if (!selectedSeat) return;
-    // Open confirmation step before settling
-    setConfirmEndOpen(true);
-  };
-
-  const handleConfirmEndSession = () => {
-    if (!selectedSeat || !branch) return;
-    // Record settlement if a wallet is matched and current user can settle
-    if (seatWallet && user && (user.role === 'cafe_owner' || user.role === 'manager')) {
-      const startIso = (() => {
-        if (!selectedSeat.startTime) return new Date().toISOString();
-        const [sh, sm] = selectedSeat.startTime.split(':').map(Number);
-        const d = new Date();
-        d.setHours(sh, sm, 0, 0);
-        return d.toISOString();
-      })();
-      addSettlement({
-        sessionId: `seat-${selectedSeat.id}-${Date.now()}`,
-        branchId: branch.id,
-        branchName: branch.name,
-        customerId: seatWallet.id,
-        customerName: seatWallet.name,
-        startTime: startIso,
-        endTime: new Date().toISOString(),
-        durationSec: sessionTotals.durationSec,
-        costPerMinute: branch.billing.costPerMinute,
-        lockedAmount: sessionTotals.lockedAmount,
-        usageCost: sessionTotals.usageCost,
-        refund: sessionTotals.refund,
-        settledBy: user.id,
-        settledByRole: user.role as 'cafe_owner' | 'manager',
-      });
-      toast.success(`Settled ${seatWallet.name} · Usage ₹${sessionTotals.usageCost.toFixed(2)} · Refund ₹${sessionTotals.refund.toFixed(2)}`);
-    } else {
-      toast.success('Session ended');
-    }
     setSeats(prev => prev.map(s =>
       s.id === selectedSeat.id ? { ...s, status: 'available' as const, playerName: undefined, startTime: undefined, endTime: undefined } : s
     ));
-    setConfirmEndOpen(false);
     closeDialog();
   };
 
@@ -431,19 +375,6 @@ export default function SeatManagement() {
           )}
         </DialogContent>
       </Dialog>
-
-      <EndSessionConfirmDialog
-        open={confirmEndOpen}
-        onOpenChange={setConfirmEndOpen}
-        onConfirm={handleConfirmEndSession}
-        customerName={seatWallet?.name ?? selectedSeat?.playerName}
-        branchName={branch?.name}
-        durationSec={sessionTotals.durationSec}
-        lockedAmount={sessionTotals.lockedAmount}
-        usageCost={sessionTotals.usageCost}
-        refund={sessionTotals.refund}
-        costPerMinute={branch?.billing.costPerMinute}
-      />
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Activity, Clock, Hash, IndianRupee, Lock, TrendingDown, Wallet, AlertTriangle, Power } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { EndSessionConfirmDialog } from './EndSessionConfirmDialog';
 
 interface ActiveSessionDashboardProps {
   sessionId?: string;
@@ -34,7 +33,6 @@ export function ActiveSessionDashboard({
 }: ActiveSessionDashboardProps) {
   const [now, setNow] = useState<Date>(new Date());
   const [ended, setEnded] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (ended) return;
@@ -47,10 +45,7 @@ export function ActiveSessionDashboard({
   const remaining = +(lockedAmount - usageCost).toFixed(2);
   const usagePct = Math.min(100, (usageCost / lockedAmount) * 100);
 
-  const handleEnd = () => setConfirmOpen(true);
-
-  const handleConfirmEnd = () => {
-    setConfirmOpen(false);
+  const handleEnd = () => {
     setEnded(true);
     onEndSession?.({ durationSec, usageCost, refund: remaining });
   };
@@ -204,18 +199,6 @@ export function ActiveSessionDashboard({
           </CardContent>
         </Card>
       </div>
-
-      <EndSessionConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        onConfirm={handleConfirmEnd}
-        branchName={branchName}
-        durationSec={durationSec}
-        lockedAmount={lockedAmount}
-        usageCost={usageCost}
-        refund={remaining}
-        costPerMinute={costPerMinute}
-      />
     </div>
   );
 }
