@@ -36,7 +36,8 @@ export default function SettlementsPage() {
     if (!user) return [];
     if (user.role === 'cafe_owner') return branches.filter((b) => b.cafeOwnerId === user.id);
     if (user.role === 'manager') return branches.filter((b) => b.managerId === user.id);
-    return branches;
+    if (user.role === 'admin') return branches.filter((b) => b.adminId === user.id);
+    return branches; // super_admin sees all
   }, [branches, user]);
 
   const visibleBranchIds = useMemo(() => new Set(visibleBranches.map((b) => b.id)), [visibleBranches]);
@@ -97,16 +98,18 @@ export default function SettlementsPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (user?.role !== 'cafe_owner' && user?.role !== 'manager') {
+  const allowedRoles = ['super_admin', 'admin', 'cafe_owner', 'manager'];
+  if (!user || !allowedRoles.includes(user.role)) {
     return (
       <Alert>
         <AlertTitle>Restricted</AlertTitle>
         <AlertDescription>
-          Settlements are only available to cafe owners and managers.
+          You don't have access to settlements.
         </AlertDescription>
       </Alert>
     );
   }
+  const isViewOnly = user.role === 'super_admin' || user.role === 'admin';
 
   return (
     <div className="space-y-4">
