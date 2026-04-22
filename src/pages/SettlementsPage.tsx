@@ -441,6 +441,89 @@ export default function SettlementsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* End-active-session: pick branch & customer */}
+      <Dialog open={endPickerOpen} onOpenChange={setEndPickerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Power className="h-5 w-5 text-destructive" /> End an Active Session
+            </DialogTitle>
+            <DialogDescription>
+              Pick the branch and customer whose session you want to settle. You'll review the totals next.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                <Building2 className="h-3.5 w-3.5" /> Branch
+              </Label>
+              <Select
+                value={endBranchId}
+                onValueChange={(v) => {
+                  setEndBranchId(v);
+                  const first = MOCK_CUSTOMER_WALLETS.find((c) => c.branchId === v);
+                  setEndCustomerId(first?.id ?? '');
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                <SelectContent>
+                  {visibleBranches.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                <UserIcon className="h-3.5 w-3.5" /> Customer
+              </Label>
+              {endBranchCustomers.length > 0 ? (
+                <Select value={endCustomerId} onValueChange={setEndCustomerId}>
+                  <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
+                  <SelectContent>
+                    {endBranchCustomers.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name} · ₹{c.balance}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-muted-foreground">No customers on this branch.</p>
+              )}
+            </div>
+            {endBranch && (
+              <p className="text-xs text-muted-foreground">
+                Rate ₹{endBranch.billing.costPerMinute.toFixed(2)}/min · session timer started when you opened this dialog.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEndPickerOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleProceedToConfirm}
+              disabled={!endBranch || !endCustomer}
+            >
+              <Power className="h-4 w-4" /> Review & End
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <EndSessionConfirmDialog
+        open={confirmEndOpen}
+        onOpenChange={setConfirmEndOpen}
+        onConfirm={handleConfirmEndActive}
+        customerName={endCustomer?.name}
+        branchName={endBranch?.name}
+        durationSec={endTotals.durationSec}
+        lockedAmount={endTotals.lockedAmount}
+        usageCost={endTotals.usageCost}
+        refund={endTotals.refund}
+        costPerMinute={endBranch?.billing.costPerMinute}
+      />
     </div>
   );
 }
