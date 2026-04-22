@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
-import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet } from 'lucide-react';
+import { Eye, Building2, IndianRupee, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
+import { toast } from '@/hooks/use-toast';
 
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
+  const addSettlement = useSettlementStore((s) => s.addSettlement);
+  const navigate = useNavigate();
   // Cafe owners and managers manage user billing; admins/super-admins view-only
   const canManage = user?.role === 'cafe_owner' || user?.role === 'manager';
 
@@ -45,6 +49,45 @@ export default function BillingSessionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlBranchId, urlCustomerId]);
 
+  // Stable session id + start time per (branch, customer) pair so settlement records are consistent
+  const sessionMetaRef = useRef<Record<string, { sessionId: string; startTime: Date }>>({});
+  const sessionKey = `${branch?.id ?? ''}-${customer?.id ?? ''}`;
+  if (sessionKey && !sessionMetaRef.current[sessionKey]) {
+    sessionMetaRef.current[sessionKey] = {
+      sessionId: crypto.randomUUID(),
+      startTime: new Date(),
+    };
+  }
+  const sessionMeta = sessionMetaRef.current[sessionKey];
+
+  const handleEndSession = (summary: { durationSec: number; usageCost: number; refund: number }) => {
+    if (!user || !branch || !customer || !canManage) return;
+    if (user.role !== 'cafe_owner' && user.role !== 'manager') return;
+    const settlement = addSettlement({
+      sessionId: sessionMeta.sessionId,
+      branchId: branch.id,
+      branchName: branch.name,
+      customerId: customer.id,
+      customerName: customer.name,
+      startTime: sessionMeta.startTime.toISOString(),
+      endTime: new Date().toISOString(),
+      durationSec: summary.durationSec,
+      costPerMinute: branch.billing.costPerMinute,
+      lockedAmount: customer.lockedAmount,
+      usageCost: summary.usageCost,
+      refund: summary.refund,
+      settledBy: user.id,
+      settledByRole: user.role,
+    });
+    toast({
+      title: 'Session settled',
+      description: `${customer.name} · Usage ₹${summary.usageCost.toFixed(2)} · Refund ₹${summary.refund.toFixed(2)}`,
+    });
+    // Reset stable meta so next session for same pair gets a fresh id
+    delete sessionMetaRef.current[sessionKey];
+    void settlement;
+  };
+
   if (!branch) {
     return (
       <Alert>
@@ -56,6 +99,14 @@ export default function BillingSessionPage() {
 
   return (
     <div className="space-y-4">
+      {canManage && (
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
+            <Receipt className="h-4 w-4" /> View Settlements
+          </Button>
+        </div>
+      )}
+
       {!canManage && (
         <Alert className="border-primary/30 bg-primary/5">
           <Eye className="h-4 w-4" />
@@ -141,11 +192,14 @@ export default function BillingSessionPage() {
 
       {customer ? (
         <ActiveSessionDashboard
-          key={`${branch.id}-${customer.id}`}
+          key={sessionKey}
+          sessionId={sessionMeta.sessionId}
+          startTime={sessionMeta.startTime}
           readOnly={!canManage}
           lockedAmount={customer.lockedAmount}
           costPerMinute={branch.billing.costPerMinute}
           branchName={`${branch.name} · ${customer.name}`}
+          onEndSession={handleEndSession}
         />
       ) : (
         <Alert>
