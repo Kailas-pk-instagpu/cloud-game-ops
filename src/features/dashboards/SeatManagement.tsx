@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MOCK_SEATS, MOCK_BRANCHES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
-import { useBookingStore } from '@/shared/lib/store';
+import { useAuthStore, useBookingStore, useSettlementStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { EndSessionConfirmDialog } from '@/features/billing/EndSessionConfirmDialog';
 
 const LOW_BALANCE_THRESHOLD = 150; // INR — flag wallets at/below this
 
@@ -35,7 +36,10 @@ export default function SeatManagement() {
   const [sessionDuration, setSessionDuration] = useState('60');
   const [extendMinutes, setExtendMinutes] = useState('30');
   const { bookings } = useBookingStore();
+  const { user } = useAuthStore();
+  const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   const seatWallet = useMemo(() => {
     if (!selectedSeat?.playerName) return undefined;
