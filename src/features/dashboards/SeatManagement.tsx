@@ -40,6 +40,22 @@ export default function SeatManagement() {
   const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+  const [walletSyncing, setWalletSyncing] = useState(false);
+  const [walletSyncedAt, setWalletSyncedAt] = useState<string | null>(null);
+
+  const handleWalletSync = async () => {
+    if (walletSyncing || !seatWallet) return;
+    setWalletSyncing(true);
+    try {
+      await new Promise((r) => setTimeout(r, 700));
+      setWalletSyncedAt(getCurrentTime());
+      toast.success('Wallet synced', {
+        description: `${seatWallet.name}'s balance is up to date.`,
+      });
+    } finally {
+      setWalletSyncing(false);
+    }
+  };
 
   const seatWallet = useMemo(() => {
     if (!selectedSeat?.playerName) return undefined;
