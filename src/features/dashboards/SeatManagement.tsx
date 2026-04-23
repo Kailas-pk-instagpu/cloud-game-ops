@@ -5,7 +5,7 @@ import { Seat } from '@/shared/lib/mock-data';
 import { useAuthStore, useBookingStore, useSettlementStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,22 @@ export default function SeatManagement() {
   const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
+  const [walletSyncing, setWalletSyncing] = useState(false);
+  const [walletSyncedAt, setWalletSyncedAt] = useState<string | null>(null);
+
+  const handleWalletSync = async () => {
+    if (walletSyncing || !seatWallet) return;
+    setWalletSyncing(true);
+    try {
+      await new Promise((r) => setTimeout(r, 700));
+      setWalletSyncedAt(getCurrentTime());
+      toast.success('Wallet synced', {
+        description: `${seatWallet.name}'s balance is up to date.`,
+      });
+    } finally {
+      setWalletSyncing(false);
+    }
+  };
 
   const seatWallet = useMemo(() => {
     if (!selectedSeat?.playerName) return undefined;
@@ -343,11 +359,31 @@ export default function SeatManagement() {
                         <Wallet className={cn('h-4 w-4', isLowBalance ? 'text-destructive' : 'text-success')} />
                         Wallet · {seatWallet.name}
                       </p>
-                      {isLowBalance && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" /> Low balance
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {isLowBalance && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Low balance
+                          </span>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              onClick={handleWalletSync}
+                              disabled={walletSyncing}
+                              aria-label="Sync wallet balance"
+                            >
+                              <RefreshCw className={cn('h-3.5 w-3.5', walletSyncing && 'animate-spin')} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {walletSyncedAt ? `Last synced at ${walletSyncedAt}` : 'Sync wallet balance'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
