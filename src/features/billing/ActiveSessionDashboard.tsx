@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Activity, Clock, Hash, Banknote, Lock, TrendingDown, Wallet, AlertTriangle, Power } from 'lucide-react';
+import { Activity, Clock, Hash, Banknote, Lock, TrendingDown, Wallet, AlertTriangle, Power, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EndSessionConfirmDialog } from './EndSessionConfirmDialog';
 
@@ -35,6 +35,7 @@ export function ActiveSessionDashboard({
   const [now, setNow] = useState<Date>(new Date());
   const [ended, setEnded] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
 
   useEffect(() => {
     if (ended) return;
@@ -47,12 +48,23 @@ export function ActiveSessionDashboard({
   const remaining = +(lockedAmount - usageCost).toFixed(2);
   const usagePct = Math.min(100, (usageCost / lockedAmount) * 100);
 
-  const handleEnd = () => setConfirmOpen(true);
+  const handleEnd = () => {
+    if (isEnding || ended) return;
+    setConfirmOpen(true);
+  };
 
-  const handleConfirmEnd = () => {
-    setConfirmOpen(false);
-    setEnded(true);
-    onEndSession?.({ durationSec, usageCost, refund: remaining });
+  const handleConfirmEnd = async () => {
+    if (isEnding || ended) return;
+    setIsEnding(true);
+    try {
+      // Simulated async settlement to guard against double-clicks / slow requests
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setEnded(true);
+      setConfirmOpen(false);
+      onEndSession?.({ durationSec, usageCost, refund: remaining });
+    } finally {
+      setIsEnding(false);
+    }
   };
 
   return (
@@ -193,12 +205,23 @@ export function ActiveSessionDashboard({
                 size="lg"
                 variant="destructive"
                 onClick={handleEnd}
-                disabled={ended || readOnly}
+                disabled={ended || readOnly || isEnding}
+                aria-busy={isEnding}
                 className="shadow-[0_0_25px_hsl(var(--destructive)/0.4)]"
                 title={readOnly ? 'Only cafe owner can end the session' : undefined}
               >
-                <Power className="h-4 w-4" />
-                {ended ? 'Session Ended' : readOnly ? 'View Only' : 'End Session'}
+                {isEnding ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Power className="h-4 w-4" />
+                )}
+                {ended
+                  ? 'Session Ended'
+                  : readOnly
+                    ? 'View Only'
+                    : isEnding
+                      ? 'Ending Session...'
+                      : 'End Session'}
               </Button>
             </div>
           </CardContent>
@@ -207,8 +230,12 @@ export function ActiveSessionDashboard({
 
       <EndSessionConfirmDialog
         open={confirmOpen}
-        onOpenChange={setConfirmOpen}
+        onOpenChange={(o) => {
+          if (isEnding) return; // prevent closing while settling
+          setConfirmOpen(o);
+        }}
         onConfirm={handleConfirmEnd}
+        isProcessing={isEnding}
         branchName={branchName}
         durationSec={durationSec}
         lockedAmount={lockedAmount}
