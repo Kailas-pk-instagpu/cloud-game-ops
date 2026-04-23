@@ -28,6 +28,7 @@ export function EndSessionConfirmDialog({
   open,
   onOpenChange,
   onConfirm,
+  isProcessing = false,
   customerName,
   branchName,
   durationSec,
@@ -37,7 +38,7 @@ export function EndSessionConfirmDialog({
   costPerMinute,
 }: EndSessionConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { if (isProcessing) return; onOpenChange(o); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
