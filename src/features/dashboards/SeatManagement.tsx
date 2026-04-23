@@ -5,7 +5,7 @@ import { Seat } from '@/shared/lib/mock-data';
 import { useAuthStore, useBookingStore, useSettlementStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Monitor, RotateCcw, UserCheck, UserMinus, CalendarCheck, Clock, TimerReset, Wallet, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
