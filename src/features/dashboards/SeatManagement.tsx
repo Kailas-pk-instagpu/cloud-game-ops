@@ -359,11 +359,31 @@ export default function SeatManagement() {
                         <Wallet className={cn('h-4 w-4', isLowBalance ? 'text-destructive' : 'text-success')} />
                         Wallet · {seatWallet.name}
                       </p>
-                      {isLowBalance && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" /> Low balance
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {isLowBalance && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Low balance
+                          </span>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              onClick={handleWalletSync}
+                              disabled={walletSyncing}
+                              aria-label="Sync wallet balance"
+                            >
+                              <RefreshCw className={cn('h-3.5 w-3.5', walletSyncing && 'animate-spin')} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {walletSyncedAt ? `Last synced at ${walletSyncedAt}` : 'Sync wallet balance'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
