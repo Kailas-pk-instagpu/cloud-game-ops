@@ -1,12 +1,13 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Clock, Banknote, Lock, Power, TrendingDown, Wallet } from 'lucide-react';
+import { AlertTriangle, Clock, Banknote, Lock, Power, TrendingDown, Wallet, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EndSessionConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  isProcessing?: boolean;
   customerName?: string;
   branchName?: string;
   durationSec: number;
@@ -103,9 +104,24 @@ export function EndSessionConfirmDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            <Power className="h-4 w-4" /> Confirm & Settle
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isProcessing}
+            aria-busy={isProcessing}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Settling...
+              </>
+            ) : (
+              <>
+                <Power className="h-4 w-4" /> Confirm & Settle
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
