@@ -5,9 +5,12 @@ import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/s
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 import { toast } from '@/hooks/use-toast';
 
@@ -36,6 +39,8 @@ export default function BillingSessionPage() {
   const urlCustomerId = searchParams.get('customerId');
 
   const [branchId, setBranchId] = useState<string>(urlBranchId ?? visibleBranches[0]?.id ?? '');
+  const [branchOpen, setBranchOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
   const branch = visibleBranches.find((b) => b.id === branchId) ?? visibleBranches[0];
 
   const branchCustomers = useMemo(
@@ -132,25 +137,44 @@ export default function BillingSessionPage() {
             <Label className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
               <Building2 className="h-3.5 w-3.5" /> Branch
             </Label>
-            <Select
-              value={branch.id}
-              onValueChange={(v) => {
-                setBranchId(v);
-                const first = MOCK_CUSTOMER_WALLETS.find((c) => c.branchId === v);
-                setCustomerId(first?.id ?? '');
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleBranches.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={branchOpen} onOpenChange={setBranchOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={branchOpen}
+                  className="w-full justify-between font-normal"
+                >
+                  {branch?.name ?? 'Select branch'}
+                  <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search branch..." />
+                  <CommandList>
+                    <CommandEmpty>No branch found.</CommandEmpty>
+                    <CommandGroup>
+                      {visibleBranches.map((b) => (
+                        <CommandItem
+                          key={b.id}
+                          value={b.name}
+                          onSelect={() => {
+                            setBranchId(b.id);
+                            const first = MOCK_CUSTOMER_WALLETS.find((c) => c.branchId === b.id);
+                            setCustomerId(first?.id ?? '');
+                            setBranchOpen(false);
+                          }}
+                        >
+                          <Check className={cn('mr-2 h-4 w-4', branch?.id === b.id ? 'opacity-100' : 'opacity-0')} />
+                          {b.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -158,18 +182,42 @@ export default function BillingSessionPage() {
               <UserIcon className="h-3.5 w-3.5" /> Customer
             </Label>
             {branchCustomers.length > 0 ? (
-              <Select value={customer?.id} onValueChange={setCustomerId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {branchCustomers.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name} · RM {c.balance}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={customerOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {customer ? `${customer.name} · RM ${customer.balance}` : 'Select customer'}
+                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search customer..." />
+                    <CommandList>
+                      <CommandEmpty>No customer found.</CommandEmpty>
+                      <CommandGroup>
+                        {branchCustomers.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.name}
+                            onSelect={() => {
+                              setCustomerId(c.id);
+                              setCustomerOpen(false);
+                            }}
+                          >
+                            <Check className={cn('mr-2 h-4 w-4', customer?.id === c.id ? 'opacity-100' : 'opacity-0')} />
+                            {c.name} · RM {c.balance}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             ) : (
               <p className="text-sm text-muted-foreground">No customers</p>
             )}
