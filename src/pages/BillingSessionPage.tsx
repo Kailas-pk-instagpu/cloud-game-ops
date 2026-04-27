@@ -39,6 +39,8 @@ export default function BillingSessionPage() {
   const urlCustomerId = searchParams.get('customerId');
 
   const [branchId, setBranchId] = useState<string>(urlBranchId ?? visibleBranches[0]?.id ?? '');
+  const [branchOpen, setBranchOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
   const branch = visibleBranches.find((b) => b.id === branchId) ?? visibleBranches[0];
 
   const branchCustomers = useMemo(
