@@ -5,9 +5,12 @@ import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/s
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 import { toast } from '@/hooks/use-toast';
 
