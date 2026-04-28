@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/shared/lib/store';
 import { ROLE_LABELS, TwoFAMethod } from '@/shared/types/auth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -198,6 +198,18 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
+
+  // Deep-link support: e.g. /settings#integrations opens the matching tab.
+  useEffect(() => {
+    const applyHash = () => {
+      const hash = window.location.hash.replace('#', '') as TabId;
+      if (hash && tabs.some(t => t.id === hash)) setActiveTab(hash);
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.role]);
 
   // Profile state
   const [name, setName] = useState(user?.name || '');

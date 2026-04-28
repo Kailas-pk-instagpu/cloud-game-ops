@@ -16,6 +16,7 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
 } from '@/components/ui/sheet';
+import { BillingStatusIndicator } from '@/shared/ui/atoms/BillingStatusIndicator';
 
 const typeIcon = {
   error: <AlertCircle className="h-4 w-4 text-destructive" />,
@@ -44,6 +45,7 @@ export function AppNavbar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <BillingStatusIndicator />
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
