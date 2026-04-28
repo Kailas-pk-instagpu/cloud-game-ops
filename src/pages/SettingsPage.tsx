@@ -182,15 +182,16 @@ function TwoFASetup() {
 }
 
 // --- Vertical Tab Item ---
-const tabs = [
+const baseTabs = [
   { id: 'profile', label: 'Profile Settings', icon: User },
   { id: 'password', label: 'Password', icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'security', label: 'Security', icon: Shield },
+  { id: 'integrations', label: 'Integrations', icon: PlugZap, roles: ['super_admin'] as string[] },
   { id: 'general', label: 'General', icon: Settings2 },
 ] as const;
 
-type TabId = typeof tabs[number]['id'];
+type TabId = typeof baseTabs[number]['id'];
 
 export default function SettingsPage() {
   const { user, theme, toggleTheme, updateProfile, changePassword } = useAuthStore();
