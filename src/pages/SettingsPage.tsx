@@ -430,6 +430,11 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* ===== INTEGRATIONS TAB (Super Admin only) ===== */}
+            {activeTab === 'integrations' && user.role === 'super_admin' && (
+              <E2LinkIntegrationPanel />
+            )}
+
             {/* ===== GENERAL TAB ===== */}
             {activeTab === 'general' && (
               <div className="space-y-6 max-w-lg">
