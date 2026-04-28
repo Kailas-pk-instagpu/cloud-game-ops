@@ -3,6 +3,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppNavbar } from './AppNavbar';
+import { ManagerBillingBanner } from '@/features/billing/ManagerBillingBanner';
 
 export function DashboardLayout() {
   const { isAuthenticated, user, is2FAVerified } = useAuthStore();
@@ -17,6 +18,7 @@ export function DashboardLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <AppNavbar />
+          <ManagerBillingBanner />
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <Outlet />
           </main>
