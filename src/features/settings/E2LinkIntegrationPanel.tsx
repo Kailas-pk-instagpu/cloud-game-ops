@@ -377,6 +377,13 @@ export default function E2LinkIntegrationPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <E2LinkDetailsDrawer
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        accountId={maskAccount(accountId)}
+        status={status}
+      />
     </div>
   );
 }
