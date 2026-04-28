@@ -65,6 +65,7 @@ export default function E2LinkIntegrationPanel() {
 
   // Sync summary (mock)
   const [summary] = useState({ synced: 12480, pending: 23, failed: 4 });
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const statusMeta: Record<
     ConnectionStatus,
