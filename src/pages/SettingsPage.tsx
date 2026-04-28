@@ -197,6 +197,7 @@ export default function SettingsPage() {
   const { user, theme, toggleTheme, updateProfile, changePassword } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
 
   // Profile state
   const [name, setName] = useState(user?.name || '');
