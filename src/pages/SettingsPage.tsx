@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/shared/lib/store';
 import { ROLE_LABELS, TwoFAMethod } from '@/shared/types/auth';
 import { Card, CardContent } from '@/components/ui/card';
