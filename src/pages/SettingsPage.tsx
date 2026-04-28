@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2 } from 'lucide-react';
+import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2, PlugZap } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 const MOCK_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/GPUCloud:user@example.com?secret=${MOCK_TOTP_SECRET}&issuer=GPUCloud`;
@@ -181,20 +182,22 @@ function TwoFASetup() {
 }
 
 // --- Vertical Tab Item ---
-const tabs = [
+const baseTabs = [
   { id: 'profile', label: 'Profile Settings', icon: User },
   { id: 'password', label: 'Password', icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'security', label: 'Security', icon: Shield },
+  { id: 'integrations', label: 'Integrations', icon: PlugZap, roles: ['super_admin'] as string[] },
   { id: 'general', label: 'General', icon: Settings2 },
 ] as const;
 
-type TabId = typeof tabs[number]['id'];
+type TabId = typeof baseTabs[number]['id'];
 
 export default function SettingsPage() {
   const { user, theme, toggleTheme, updateProfile, changePassword } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
 
   // Profile state
   const [name, setName] = useState(user?.name || '');
@@ -425,6 +428,11 @@ export default function SettingsPage() {
                 <Separator />
                 <TwoFASetup />
               </div>
+            )}
+
+            {/* ===== INTEGRATIONS TAB (Super Admin only) ===== */}
+            {activeTab === 'integrations' && user.role === 'super_admin' && (
+              <E2LinkIntegrationPanel />
             )}
 
             {/* ===== GENERAL TAB ===== */}
