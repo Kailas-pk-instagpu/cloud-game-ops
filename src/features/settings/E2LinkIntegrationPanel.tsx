@@ -29,9 +29,11 @@ import {
   Activity,
   Hourglass,
   CircleX,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import E2LinkDetailsDrawer from './E2LinkDetailsDrawer';
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'sync_issue';
 
