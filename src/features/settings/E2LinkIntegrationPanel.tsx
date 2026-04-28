@@ -172,7 +172,19 @@ export default function E2LinkIntegrationPanel() {
       <Separator />
 
       {/* Connection Status */}
-      <Card className="border-border/60">
+      <Card
+        className="border-border/60 cursor-pointer transition-colors hover:border-primary/40 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        role="button"
+        tabIndex={0}
+        onClick={() => setDetailsOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setDetailsOpen(true);
+          }
+        }}
+        aria-label="Open E2Link details"
+      >
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
@@ -184,18 +196,19 @@ export default function E2LinkIntegrationPanel() {
                   <StatusIcon className={cn('h-4 w-4', meta.tone)} />
                   <p className={cn('text-sm font-semibold', meta.tone)}>{meta.label}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">E2Link service status</p>
+                <p className="text-xs text-muted-foreground">E2Link service status · click for details</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 sm:gap-8 text-right">
-              <div>
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="text-right">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Account ID</p>
                 <p className="text-sm font-mono font-medium">{maskAccount(accountId)}</p>
               </div>
-              <div>
+              <div className="text-right">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Last Sync</p>
                 <p className="text-sm font-medium">{formatTime(lastSync)}</p>
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
         </CardContent>
