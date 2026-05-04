@@ -10,6 +10,7 @@ import { MOCK_BRANCHES, MOCK_SEATS } from '@/shared/lib/mock-data';
 import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import LiveSessionInspectorDrawer from './LiveSessionInspectorDrawer';
 
 interface LiveSession {
   id: string;
@@ -76,6 +77,7 @@ export default function LiveSessionsMonitor() {
   const [branchFilter, setBranchFilter] = useState<string>('all');
   const [healthFilter, setHealthFilter] = useState<string>('all');
   const [tick, setTick] = useState(0);
+  const [inspected, setInspected] = useState<LiveSession | null>(null);
 
   // live ticking — update durations + spent every 5s
   useEffect(() => {
@@ -237,7 +239,7 @@ export default function LiveSessionsMonitor() {
                           </Badge>
                         </TableCell>
                         <TableCell className="py-2.5 text-right">
-                          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => toast.info(`Inspecting ${s.id}`)}>
+                          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => setInspected(s)}>
                             <Eye className="h-3.5 w-3.5" /> Inspect
                           </Button>
                         </TableCell>
@@ -252,6 +254,12 @@ export default function LiveSessionsMonitor() {
       </Card>
 
       <p className="text-[11px] text-muted-foreground text-right">Tick #{tick}</p>
+
+      <LiveSessionInspectorDrawer
+        session={inspected}
+        open={!!inspected}
+        onOpenChange={(o) => !o && setInspected(null)}
+      />
     </div>
   );
 }
