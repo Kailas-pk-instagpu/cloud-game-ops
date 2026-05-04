@@ -77,6 +77,7 @@ export default function LiveSessionsMonitor() {
   const [branchFilter, setBranchFilter] = useState<string>('all');
   const [healthFilter, setHealthFilter] = useState<string>('all');
   const [tick, setTick] = useState(0);
+  const [inspected, setInspected] = useState<LiveSession | null>(null);
 
   // live ticking — update durations + spent every 5s
   useEffect(() => {
