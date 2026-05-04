@@ -10,6 +10,7 @@ import { MOCK_BRANCHES, MOCK_SEATS } from '@/shared/lib/mock-data';
 import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import LiveSessionInspectorDrawer from './LiveSessionInspectorDrawer';
 
 interface LiveSession {
   id: string;
