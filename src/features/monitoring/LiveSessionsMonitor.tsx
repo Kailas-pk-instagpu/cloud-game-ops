@@ -254,6 +254,12 @@ export default function LiveSessionsMonitor() {
       </Card>
 
       <p className="text-[11px] text-muted-foreground text-right">Tick #{tick}</p>
+
+      <LiveSessionInspectorDrawer
+        session={inspected}
+        open={!!inspected}
+        onOpenChange={(o) => !o && setInspected(null)}
+      />
     </div>
   );
 }
