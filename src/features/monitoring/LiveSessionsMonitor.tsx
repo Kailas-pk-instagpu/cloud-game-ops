@@ -239,7 +239,7 @@ export default function LiveSessionsMonitor() {
                           </Badge>
                         </TableCell>
                         <TableCell className="py-2.5 text-right">
-                          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => toast.info(`Inspecting ${s.id}`)}>
+                          <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs" onClick={() => setInspected(s)}>
                             <Eye className="h-3.5 w-3.5" /> Inspect
                           </Button>
                         </TableCell>
