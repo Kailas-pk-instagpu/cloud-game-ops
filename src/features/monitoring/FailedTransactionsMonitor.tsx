@@ -118,6 +118,16 @@ export default function FailedTransactionsMonitor() {
     });
   }, [items, query, reasonFilter, branchFilter, retryFilter]);
 
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
+
   const stats = useMemo(() => {
     const total = items.length;
     const pending = items.filter((t) => t.retry === 'pending').length;
