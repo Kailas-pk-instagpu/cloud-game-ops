@@ -311,11 +311,20 @@ export default function ApplicationLogsMonitor() {
               )}
             </div>
           </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={(p) => { setPage(p); listRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            pageSizeOptions={[25, 50, 100, 200]}
+            itemLabel="entries"
+          />
         </CardContent>
       </Card>
 
       <p className="text-[11px] text-muted-foreground text-right">
-        Showing {filtered.length} of {logs.length} entries · buffer cap 500
+        Buffer holds {logs.length} of 500 entries
       </p>
 
       <Sheet open={!!inspected} onOpenChange={(o) => !o && setInspected(null)}>
