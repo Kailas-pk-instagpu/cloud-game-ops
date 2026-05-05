@@ -113,6 +113,8 @@ export default function ApplicationLogsMonitor() {
   const [levelFilter, setLevelFilter] = useState<LogLevel | 'all'>('all');
   const [sourceFilter, setSourceFilter] = useState<LogSource | 'all'>('all');
   const [inspected, setInspected] = useState<AppLog | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Live stream — push new logs every 2s when not paused
