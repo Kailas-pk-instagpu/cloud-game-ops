@@ -102,6 +102,8 @@ export default function FailedTransactionsMonitor() {
   const [retryFilter, setRetryFilter] = useState<string>('all');
   const [selected, setSelected] = useState<FailedTx | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     return items.filter((t) => {
