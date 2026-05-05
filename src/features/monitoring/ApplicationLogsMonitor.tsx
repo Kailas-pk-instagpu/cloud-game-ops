@@ -144,6 +144,16 @@ export default function ApplicationLogsMonitor() {
     });
   }, [logs, query, levelFilter, sourceFilter]);
 
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
+
   const counts = useMemo(() => {
     const c = { debug: 0, info: 0, warn: 0, error: 0, success: 0 } as Record<LogLevel, number>;
     logs.forEach((l) => (c[l.level] += 1));
