@@ -109,6 +109,17 @@ export default function LiveSessionsMonitor() {
     });
   }, [sessions, query, branchFilter, healthFilter]);
 
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  // reset page when filters shrink result set below current page
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
+
   const stats = useMemo(() => {
     const totalRevenue = sessions.reduce((a, b) => a + b.spent, 0);
     const branches = new Set(sessions.map((s) => s.branchId)).size;
