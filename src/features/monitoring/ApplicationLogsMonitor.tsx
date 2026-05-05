@@ -297,7 +297,7 @@ export default function ApplicationLogsMonitor() {
                 })
               )}
             </div>
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
 
