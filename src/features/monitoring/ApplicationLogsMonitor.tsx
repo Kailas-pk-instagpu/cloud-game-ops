@@ -254,8 +254,8 @@ export default function ApplicationLogsMonitor() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <ScrollArea className="h-[520px] border-t" viewportRef={undefined as unknown as React.RefObject<HTMLDivElement>}>
-            <div ref={listRef} className="font-mono text-xs">
+          <div ref={listRef} className="h-[520px] border-t overflow-y-auto">
+            <div className="font-mono text-xs">
               {filtered.length === 0 ? (
                 <div className="py-16 text-center text-sm text-muted-foreground">
                   No log entries match these filters.
