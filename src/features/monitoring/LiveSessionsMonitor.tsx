@@ -218,7 +218,7 @@ export default function LiveSessionsMonitor() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((s) => {
+                  paged.map((s) => {
                     const remaining = +(s.walletBalance - s.spent).toFixed(2);
                     const lowWallet = remaining < 20;
                     return (
