@@ -24,10 +24,15 @@ import {
   CircleX,
   CheckCircle2,
   Filter,
+  FilterX,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import TablePagination from '@/shared/ui/molecules/TablePagination';
+import { Skeleton } from '@/components/ui/skeleton';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
+import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 type LogSource =
@@ -153,6 +158,15 @@ export default function ApplicationLogsMonitor() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
+
+  const filtersActive = query.trim() !== '' || levelFilter !== 'all' || sourceFilter !== 'all';
+  const isLoading = useDeferredLoading([query, levelFilter, sourceFilter, page, pageSize]);
+
+  const clearFilters = () => {
+    setQuery('');
+    setLevelFilter('all');
+    setSourceFilter('all');
+  };
 
   const counts = useMemo(() => {
     const c = { debug: 0, info: 0, warn: 0, error: 0, success: 0 } as Record<LogLevel, number>;
