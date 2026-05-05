@@ -9,9 +9,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { MOCK_BRANCHES } from '@/shared/lib/mock-data';
-import { AlertTriangle, RotateCcw, Search, Ban, CircleX, Wallet, Building2, Eye, Copy, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, RotateCcw, Search, Ban, CircleX, Wallet, Building2, Eye, Copy, ShieldAlert, FilterX, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import TableSkeletonRows from '@/shared/ui/molecules/TableSkeletonRows';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
+import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
 
 type FailureReason = 'gateway_timeout' | 'insufficient_balance' | 'signature_mismatch' | 'rate_limited' | 'wallet_locked' | 'network_error';
 type TxType = 'Lock' | 'Deduct' | 'Release' | 'Topup';
@@ -127,6 +130,17 @@ export default function FailedTransactionsMonitor() {
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
+
+  const filtersActive =
+    query.trim() !== '' || reasonFilter !== 'all' || branchFilter !== 'all' || retryFilter !== 'all';
+  const isLoading = useDeferredLoading([query, reasonFilter, branchFilter, retryFilter, page, pageSize]);
+
+  const clearFilters = () => {
+    setQuery('');
+    setReasonFilter('all');
+    setBranchFilter('all');
+    setRetryFilter('all');
+  };
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -260,10 +274,23 @@ export default function FailedTransactionsMonitor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                      No failed transactions match these filters.
+                {isLoading ? (
+                  <TableSkeletonRows rows={Math.min(pageSize, 8)} columns={9} />
+                ) : filtered.length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={9} className="p-0">
+                      <EmptyState
+                        icon={filtersActive ? FilterX : ShieldCheck}
+                        tone={filtersActive ? 'warning' : 'success'}
+                        title={filtersActive ? 'No failures match your filters' : 'All clear — no failed transactions'}
+                        description={
+                          filtersActive
+                            ? 'Adjust the reason, branch, or retry status, or clear the search to see more results.'
+                            : 'Billing is healthy across the network. Any future failures will surface here for review.'
+                        }
+                        actionLabel={filtersActive ? 'Clear filters' : undefined}
+                        onAction={filtersActive ? clearFilters : undefined}
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
