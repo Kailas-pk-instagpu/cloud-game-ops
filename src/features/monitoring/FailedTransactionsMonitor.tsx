@@ -325,6 +325,14 @@ export default function FailedTransactionsMonitor() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            itemLabel="transactions"
+          />
         </CardContent>
       </Card>
 
