@@ -274,7 +274,7 @@ export default function ApplicationLogsMonitor() {
                   No log entries match these filters.
                 </div>
               ) : (
-                filtered.map((l) => {
+                paged.map((l) => {
                   const meta = LEVEL_META[l.level];
                   return (
                     <div
