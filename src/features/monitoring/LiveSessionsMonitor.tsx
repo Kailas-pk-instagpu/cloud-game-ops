@@ -11,6 +11,7 @@ import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye } 
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import LiveSessionInspectorDrawer from './LiveSessionInspectorDrawer';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 
 interface LiveSession {
   id: string;
@@ -78,6 +79,8 @@ export default function LiveSessionsMonitor() {
   const [healthFilter, setHealthFilter] = useState<string>('all');
   const [tick, setTick] = useState(0);
   const [inspected, setInspected] = useState<LiveSession | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // live ticking — update durations + spent every 5s
   useEffect(() => {
@@ -105,6 +108,17 @@ export default function LiveSessionsMonitor() {
       return true;
     });
   }, [sessions, query, branchFilter, healthFilter]);
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  // reset page when filters shrink result set below current page
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
 
   const stats = useMemo(() => {
     const totalRevenue = sessions.reduce((a, b) => a + b.spent, 0);
@@ -204,7 +218,7 @@ export default function LiveSessionsMonitor() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((s) => {
+                  paged.map((s) => {
                     const remaining = +(s.walletBalance - s.spent).toFixed(2);
                     const lowWallet = remaining < 20;
                     return (
@@ -250,6 +264,14 @@ export default function LiveSessionsMonitor() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            itemLabel="sessions"
+          />
         </CardContent>
       </Card>
 

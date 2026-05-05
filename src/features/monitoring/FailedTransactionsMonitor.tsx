@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -101,6 +102,8 @@ export default function FailedTransactionsMonitor() {
   const [retryFilter, setRetryFilter] = useState<string>('all');
   const [selected, setSelected] = useState<FailedTx | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     return items.filter((t) => {
@@ -114,6 +117,16 @@ export default function FailedTransactionsMonitor() {
       return true;
     });
   }, [items, query, reasonFilter, branchFilter, retryFilter]);
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -254,7 +267,7 @@ export default function FailedTransactionsMonitor() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((t) => (
+                  paged.map((t) => (
                     <TableRow key={t.id} className="cursor-pointer" onClick={() => setSelected(t)}>
                       <TableCell className="py-2.5 font-mono text-xs">{t.id}</TableCell>
                       <TableCell className="py-2.5">
@@ -312,6 +325,14 @@ export default function FailedTransactionsMonitor() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            itemLabel="transactions"
+          />
         </CardContent>
       </Card>
 

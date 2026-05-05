@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 type LogSource =
@@ -112,6 +113,8 @@ export default function ApplicationLogsMonitor() {
   const [levelFilter, setLevelFilter] = useState<LogLevel | 'all'>('all');
   const [sourceFilter, setSourceFilter] = useState<LogSource | 'all'>('all');
   const [inspected, setInspected] = useState<AppLog | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Live stream — push new logs every 2s when not paused
@@ -140,6 +143,16 @@ export default function ApplicationLogsMonitor() {
       return true;
     });
   }, [logs, query, levelFilter, sourceFilter]);
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filtered.length, page, pageSize]);
 
   const counts = useMemo(() => {
     const c = { debug: 0, info: 0, warn: 0, error: 0, success: 0 } as Record<LogLevel, number>;
@@ -261,7 +274,7 @@ export default function ApplicationLogsMonitor() {
                   No log entries match these filters.
                 </div>
               ) : (
-                filtered.map((l) => {
+                paged.map((l) => {
                   const meta = LEVEL_META[l.level];
                   return (
                     <div
@@ -298,11 +311,20 @@ export default function ApplicationLogsMonitor() {
               )}
             </div>
           </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={(p) => { setPage(p); listRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            pageSizeOptions={[25, 50, 100, 200]}
+            itemLabel="entries"
+          />
         </CardContent>
       </Card>
 
       <p className="text-[11px] text-muted-foreground text-right">
-        Showing {filtered.length} of {logs.length} entries · buffer cap 500
+        Buffer holds {logs.length} of 500 entries
       </p>
 
       <Sheet open={!!inspected} onOpenChange={(o) => !o && setInspected(null)}>
