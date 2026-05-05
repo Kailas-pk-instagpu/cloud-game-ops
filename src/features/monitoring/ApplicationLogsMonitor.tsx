@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 type LogSource =
