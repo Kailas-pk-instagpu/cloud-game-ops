@@ -27,6 +27,9 @@ export default function MonitoringPage() {
           <TabsTrigger value="failed" className="gap-2">
             <AlertTriangle className="h-4 w-4" /> Failed Transactions
           </TabsTrigger>
+          <TabsTrigger value="logs" className="gap-2">
+            <ScrollText className="h-4 w-4" /> Logs
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="m-0">
@@ -34,6 +37,9 @@ export default function MonitoringPage() {
         </TabsContent>
         <TabsContent value="failed" className="m-0">
           <FailedTransactionsMonitor />
+        </TabsContent>
+        <TabsContent value="logs" className="m-0">
+          <ApplicationLogsMonitor />
         </TabsContent>
       </Tabs>
     </div>
