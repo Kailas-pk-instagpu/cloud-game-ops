@@ -267,7 +267,7 @@ export default function FailedTransactionsMonitor() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((t) => (
+                  paged.map((t) => (
                     <TableRow key={t.id} className="cursor-pointer" onClick={() => setSelected(t)}>
                       <TableCell className="py-2.5 font-mono text-xs">{t.id}</TableCell>
                       <TableCell className="py-2.5">
