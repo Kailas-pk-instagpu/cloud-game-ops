@@ -11,6 +11,7 @@ import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye } 
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import LiveSessionInspectorDrawer from './LiveSessionInspectorDrawer';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 
 interface LiveSession {
   id: string;
