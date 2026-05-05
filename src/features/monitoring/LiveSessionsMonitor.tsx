@@ -7,11 +7,14 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MOCK_BRANCHES, MOCK_SEATS } from '@/shared/lib/mock-data';
-import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye } from 'lucide-react';
+import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye, FilterX, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import LiveSessionInspectorDrawer from './LiveSessionInspectorDrawer';
 import TablePagination from '@/shared/ui/molecules/TablePagination';
+import TableSkeletonRows from '@/shared/ui/molecules/TableSkeletonRows';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
+import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
 
 interface LiveSession {
   id: string;
@@ -120,6 +123,15 @@ export default function LiveSessionsMonitor() {
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
 
+  const filtersActive = query.trim() !== '' || branchFilter !== 'all' || healthFilter !== 'all';
+  const isLoading = useDeferredLoading([query, branchFilter, healthFilter, page, pageSize]);
+
+  const clearFilters = () => {
+    setQuery('');
+    setBranchFilter('all');
+    setHealthFilter('all');
+  };
+
   const stats = useMemo(() => {
     const totalRevenue = sessions.reduce((a, b) => a + b.spent, 0);
     const branches = new Set(sessions.map((s) => s.branchId)).size;
@@ -211,10 +223,23 @@ export default function LiveSessionsMonitor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                      No live sessions match these filters.
+                {isLoading ? (
+                  <TableSkeletonRows rows={Math.min(pageSize, 8)} columns={9} />
+                ) : filtered.length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={9} className="p-0">
+                      <EmptyState
+                        icon={filtersActive ? FilterX : Inbox}
+                        tone={filtersActive ? 'warning' : 'info'}
+                        title={filtersActive ? 'No sessions match your filters' : 'No live sessions right now'}
+                        description={
+                          filtersActive
+                            ? 'Try widening the search, switching branches, or resetting the health filter.'
+                            : 'Once players start a session at any cafe, they’ll appear here in real time.'
+                        }
+                        actionLabel={filtersActive ? 'Clear filters' : 'Refresh'}
+                        onAction={filtersActive ? clearFilters : handleRefresh}
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (

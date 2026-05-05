@@ -24,10 +24,15 @@ import {
   CircleX,
   CheckCircle2,
   Filter,
+  FilterX,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import TablePagination from '@/shared/ui/molecules/TablePagination';
+import { Skeleton } from '@/components/ui/skeleton';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
+import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 type LogSource =
@@ -154,6 +159,15 @@ export default function ApplicationLogsMonitor() {
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
 
+  const filtersActive = query.trim() !== '' || levelFilter !== 'all' || sourceFilter !== 'all';
+  const isLoading = useDeferredLoading([query, levelFilter, sourceFilter, page, pageSize]);
+
+  const clearFilters = () => {
+    setQuery('');
+    setLevelFilter('all');
+    setSourceFilter('all');
+  };
+
   const counts = useMemo(() => {
     const c = { debug: 0, info: 0, warn: 0, error: 0, success: 0 } as Record<LogLevel, number>;
     logs.forEach((l) => (c[l.level] += 1));
@@ -269,10 +283,33 @@ export default function ApplicationLogsMonitor() {
         <CardContent className="p-0">
           <div ref={listRef} className="h-[520px] border-t overflow-y-auto">
             <div className="font-mono text-xs">
-              {filtered.length === 0 ? (
-                <div className="py-16 text-center text-sm text-muted-foreground">
-                  No log entries match these filters.
-                </div>
+              {isLoading ? (
+                Array.from({ length: Math.min(pageSize, 12) }).map((_, i) => (
+                  <div
+                    key={`sk-log-${i}`}
+                    className="flex items-center gap-3 px-4 py-2 border-b border-border/40"
+                  >
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-12" />
+                    <Skeleton className="h-4 w-16 rounded" />
+                    <Skeleton className="h-3 flex-1 max-w-[60%]" />
+                  </div>
+                ))
+              ) : filtered.length === 0 ? (
+                <EmptyState
+                  icon={filtersActive ? FilterX : Sparkles}
+                  tone={filtersActive ? 'warning' : 'success'}
+                  title={filtersActive ? 'No log entries match your filters' : 'Log stream is quiet'}
+                  description={
+                    filtersActive
+                      ? 'Try a broader search, switch to All levels, or pick a different source.'
+                      : paused
+                        ? 'Streaming is paused. Resume to start receiving live log entries again.'
+                        : 'Waiting for new events. New logs will appear here automatically as they happen.'
+                  }
+                  actionLabel={filtersActive ? 'Clear filters' : paused ? 'Resume streaming' : undefined}
+                  onAction={filtersActive ? clearFilters : paused ? () => setPaused(false) : undefined}
+                />
               ) : (
                 paged.map((l) => {
                   const meta = LEVEL_META[l.level];
