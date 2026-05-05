@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, AlertTriangle, Radar } from 'lucide-react';
+import { Activity, AlertTriangle, Radar, ScrollText } from 'lucide-react';
 import LiveSessionsMonitor from '@/features/monitoring/LiveSessionsMonitor';
 import FailedTransactionsMonitor from '@/features/monitoring/FailedTransactionsMonitor';
+import ApplicationLogsMonitor from '@/features/monitoring/ApplicationLogsMonitor';
 
 export default function MonitoringPage() {
   return (
