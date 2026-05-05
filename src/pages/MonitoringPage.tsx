@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, AlertTriangle, Radar } from 'lucide-react';
+import { Activity, AlertTriangle, Radar, ScrollText } from 'lucide-react';
 import LiveSessionsMonitor from '@/features/monitoring/LiveSessionsMonitor';
 import FailedTransactionsMonitor from '@/features/monitoring/FailedTransactionsMonitor';
+import ApplicationLogsMonitor from '@/features/monitoring/ApplicationLogsMonitor';
 
 export default function MonitoringPage() {
   return (
@@ -26,6 +27,9 @@ export default function MonitoringPage() {
           <TabsTrigger value="failed" className="gap-2">
             <AlertTriangle className="h-4 w-4" /> Failed Transactions
           </TabsTrigger>
+          <TabsTrigger value="logs" className="gap-2">
+            <ScrollText className="h-4 w-4" /> Logs
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="m-0">
@@ -33,6 +37,9 @@ export default function MonitoringPage() {
         </TabsContent>
         <TabsContent value="failed" className="m-0">
           <FailedTransactionsMonitor />
+        </TabsContent>
+        <TabsContent value="logs" className="m-0">
+          <ApplicationLogsMonitor />
         </TabsContent>
       </Tabs>
     </div>
