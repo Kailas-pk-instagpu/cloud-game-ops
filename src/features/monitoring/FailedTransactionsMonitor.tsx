@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import TableSkeletonRows from '@/shared/ui/molecules/TableSkeletonRows';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
 import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
+import LastUpdated from '@/shared/ui/atoms/LastUpdated';
 
 type FailureReason = 'gateway_timeout' | 'insufficient_balance' | 'signature_mismatch' | 'rate_limited' | 'wallet_locked' | 'network_error';
 type TxType = 'Lock' | 'Deduct' | 'Release' | 'Topup';
@@ -107,6 +108,12 @@ export default function FailedTransactionsMonitor() {
   const [retryingAll, setRetryingAll] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
+
+  // bump lastUpdated whenever the underlying items change (retry, retryAll, ignore)
+  useEffect(() => {
+    setLastUpdated(new Date());
+  }, [items]);
 
   const filtered = useMemo(() => {
     return items.filter((t) => {
@@ -210,10 +217,13 @@ export default function FailedTransactionsMonitor() {
               </CardTitle>
               <CardDescription>Review, inspect, and retry failed billing operations across the network.</CardDescription>
             </div>
-            <Button size="sm" onClick={retryAll} disabled={retryingAll} className="gap-2">
-              <RotateCcw className={cn('h-3.5 w-3.5', retryingAll && 'animate-spin')} />
-              {retryingAll ? 'Retrying...' : 'Retry all eligible'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <LastUpdated timestamp={lastUpdated} />
+              <Button size="sm" onClick={retryAll} disabled={retryingAll} className="gap-2">
+                <RotateCcw className={cn('h-3.5 w-3.5', retryingAll && 'animate-spin')} />
+                {retryingAll ? 'Retrying...' : 'Retry all eligible'}
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-3">

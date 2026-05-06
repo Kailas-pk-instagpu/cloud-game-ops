@@ -15,6 +15,7 @@ import TablePagination from '@/shared/ui/molecules/TablePagination';
 import TableSkeletonRows from '@/shared/ui/molecules/TableSkeletonRows';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
 import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
+import LastUpdated from '@/shared/ui/atoms/LastUpdated';
 
 interface LiveSession {
   id: string;
@@ -84,6 +85,7 @@ export default function LiveSessionsMonitor() {
   const [inspected, setInspected] = useState<LiveSession | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
 
   // live ticking — update durations + spent every 5s
   useEffect(() => {
@@ -96,6 +98,7 @@ export default function LiveSessionsMonitor() {
         }),
       );
       setTick((t) => t + 1);
+      setLastUpdated(new Date());
     }, 5000);
     return () => clearInterval(id);
   }, []);
@@ -142,6 +145,7 @@ export default function LiveSessionsMonitor() {
 
   const handleRefresh = () => {
     setSessions(buildSessions());
+    setLastUpdated(new Date());
     toast.success('Live sessions refreshed');
   };
 
@@ -170,9 +174,12 @@ export default function LiveSessionsMonitor() {
               </CardTitle>
               <CardDescription>Real-time view of every active session across all cafes.</CardDescription>
             </div>
-            <Button size="sm" variant="outline" onClick={handleRefresh} className="gap-2">
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
-            </Button>
+            <div className="flex items-center gap-3">
+              <LastUpdated timestamp={lastUpdated} />
+              <Button size="sm" variant="outline" onClick={handleRefresh} className="gap-2">
+                <RefreshCw className="h-3.5 w-3.5" /> Refresh
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-3">

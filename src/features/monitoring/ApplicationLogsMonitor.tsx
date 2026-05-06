@@ -33,6 +33,7 @@ import TablePagination from '@/shared/ui/molecules/TablePagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
 import { useDeferredLoading } from '@/shared/lib/useDeferredLoading';
+import LastUpdated from '@/shared/ui/atoms/LastUpdated';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 type LogSource =
@@ -120,6 +121,7 @@ export default function ApplicationLogsMonitor() {
   const [inspected, setInspected] = useState<AppLog | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Live stream — push new logs every 2s when not paused
@@ -127,6 +129,7 @@ export default function ApplicationLogsMonitor() {
     if (paused) return;
     const id = setInterval(() => {
       setLogs((prev) => [makeLog(), ...prev].slice(0, 500));
+      setLastUpdated(new Date());
     }, 2000);
     return () => clearInterval(id);
   }, [paused]);
@@ -234,7 +237,8 @@ export default function ApplicationLogsMonitor() {
                 Unified view of every backend, billing, and integration log — built for fast debugging.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <LastUpdated timestamp={lastUpdated} className="mr-1" />
               <div className="flex items-center gap-2 px-2 h-9 rounded-md border bg-background">
                 <Label htmlFor="autoscroll" className="text-xs text-muted-foreground cursor-pointer">Auto-scroll</Label>
                 <Switch id="autoscroll" checked={autoScroll} onCheckedChange={setAutoScroll} />
