@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
-import { MOCK_USERS } from '@/shared/lib/mock-data';
+import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
 import { Branch, Seat } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X } from 'lucide-react';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ function getUserName(id?: string) {
 
 export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
-  const { seats, updateSeatStatus } = useSeatStore();
+  const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -51,6 +51,9 @@ export default function BranchesPage() {
   const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
+  const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
+  const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
+  const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
 
   const userRole = currentUser?.role;
 
