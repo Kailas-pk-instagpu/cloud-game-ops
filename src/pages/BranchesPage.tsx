@@ -700,7 +700,11 @@ export default function BranchesPage() {
                   {(['available', 'occupied', 'maintenance'] as const).map(s => {
                     const active = seatForm.status === s;
                     const Icon = s === 'available' ? CheckCircle2 : s === 'occupied' ? User : Wrench;
-                    const tone = s === 'available' ? 'success' : s === 'occupied' ? 'destructive' : 'warning';
+                    const activeTone = s === 'available'
+                      ? 'bg-success/15 border-success/40 text-success ring-1 ring-success/30'
+                      : s === 'occupied'
+                      ? 'bg-destructive/15 border-destructive/40 text-destructive ring-1 ring-destructive/30'
+                      : 'bg-warning/15 border-warning/40 text-warning ring-1 ring-warning/30';
                     return (
                       <button
                         key={s}
@@ -708,9 +712,7 @@ export default function BranchesPage() {
                         onClick={() => setSeatForm(f => ({ ...f, status: s }))}
                         className={cn(
                           'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs capitalize transition-all',
-                          active
-                            ? `bg-${tone}/15 border-${tone}/40 text-${tone} ring-1 ring-${tone}/30`
-                            : 'border-border hover:bg-muted/50 text-muted-foreground'
+                          active ? activeTone : 'border-border hover:bg-muted/50 text-muted-foreground'
                         )}
                       >
                         <Icon className="h-4 w-4" />
