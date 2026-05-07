@@ -109,7 +109,7 @@ import { Branch, MOCK_BRANCHES } from './mock-data';
 
 interface BranchState {
   branches: Branch[];
-  addBranch: (branch: Omit<Branch, 'id'>) => void;
+  addBranch: (branch: Omit<Branch, 'id'>) => string;
   updateBranch: (id: string, updates: Partial<Branch>) => void;
   deleteBranch: (id: string) => void;
   toggleBranchStatus: (id: string) => void;
@@ -117,9 +117,11 @@ interface BranchState {
 
 export const useBranchStore = create<BranchState>((set) => ({
   branches: [...MOCK_BRANCHES],
-  addBranch: (branch) => set((s) => ({
-    branches: [...s.branches, { ...branch, id: `branch-${Date.now()}` }],
-  })),
+  addBranch: (branch) => {
+    const id = `branch-${Date.now()}`;
+    set((s) => ({ branches: [...s.branches, { ...branch, id }] }));
+    return id;
+  },
   updateBranch: (id, updates) => set((s) => ({
     branches: s.branches.map(b => b.id === id ? { ...b, ...updates } : b),
   })),
@@ -141,6 +143,9 @@ interface SeatState {
   getSeatsByBranch: (branchId: string) => Seat[];
   updateSeatStatus: (seatId: string, status: Seat['status']) => void;
   updateSeat: (seatId: string, updates: Partial<Seat>) => void;
+  provisionSeats: (branchId: string, total: number, defaultGpu?: string) => void;
+  syncSeatCount: (branchId: string, total: number, defaultGpu?: string) => void;
+  removeSeatsForBranch: (branchId: string) => void;
 }
 
 export const useSeatStore = create<SeatState>((set, get) => ({
@@ -151,6 +156,50 @@ export const useSeatStore = create<SeatState>((set, get) => ({
   })),
   updateSeat: (seatId, updates) => set((s) => ({
     seats: s.seats.map(seat => seat.id === seatId ? { ...seat, ...updates } : seat),
+  })),
+  provisionSeats: (branchId, total, defaultGpu = 'RTX 4070') => set((s) => {
+    if (s.seats.some(seat => seat.branchId === branchId)) return s;
+    const newSeats: Seat[] = Array.from({ length: total }, (_, i) => ({
+      id: `${branchId}-seat-${i + 1}`,
+      branchId,
+      number: i + 1,
+      status: 'available',
+      gpuModel: defaultGpu,
+    }));
+    return { seats: [...s.seats, ...newSeats] };
+  }),
+  syncSeatCount: (branchId, total, defaultGpu = 'RTX 4070') => set((s) => {
+    const branchSeats = s.seats.filter(seat => seat.branchId === branchId).sort((a, b) => a.number - b.number);
+    const others = s.seats.filter(seat => seat.branchId !== branchId);
+    if (branchSeats.length === total) return s;
+    if (branchSeats.length < total) {
+      const toAdd: Seat[] = [];
+      for (let i = branchSeats.length; i < total; i++) {
+        toAdd.push({
+          id: `${branchId}-seat-${i + 1}-${Date.now()}`,
+          branchId,
+          number: i + 1,
+          status: 'available',
+          gpuModel: defaultGpu,
+        });
+      }
+      return { seats: [...others, ...branchSeats, ...toAdd] };
+    }
+    // remove from the end, but skip occupied seats
+    const sorted = [...branchSeats].sort((a, b) => b.number - a.number);
+    const kept: Seat[] = [];
+    let removable = branchSeats.length - total;
+    for (const seat of sorted) {
+      if (removable > 0 && seat.status !== 'occupied') {
+        removable--;
+      } else {
+        kept.push(seat);
+      }
+    }
+    return { seats: [...others, ...kept] };
+  }),
+  removeSeatsForBranch: (branchId) => set((s) => ({
+    seats: s.seats.filter(seat => seat.branchId !== branchId),
   })),
 }));
 
