@@ -107,7 +107,7 @@ export default function BranchesPage() {
       toast.error('Please fill in branch name and address');
       return;
     }
-    addBranch({
+    const newId = addBranch({
       name: form.name,
       address: form.address,
       cafeId: form.cafeId || 'cafe-1',
@@ -119,8 +119,13 @@ export default function BranchesPage() {
       managerId: form.managerId || undefined,
       billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' },
     });
+    provisionSeats(newId, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
+    // Open seat grid so the owner can immediately configure GPUs
+    const newBranch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active' as const, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
+    setSelectedBranch(newBranch);
+    setShowSeatGrid(true);
   };
 
   const submitUpdate = () => {
@@ -134,6 +139,7 @@ export default function BranchesPage() {
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
     });
+    syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" updated successfully`);
     setShowManageDialog(false);
   };
@@ -148,6 +154,7 @@ export default function BranchesPage() {
 
   const handleDelete = () => {
     if (!selectedBranch) return;
+    removeSeatsForBranch(selectedBranch.id);
     deleteBranch(selectedBranch.id);
     toast.success(`Branch "${selectedBranch.name}" deleted`);
     setShowDeleteConfirm(false);
