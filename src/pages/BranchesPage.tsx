@@ -123,7 +123,7 @@ export default function BranchesPage() {
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
     // Open seat grid so the owner can immediately configure GPUs
-    const newBranch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active' as const, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
+    const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
     setSelectedBranch(newBranch);
     setShowSeatGrid(true);
   };
