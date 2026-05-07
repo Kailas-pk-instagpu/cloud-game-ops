@@ -46,7 +46,19 @@ export interface Seat {
   startTime?: string;
   endTime?: string;
   gpuModel: string;
+  label?: string;
 }
+
+export const GPU_MODEL_OPTIONS = [
+  'RTX 4090',
+  'RTX 4080',
+  'RTX 4070 Ti',
+  'RTX 4070',
+  'RTX 4060 Ti',
+  'RTX 3090',
+  'RTX 3080',
+  'RTX 3070',
+] as const;
 
 export interface GPUNode {
   id: string;

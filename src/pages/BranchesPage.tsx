@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
-import { MOCK_USERS } from '@/shared/lib/mock-data';
+import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
 import { Branch, Seat } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X } from 'lucide-react';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ function getUserName(id?: string) {
 
 export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
-  const { seats, updateSeatStatus } = useSeatStore();
+  const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -51,6 +51,9 @@ export default function BranchesPage() {
   const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
+  const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
+  const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
+  const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
 
   const userRole = currentUser?.role;
 
@@ -104,7 +107,7 @@ export default function BranchesPage() {
       toast.error('Please fill in branch name and address');
       return;
     }
-    addBranch({
+    const newId = addBranch({
       name: form.name,
       address: form.address,
       cafeId: form.cafeId || 'cafe-1',
@@ -116,8 +119,13 @@ export default function BranchesPage() {
       managerId: form.managerId || undefined,
       billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' },
     });
+    provisionSeats(newId, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
+    // Open seat grid so the owner can immediately configure GPUs
+    const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
+    setSelectedBranch(newBranch);
+    setShowSeatGrid(true);
   };
 
   const submitUpdate = () => {
@@ -131,6 +139,7 @@ export default function BranchesPage() {
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
     });
+    syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" updated successfully`);
     setShowManageDialog(false);
   };
@@ -145,6 +154,7 @@ export default function BranchesPage() {
 
   const handleDelete = () => {
     if (!selectedBranch) return;
+    removeSeatsForBranch(selectedBranch.id);
     deleteBranch(selectedBranch.id);
     toast.success(`Branch "${selectedBranch.name}" deleted`);
     setShowDeleteConfirm(false);
@@ -512,27 +522,28 @@ export default function BranchesPage() {
 
 
       {/* Seat Grid Dialog */}
-      <Dialog open={showSeatGrid} onOpenChange={setShowSeatGrid}>
+      <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) setEditingSeat(null); }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <LayoutGrid className="h-5 w-5 text-primary" />
-              {selectedBranch?.name} — Seat Map
+              {selectedBranch?.name} — Seat Configuration
             </DialogTitle>
             <DialogDescription>
-              Click a seat to change its status. Colors indicate availability.
+              Click any seat to edit its name, GPU model and status.
             </DialogDescription>
           </DialogHeader>
           {selectedBranch && (() => {
-            const branchSeats = seats.filter(s => s.branchId === selectedBranch.id);
+            const branchSeats = seats.filter(s => s.branchId === selectedBranch.id).sort((a, b) => a.number - b.number);
             const available = branchSeats.filter(s => s.status === 'available').length;
             const occupied = branchSeats.filter(s => s.status === 'occupied').length;
             const maintenance = branchSeats.filter(s => s.status === 'maintenance').length;
+            const canEdit = userRole === 'cafe_owner' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'manager';
 
             return (
               <div className="space-y-4">
                 {/* Legend & Stats */}
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-sm bg-success/80" />
                     <span className="text-muted-foreground">Available ({available})</span>
@@ -547,9 +558,41 @@ export default function BranchesPage() {
                   </div>
                 </div>
 
+                {/* Bulk GPU assignment */}
+                {canEdit && branchSeats.length > 0 && (
+                  <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg border bg-muted/30">
+                    <div className="flex-1 min-w-[180px]">
+                      <Label className="text-xs flex items-center gap-1.5"><Cpu className="h-3 w-3" /> Default GPU for new/unassigned seats</Label>
+                      <Select value={defaultGpu} onValueChange={setDefaultGpu}>
+                        <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {GPU_MODEL_OPTIONS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        let count = 0;
+                        branchSeats.forEach(s => {
+                          if (s.status !== 'occupied') {
+                            updateSeat(s.id, { gpuModel: defaultGpu });
+                            count++;
+                          }
+                        });
+                        toast.success(`Applied ${defaultGpu} to ${count} seat${count === 1 ? '' : 's'}`);
+                      }}
+                    >
+                      <Cpu className="h-3.5 w-3.5" /> Apply to all
+                    </Button>
+                  </div>
+                )}
+
                 {/* Grid */}
                 <TooltipProvider delayDuration={200}>
-                  <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                     {branchSeats.map(seat => {
                       const statusColor = seat.status === 'available'
                         ? 'bg-success/15 border-success/30 hover:bg-success/25 text-success'
@@ -557,37 +600,38 @@ export default function BranchesPage() {
                         ? 'bg-destructive/15 border-destructive/30 hover:bg-destructive/25 text-destructive'
                         : 'bg-warning/15 border-warning/30 hover:bg-warning/25 text-warning';
 
-                      const cycleStatus = () => {
-                        const next: Record<string, Seat['status']> = {
-                          available: 'occupied',
-                          occupied: 'maintenance',
-                          maintenance: 'available',
-                        };
-                        updateSeatStatus(seat.id, next[seat.status]);
-                        toast.success(`Seat ${seat.number} → ${next[seat.status]}`);
+                      const openEdit = () => {
+                        setEditingSeat(seat);
+                        setSeatForm({
+                          label: seat.label || '',
+                          gpuModel: seat.gpuModel || defaultGpu,
+                          status: seat.status,
+                        });
                       };
 
                       return (
                         <Tooltip key={seat.id}>
                           <TooltipTrigger asChild>
                             <button
-                              onClick={cycleStatus}
+                              onClick={openEdit}
                               className={cn(
-                                'relative flex flex-col items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer aspect-square',
+                                'group relative flex flex-col items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer aspect-square',
                                 statusColor
                               )}
                             >
+                              <Pencil className="absolute top-1 right-1 h-2.5 w-2.5 opacity-0 group-hover:opacity-70 transition-opacity" />
                               <Armchair className="h-4 w-4 mb-0.5" />
-                              <span className="text-xs font-bold">{seat.number}</span>
+                              <span className="text-xs font-bold leading-none">{seat.label || `#${seat.number}`}</span>
+                              <span className="text-[9px] opacity-70 mt-0.5 truncate max-w-full">{seat.gpuModel}</span>
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="text-xs space-y-1 max-w-[180px]">
-                            <p className="font-semibold">Seat #{seat.number}</p>
+                          <TooltipContent side="top" className="text-xs space-y-1 max-w-[200px]">
+                            <p className="font-semibold">Seat #{seat.number}{seat.label ? ` · ${seat.label}` : ''}</p>
                             <p className="capitalize">Status: {seat.status}</p>
                             <p className="flex items-center gap-1"><Cpu className="h-3 w-3" /> {seat.gpuModel}</p>
                             {seat.playerName && <p className="flex items-center gap-1"><User className="h-3 w-3" /> {seat.playerName}</p>}
                             {seat.startTime && <p className="flex items-center gap-1"><Clock className="h-3 w-3" /> Since {seat.startTime}</p>}
-                            <p className="text-muted-foreground italic mt-1">Click to cycle status</p>
+                            <p className="text-muted-foreground italic mt-1">Click to edit</p>
                           </TooltipContent>
                         </Tooltip>
                       );
@@ -598,12 +642,111 @@ export default function BranchesPage() {
                 {branchSeats.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Armchair className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">No seats configured for this branch yet</p>
+                    <p className="text-sm mb-3">No seats configured for this branch yet</p>
+                    {canEdit && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          provisionSeats(selectedBranch.id, selectedBranch.totalSeats || 1, defaultGpu);
+                          toast.success(`Provisioned ${selectedBranch.totalSeats} seats`);
+                        }}
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1.5" /> Provision {selectedBranch.totalSeats} seats
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Seat Edit Dialog */}
+      <Dialog open={editingSeat !== null} onOpenChange={(o) => { if (!o) setEditingSeat(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Armchair className="h-5 w-5 text-primary" /> Seat #{editingSeat?.number}
+            </DialogTitle>
+            <DialogDescription>Update seat name, GPU model and operational status.</DialogDescription>
+          </DialogHeader>
+          {editingSeat && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-xs">Display Name (optional)</Label>
+                <Input
+                  className="mt-1"
+                  placeholder={`Seat ${editingSeat.number}`}
+                  value={seatForm.label}
+                  onChange={e => setSeatForm(f => ({ ...f, label: e.target.value }))}
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">e.g. "VIP-1", "Stream Booth"</p>
+              </div>
+
+              <div>
+                <Label className="text-xs flex items-center gap-1.5"><Cpu className="h-3 w-3" /> GPU Model</Label>
+                <Select value={seatForm.gpuModel} onValueChange={v => setSeatForm(f => ({ ...f, gpuModel: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {GPU_MODEL_OPTIONS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs">Status</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {(['available', 'occupied', 'maintenance'] as const).map(s => {
+                    const active = seatForm.status === s;
+                    const Icon = s === 'available' ? CheckCircle2 : s === 'occupied' ? User : Wrench;
+                    const activeTone = s === 'available'
+                      ? 'bg-success/15 border-success/40 text-success ring-1 ring-success/30'
+                      : s === 'occupied'
+                      ? 'bg-destructive/15 border-destructive/40 text-destructive ring-1 ring-destructive/30'
+                      : 'bg-warning/15 border-warning/40 text-warning ring-1 ring-warning/30';
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSeatForm(f => ({ ...f, status: s }))}
+                        className={cn(
+                          'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs capitalize transition-all',
+                          active ? activeTone : 'border-border hover:bg-muted/50 text-muted-foreground'
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+                {editingSeat.status === 'occupied' && seatForm.status !== 'occupied' && (
+                  <p className="text-[11px] text-warning mt-1.5">Changing away from "occupied" will clear the active player session.</p>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setEditingSeat(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (!editingSeat) return;
+                const wasOccupied = editingSeat.status === 'occupied';
+                const becomesNonOccupied = seatForm.status !== 'occupied';
+                updateSeat(editingSeat.id, {
+                  label: seatForm.label.trim() || undefined,
+                  gpuModel: seatForm.gpuModel,
+                  status: seatForm.status,
+                  ...(wasOccupied && becomesNonOccupied ? { playerName: undefined, startTime: undefined, endTime: undefined } : {}),
+                });
+                toast.success(`Seat #${editingSeat.number} updated`);
+                setEditingSeat(null);
+              }}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
