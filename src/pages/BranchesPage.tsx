@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
+import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
+import { ROLE_LABELS } from '@/shared/types/auth';
 import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
 import { Branch, Seat } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
