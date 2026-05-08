@@ -736,8 +736,29 @@ export default function BranchesPage() {
                 if (!editingSeat) return;
                 const wasOccupied = editingSeat.status === 'occupied';
                 const becomesNonOccupied = seatForm.status !== 'occupied';
+                const newLabel = seatForm.label.trim() || undefined;
+                const branchName = selectedBranch?.name || '';
+                const logChange = (field: 'label' | 'gpuModel' | 'status', from: string, to: string) => {
+                  if (from === to) return;
+                  if (!currentUser) return;
+                  useSeatActivityStore.getState().log({
+                    seatId: editingSeat.id,
+                    seatNumber: editingSeat.number,
+                    branchId: editingSeat.branchId,
+                    branchName,
+                    field,
+                    fromValue: from,
+                    toValue: to,
+                    actorId: currentUser.id,
+                    actorName: currentUser.name,
+                    actorRole: ROLE_LABELS[currentUser.role],
+                  });
+                };
+                logChange('label', editingSeat.label || '—', newLabel || '—');
+                logChange('gpuModel', editingSeat.gpuModel || '—', seatForm.gpuModel);
+                logChange('status', editingSeat.status, seatForm.status);
                 updateSeat(editingSeat.id, {
-                  label: seatForm.label.trim() || undefined,
+                  label: newLabel,
                   gpuModel: seatForm.gpuModel,
                   status: seatForm.status,
                   ...(wasOccupied && becomesNonOccupied ? { playerName: undefined, startTime: undefined, endTime: undefined } : {}),
