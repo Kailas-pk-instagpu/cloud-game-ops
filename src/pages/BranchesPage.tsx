@@ -578,8 +578,23 @@ export default function BranchesPage() {
                       className="gap-1.5"
                       onClick={() => {
                         let count = 0;
+                        const actor = currentUser;
                         branchSeats.forEach(s => {
-                          if (s.status !== 'occupied') {
+                          if (s.status !== 'occupied' && s.gpuModel !== defaultGpu) {
+                            if (actor) {
+                              useSeatActivityStore.getState().log({
+                                seatId: s.id,
+                                seatNumber: s.number,
+                                branchId: s.branchId,
+                                branchName: selectedBranch.name,
+                                field: 'gpuModel',
+                                fromValue: s.gpuModel || '—',
+                                toValue: defaultGpu,
+                                actorId: actor.id,
+                                actorName: actor.name,
+                                actorRole: ROLE_LABELS[actor.role],
+                              });
+                            }
                             updateSeat(s.id, { gpuModel: defaultGpu });
                             count++;
                           }
