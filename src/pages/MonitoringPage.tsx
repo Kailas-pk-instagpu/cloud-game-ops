@@ -1,10 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, AlertTriangle, Radar, ScrollText } from 'lucide-react';
+import { Activity, AlertTriangle, Radar, ScrollText, History } from 'lucide-react';
 import LiveSessionsMonitor from '@/features/monitoring/LiveSessionsMonitor';
 import FailedTransactionsMonitor from '@/features/monitoring/FailedTransactionsMonitor';
 import ApplicationLogsMonitor from '@/features/monitoring/ApplicationLogsMonitor';
+import SeatActivityMonitor from '@/features/monitoring/SeatActivityMonitor';
+import { useAuthStore } from '@/shared/lib/store';
 
 export default function MonitoringPage() {
+  const role = useAuthStore((s) => s.user?.role);
+  const isSuperAdmin = role === 'super_admin';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -30,6 +35,11 @@ export default function MonitoringPage() {
           <TabsTrigger value="logs" className="gap-2">
             <ScrollText className="h-4 w-4" /> Logs
           </TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="seat-activity" className="gap-2">
+              <History className="h-4 w-4" /> Seat Activity
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="sessions" className="m-0">
@@ -41,6 +51,11 @@ export default function MonitoringPage() {
         <TabsContent value="logs" className="m-0">
           <ApplicationLogsMonitor />
         </TabsContent>
+        {isSuperAdmin && (
+          <TabsContent value="seat-activity" className="m-0">
+            <SeatActivityMonitor />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
