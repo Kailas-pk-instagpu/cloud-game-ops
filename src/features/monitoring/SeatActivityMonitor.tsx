@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Armchair, Search, FilterX, History, Cpu, Tag, Activity, Download, Trash2, ArrowRight, User } from 'lucide-react';
-import { useSeatActivityStore, SeatActivityField } from '@/shared/lib/seatActivityStore';
+import { useSeatActivityStore, SeatActivityField, SeatActivityEntry } from '@/shared/lib/seatActivityStore';
+import SeatActivityDetailsDrawer from './SeatActivityDetailsDrawer';
 import { useBranchStore } from '@/shared/lib/store';
 import TablePagination from '@/shared/ui/molecules/TablePagination';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
@@ -38,6 +39,7 @@ export default function SeatActivityMonitor() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
+  const [selected, setSelected] = useState<SeatActivityEntry | null>(null);
 
   useEffect(() => {
     setLastUpdated(new Date());
@@ -181,7 +183,11 @@ export default function SeatActivityMonitor() {
                 const meta = FIELD_META[e.field];
                 const Icon = meta.icon;
                 return (
-                  <TableRow key={e.id} className="text-xs">
+                  <TableRow
+                    key={e.id}
+                    className="text-xs cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelected(e)}
+                  >
                     <TableCell className="font-mono tabular-nums text-muted-foreground">{fmtAbs(e.timestamp)}</TableCell>
                     <TableCell>
                       <span className="flex items-center gap-1.5 font-medium">
@@ -229,6 +235,7 @@ export default function SeatActivityMonitor() {
           itemLabel="entries"
         />
       </CardContent>
+      <SeatActivityDetailsDrawer entry={selected} onOpenChange={(o) => !o && setSelected(null)} />
     </Card>
   );
 }
