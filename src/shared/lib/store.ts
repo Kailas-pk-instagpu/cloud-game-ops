@@ -227,6 +227,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     { id: '2', title: 'New Branch Added', message: 'Eastside Den has been added to the network', type: 'success', timestamp: '1 hour ago', read: false },
     { id: '3', title: 'Revenue Milestone', message: 'Monthly revenue exceeded RM 130,000', type: 'info', timestamp: '3 hours ago', read: true },
     { id: '4', title: 'Node Offline', message: 'Node Delta went offline in Westside Lounge', type: 'error', timestamp: '5 hours ago', read: false },
+    { id: '5', title: 'System Maintenance Scheduled', message: 'The platform will undergo scheduled maintenance tonight between 2:00 AM and 4:00 AM UTC to apply critical security patches and upgrade the database cluster. During this window, all services may experience brief interruptions. Please save your work and log out before the maintenance window begins to avoid data loss.', type: 'info', timestamp: '10 min ago', read: false },
   ],
   markAsRead: (id) => set((s) => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
   markAllAsRead: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
