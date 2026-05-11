@@ -35,7 +35,7 @@ const typeBg = {
 export function AppNavbar() {
   const { user, theme, toggleTheme, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { notifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -107,28 +107,19 @@ export function AppNavbar() {
               </div>
               {notifications.length > 0 && (
                 <div className="flex items-center gap-2 pt-1">
-                  <TooltipProvider>
-                    {unreadCount > 0 && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={markAllAsRead}>
-                            <CheckCheck className="h-3.5 w-3.5" />
-                            Mark all read
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Mark all notifications as read</TooltipContent>
-                      </Tooltip>
-                    )}
+                <TooltipProvider>
+                  {unreadCount > 0 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-destructive hover:text-destructive" onClick={deleteAllNotifications}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Clear all
+                        <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={markAllAsRead}>
+                          <CheckCheck className="h-3.5 w-3.5" />
+                          Mark all read
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Delete all notifications</TooltipContent>
+                      <TooltipContent>Mark all notifications as read</TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
+                  )}
+                </TooltipProvider>
                 </div>
               )}
             </SheetHeader>
@@ -165,10 +156,6 @@ export function AppNavbar() {
                               Mark read
                             </Button>
                           )}
-                          <Button variant="ghost" size="sm" className="h-6 text-[11px] px-2 gap-1 text-destructive hover:text-destructive" onClick={() => deleteNotification(n.id)}>
-                            <X className="h-3 w-3" />
-                            Delete
-                          </Button>
                         </div>
                       </div>
                     </div>
