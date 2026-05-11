@@ -604,6 +604,16 @@ export default function BranchesPage() {
                     >
                       <Cpu className="h-3.5 w-3.5" /> Apply to all
                     </Button>
+                    <Button
+                      size="sm"
+                      className="gap-1.5 gradient-primary text-primary-foreground"
+                      onClick={() => {
+                        toast.success('Seat configuration saved');
+                        setShowSeatGrid(false);
+                      }}
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Save Changes
+                    </Button>
                   </div>
                 )}
 
