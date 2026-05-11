@@ -235,6 +235,7 @@ export default function SeatActivityMonitor() {
           itemLabel="entries"
         />
       </CardContent>
+      <SeatActivityDetailsDrawer entry={selected} onOpenChange={(o) => !o && setSelected(null)} />
     </Card>
   );
 }
