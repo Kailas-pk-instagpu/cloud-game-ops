@@ -39,6 +39,7 @@ export default function SeatActivityMonitor() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
+  const [selected, setSelected] = useState<SeatActivityEntry | null>(null);
 
   useEffect(() => {
     setLastUpdated(new Date());
