@@ -472,9 +472,103 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+
+            {/* ===== ACCOUNT TAB (Cafe Owner only) ===== */}
+            {activeTab === 'account' && user.role === 'cafe_owner' && (() => {
+              const pending = hasPendingForUser(user.id);
+              return (
+                <div className="space-y-6 max-w-2xl">
+                  <div>
+                    <h2 className="text-lg font-semibold">Account</h2>
+                    <p className="text-sm text-muted-foreground mt-1">Manage account-level actions for your profile</p>
+                  </div>
+                  <Separator />
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5 space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-destructive/10 text-destructive shrink-0">
+                        <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-destructive">Danger Zone</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Submit a request to permanently delete your account. The Super Admin must approve before your account is removed. This action cannot be undone once approved.
+                        </p>
+                      </div>
+                    </div>
+                    {pending ? (
+                      <div className="flex items-center gap-2 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Your deletion request is pending review by Super Admin.
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                        onClick={() => { setDeleteReason(''); setShowDeleteSelf(true); }}
+                      >
+                        <UserMinus className="h-4 w-4 mr-2" /> Request Account Deletion
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </Card>
+
+      {/* Self-deletion request dialog (Cafe Owner) */}
+      <AlertDialog open={showDeleteSelf} onOpenChange={(o) => { if (!o) setDeleteReason(''); setShowDeleteSelf(o); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Request Account Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              You're requesting deletion of your own account. The Super Admin will review and approve before it is permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs">Reason</Label>
+            <Textarea
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+              placeholder="Tell the Super Admin why you want to delete your account..."
+              rows={4}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!deleteReason.trim()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!user) return;
+                if (hasPendingForUser(user.id)) {
+                  toast.error('You already have a pending deletion request');
+                  setShowDeleteSelf(false);
+                  return;
+                }
+                createRequest({
+                  targetUserId: user.id,
+                  targetName: user.name,
+                  targetEmail: user.email,
+                  targetRole: user.role,
+                  isSelf: true,
+                  requestedById: user.id,
+                  requestedByName: user.name,
+                  requestedByRole: user.role,
+                  reason: deleteReason.trim(),
+                });
+                toast.success('Your deletion request has been sent to Super Admin');
+                setShowDeleteSelf(false);
+                setDeleteReason('');
+              }}
+            >
+              Submit Request
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
