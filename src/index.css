@@ -300,3 +300,12 @@
 @media (prefers-reduced-motion: reduce) {
   .aurora-blob, .login-arc, .animate-login-up, .animate-login-in { animation: none !important; }
 }
+
+/* Bolder form control outlines in light mode for better visibility */
+:root:not(.dark) input,
+:root:not(.dark) textarea,
+:root:not(.dark) select,
+:root:not(.dark) [role="combobox"],
+:root:not(.dark) .border-input {
+  border-width: 1.5px;
+}
