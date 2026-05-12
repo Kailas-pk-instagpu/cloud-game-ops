@@ -416,7 +416,7 @@ export default function UsersPage() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                        <Trash2 className="h-4 w-4" /> Delete User
+                        <Trash2 className="h-4 w-4" /> {isCafeOwner ? 'Request Deletion' : 'Delete User'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
