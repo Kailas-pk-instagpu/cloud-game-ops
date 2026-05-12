@@ -309,3 +309,15 @@
 :root:not(.dark) .border-input {
   border-width: 1.5px;
 }
+
+/* Bolder outline buttons in light mode + stronger hover state */
+:root:not(.dark) button.border,
+:root:not(.dark) button.border-input,
+:root:not(.dark) a.border-input {
+  border-width: 1.5px;
+}
+:root:not(.dark) button.border-input:hover,
+:root:not(.dark) a.border-input:hover {
+  border-color: hsl(220 14% 50%);
+  background-color: hsl(220 14% 92%);
+}
