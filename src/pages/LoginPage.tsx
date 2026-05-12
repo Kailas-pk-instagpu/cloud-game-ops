@@ -40,11 +40,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-[#05080d]">
       <GPUBackground />
-      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] pointer-events-none" />
+      <div className="absolute inset-0 z-10 bg-background/30 pointer-events-none" />
 
-      <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/60 shadow-2xl shadow-primary/10">
+      <Card className="w-full max-w-md relative z-20 bg-card/80 backdrop-blur-xl border-border/60 shadow-2xl shadow-primary/10">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
             <Gamepad2 className="h-7 w-7 text-primary-foreground" />
