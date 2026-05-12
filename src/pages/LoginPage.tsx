@@ -4,7 +4,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Gamepad2, Eye, EyeOff, AlertCircle, Apple, Loader2 } from 'lucide-react';
+import { Gamepad2, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import GPUBackground from '@/features/login/GPUBackground';
 
 export default function LoginPage() {
@@ -138,33 +138,6 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            <div className="flex items-center gap-3 py-1 animate-login-in" style={{ animationDelay: '620ms' }}>
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">or continue with</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 animate-login-up" style={{ animationDelay: '700ms' }}>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 bg-background/40 border-white/10 hover:bg-background/60 hover:border-white/20 transition-all"
-                onClick={() => setError('Social sign-in is not configured yet.')}
-              >
-                <GoogleIcon />
-                Google
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 bg-background/40 border-white/10 hover:bg-background/60 hover:border-white/20 transition-all"
-                onClick={() => setError('Social sign-in is not configured yet.')}
-              >
-                <Apple className="h-4 w-4" />
-                Apple
-              </Button>
-            </div>
-
             <div
               className="mt-5 p-3 rounded-lg bg-background/40 border border-white/10 text-xs text-muted-foreground space-y-0.5 animate-login-in"
               style={{ animationDelay: '780ms' }}
@@ -181,10 +154,3 @@ export default function LoginPage() {
   );
 }
 
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.1 14.7 2 12 2 6.9 2 2.8 6.1 2.8 11.2S6.9 20.4 12 20.4c6.9 0 9.5-4.8 9.5-7.3 0-.5-.1-.9-.1-1.3H12z"/>
-    </svg>
-  );
-}
