@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gamepad2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import GPUBackground from '@/features/login/GPUBackground';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -39,13 +40,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden">
+      <GPUBackground />
+      <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] pointer-events-none" />
 
-      <Card className="w-full max-w-md relative">
+      <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/60 shadow-2xl shadow-primary/10">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
             <Gamepad2 className="h-7 w-7 text-primary-foreground" />
