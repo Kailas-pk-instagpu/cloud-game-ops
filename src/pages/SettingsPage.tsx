@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuthStore } from '@/shared/lib/store';
+import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
 import { ROLE_LABELS, TwoFAMethod } from '@/shared/types/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2, PlugZap } from 'lucide-react';
+import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2, PlugZap, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
