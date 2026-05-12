@@ -113,7 +113,35 @@ export default function UsersPage() {
 
   const openDelete = (u: ManagedUser) => {
     setSelectedUser(u);
-    setShowDelete(true);
+    if (currentUser.role === 'cafe_owner') {
+      setRequestReason('');
+      setShowRequestDelete(true);
+    } else {
+      setShowDelete(true);
+    }
+  };
+
+  const submitDeletionRequest = () => {
+    if (!selectedUser) return;
+    if (hasPendingForUser(selectedUser.id)) {
+      toast.error('A deletion request is already pending for this user');
+      return;
+    }
+    createRequest({
+      targetUserId: selectedUser.id,
+      targetName: selectedUser.name,
+      targetEmail: selectedUser.email,
+      targetRole: selectedUser.role,
+      isSelf: false,
+      requestedById: currentUser.id,
+      requestedByName: currentUser.name,
+      requestedByRole: currentUser.role,
+      reason: requestReason.trim(),
+    });
+    toast.success(`Deletion request sent to Super Admin for "${selectedUser.name}"`);
+    setShowRequestDelete(false);
+    setSelectedUser(null);
+    setRequestReason('');
   };
 
   const handleCreate = () => {
