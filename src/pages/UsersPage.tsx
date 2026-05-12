@@ -572,6 +572,43 @@ export default function UsersPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Request Deletion Dialog (Cafe Owner) */}
+      <Dialog open={showRequestDelete} onOpenChange={v => { if (!v) { setSelectedUser(null); setRequestReason(''); } setShowRequestDelete(v); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Account Deletion</DialogTitle>
+            <DialogDescription>
+              Submit a deletion request for <strong>{selectedUser?.name}</strong> ({selectedUser ? ROLE_LABELS[selectedUser.role] : ''}).
+              The Super Admin will review and approve before the account is permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label>Reason for deletion</Label>
+              <textarea
+                className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                placeholder="Explain why this account should be deleted..."
+                value={requestReason}
+                onChange={e => setRequestReason(e.target.value)}
+              />
+            </div>
+            {selectedUser && hasPendingForUser(selectedUser.id) && (
+              <p className="text-xs text-warning">A deletion request for this user is already pending review.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowRequestDelete(false); setSelectedUser(null); setRequestReason(''); }}>Cancel</Button>
+            <Button
+              onClick={submitDeletionRequest}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!requestReason.trim() || (selectedUser ? hasPendingForUser(selectedUser.id) : false)}
+            >
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* User Detail Dialog */}
       <Dialog open={showDetail} onOpenChange={v => { if (!v) { setDetailUser(null); setDetailHistory([]); } setShowDetail(v); }}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
