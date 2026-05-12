@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAuthStore } from '@/shared/lib/store';
+import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
 import { canCreateRole, canManageUser } from '@/shared/lib/rbac';
@@ -39,9 +39,12 @@ interface ManagedUser extends User {
 
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
+  const { deletedUserIds, hasPendingForUser, createRequest } = useDeletionRequestStore();
   const [users, setUsers] = useState<ManagedUser[]>(
     MOCK_USERS.map(u => ({ ...u, status: 'active' as UserStatus }))
   );
+  const [showRequestDelete, setShowRequestDelete] = useState(false);
+  const [requestReason, setRequestReason] = useState('');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
@@ -65,10 +68,13 @@ export default function UsersPage() {
   const isSuperAdmin = currentUser.role === 'super_admin';
   const childRole = canCreateRole(currentUser.role);
 
-  // Super Admin sees all; others see manageable users
+  const isCafeOwner = currentUser.role === 'cafe_owner';
+
+  // Super Admin sees all; others see manageable users. Hide users already deleted via approved requests.
   const visibleUsers = users
     .filter(u => {
       if (u.id === currentUser.id) return false; // don't show self
+      if (deletedUserIds.includes(u.id)) return false;
       if (isSuperAdmin) return true;
       return canManageUser(currentUser.role, u.role);
     })
@@ -107,7 +113,35 @@ export default function UsersPage() {
 
   const openDelete = (u: ManagedUser) => {
     setSelectedUser(u);
-    setShowDelete(true);
+    if (currentUser.role === 'cafe_owner') {
+      setRequestReason('');
+      setShowRequestDelete(true);
+    } else {
+      setShowDelete(true);
+    }
+  };
+
+  const submitDeletionRequest = () => {
+    if (!selectedUser) return;
+    if (hasPendingForUser(selectedUser.id)) {
+      toast.error('A deletion request is already pending for this user');
+      return;
+    }
+    createRequest({
+      targetUserId: selectedUser.id,
+      targetName: selectedUser.name,
+      targetEmail: selectedUser.email,
+      targetRole: selectedUser.role,
+      isSelf: false,
+      requestedById: currentUser.id,
+      requestedByName: currentUser.name,
+      requestedByRole: currentUser.role,
+      reason: requestReason.trim(),
+    });
+    toast.success(`Deletion request sent to Super Admin for "${selectedUser.name}"`);
+    setShowRequestDelete(false);
+    setSelectedUser(null);
+    setRequestReason('');
   };
 
   const handleCreate = () => {
@@ -382,7 +416,7 @@ export default function UsersPage() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                        <Trash2 className="h-4 w-4" /> Delete User
+                        <Trash2 className="h-4 w-4" /> {isCafeOwner ? 'Request Deletion' : 'Delete User'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -537,6 +571,43 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Request Deletion Dialog (Cafe Owner) */}
+      <Dialog open={showRequestDelete} onOpenChange={v => { if (!v) { setSelectedUser(null); setRequestReason(''); } setShowRequestDelete(v); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Account Deletion</DialogTitle>
+            <DialogDescription>
+              Submit a deletion request for <strong>{selectedUser?.name}</strong> ({selectedUser ? ROLE_LABELS[selectedUser.role] : ''}).
+              The Super Admin will review and approve before the account is permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label>Reason for deletion</Label>
+              <textarea
+                className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                placeholder="Explain why this account should be deleted..."
+                value={requestReason}
+                onChange={e => setRequestReason(e.target.value)}
+              />
+            </div>
+            {selectedUser && hasPendingForUser(selectedUser.id) && (
+              <p className="text-xs text-warning">A deletion request for this user is already pending review.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowRequestDelete(false); setSelectedUser(null); setRequestReason(''); }}>Cancel</Button>
+            <Button
+              onClick={submitDeletionRequest}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!requestReason.trim() || (selectedUser ? hasPendingForUser(selectedUser.id) : false)}
+            >
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* User Detail Dialog */}
       <Dialog open={showDetail} onOpenChange={v => { if (!v) { setDetailUser(null); setDetailHistory([]); } setShowDetail(v); }}>

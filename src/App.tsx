@@ -20,6 +20,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BillingSessionPage from "./pages/BillingSessionPage";
 import SettlementsPage from "./pages/SettlementsPage";
 import MonitoringPage from "./pages/MonitoringPage";
+import DeletionRequestsPage from "./pages/DeletionRequestsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/billing/session" element={<BillingSessionPage />} />
             <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
             <Route path="/monitoring" element={<RoleGuard roles={['super_admin']}><MonitoringPage /></RoleGuard>} />
+            <Route path="/deletion-requests" element={<RoleGuard roles={['super_admin']}><DeletionRequestsPage /></RoleGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
