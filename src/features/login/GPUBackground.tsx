@@ -109,7 +109,7 @@ function Blob() {
 
 export default function GPUBackground() {
   return (
-    <div className="absolute inset-0 -z-10 pointer-events-none">
+    <div className="absolute inset-0 z-0 pointer-events-none">
       <Canvas camera={{ position: [0, 0, 7], fov: 55 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
         <color attach="background" args={['#05080d']} />
         <fog attach="fog" args={['#05080d', 8, 18]} />
