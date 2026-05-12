@@ -20,6 +20,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BillingSessionPage from "./pages/BillingSessionPage";
 import SettlementsPage from "./pages/SettlementsPage";
 import MonitoringPage from "./pages/MonitoringPage";
+import DeletionRequestsPage from "./pages/DeletionRequestsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
