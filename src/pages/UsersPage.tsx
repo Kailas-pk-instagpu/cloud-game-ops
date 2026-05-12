@@ -68,10 +68,13 @@ export default function UsersPage() {
   const isSuperAdmin = currentUser.role === 'super_admin';
   const childRole = canCreateRole(currentUser.role);
 
-  // Super Admin sees all; others see manageable users
+  const isCafeOwner = currentUser.role === 'cafe_owner';
+
+  // Super Admin sees all; others see manageable users. Hide users already deleted via approved requests.
   const visibleUsers = users
     .filter(u => {
       if (u.id === currentUser.id) return false; // don't show self
+      if (deletedUserIds.includes(u.id)) return false;
       if (isSuperAdmin) return true;
       return canManageUser(currentUser.role, u.role);
     })
