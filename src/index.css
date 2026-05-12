@@ -183,14 +183,34 @@
   animation: aurora-drift-c 26s ease-in-out infinite;
 }
 
-/* Large glowing arc background (login) */
+/* ===== Login background — themed for light & dark ===== */
+/* Default (light mode): soft, airy lavender/indigo wash */
+.login-bg-wash {
+  background:
+    linear-gradient(135deg, hsl(220 40% 98%) 0%, hsl(230 45% 96%) 45%, hsl(255 50% 95%) 100%);
+}
+.login-bg-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, hsl(225 30% 88% / 0.55) 100%);
+}
+
+/* Dark mode: deep cosmic canvas */
+.dark .login-bg-wash {
+  background:
+    linear-gradient(135deg, hsl(222 47% 3%) 0%, hsl(232 47% 5%) 45%, hsl(262 50% 4%) 100%);
+}
+.dark .login-bg-vignette {
+  background: radial-gradient(ellipse at center, transparent 30%, hsl(222 47% 2% / 0.9) 100%);
+}
+
+/* Glowing arcs — shared geometry */
 .login-arc {
   position: absolute;
   border-radius: 9999px;
   pointer-events: none;
   will-change: transform, opacity;
-  mix-blend-mode: screen;
 }
+
+/* --- LIGHT MODE arcs: softer tint, multiply blend --- */
 .login-arc-primary {
   width: 75vmax;
   height: 75vmax;
@@ -199,12 +219,14 @@
   transform: translateY(-50%);
   background: radial-gradient(
     circle at 70% 50%,
-    hsl(var(--gradient-end) / 0.55) 0%,
-    hsl(var(--gradient-start) / 0.45) 18%,
-    hsl(var(--gradient-start) / 0.15) 35%,
+    hsl(var(--gradient-end) / 0.28) 0%,
+    hsl(var(--gradient-start) / 0.22) 18%,
+    hsl(var(--gradient-start) / 0.08) 35%,
     transparent 55%
   );
-  filter: blur(60px);
+  filter: blur(70px);
+  mix-blend-mode: multiply;
+  opacity: 0.85;
   animation: aurora-drift-a 24s ease-in-out infinite;
 }
 .login-arc-inner {
@@ -215,12 +237,13 @@
   transform: translateY(-50%);
   background: radial-gradient(
     circle at 70% 50%,
-    hsl(var(--primary) / 0.55) 0%,
-    hsl(var(--gradient-end) / 0.25) 30%,
+    hsl(var(--primary) / 0.30) 0%,
+    hsl(var(--gradient-end) / 0.15) 30%,
     transparent 65%
   );
-  filter: blur(40px);
-  opacity: 0.85;
+  filter: blur(50px);
+  mix-blend-mode: multiply;
+  opacity: 0.7;
   animation: aurora-drift-b 20s ease-in-out infinite;
 }
 .login-arc-accent {
@@ -230,12 +253,48 @@
   right: -20vmax;
   background: radial-gradient(
     circle at 30% 30%,
+    hsl(var(--gradient-end) / 0.22),
+    transparent 60%
+  );
+  filter: blur(80px);
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+  animation: aurora-drift-c 28s ease-in-out infinite;
+}
+
+/* --- DARK MODE arcs: brighter, screen blend for true glow --- */
+.dark .login-arc-primary {
+  background: radial-gradient(
+    circle at 70% 50%,
+    hsl(var(--gradient-end) / 0.55) 0%,
+    hsl(var(--gradient-start) / 0.45) 18%,
+    hsl(var(--gradient-start) / 0.15) 35%,
+    transparent 55%
+  );
+  filter: blur(60px);
+  mix-blend-mode: screen;
+  opacity: 1;
+}
+.dark .login-arc-inner {
+  background: radial-gradient(
+    circle at 70% 50%,
+    hsl(var(--primary) / 0.55) 0%,
+    hsl(var(--gradient-end) / 0.25) 30%,
+    transparent 65%
+  );
+  filter: blur(40px);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+.dark .login-arc-accent {
+  background: radial-gradient(
+    circle at 30% 30%,
     hsl(var(--gradient-end) / 0.35),
     transparent 60%
   );
   filter: blur(70px);
+  mix-blend-mode: screen;
   opacity: 0.6;
-  animation: aurora-drift-c 28s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
