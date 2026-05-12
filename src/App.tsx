@@ -50,6 +50,7 @@ const App = () => (
             <Route path="/billing/session" element={<BillingSessionPage />} />
             <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
             <Route path="/monitoring" element={<RoleGuard roles={['super_admin']}><MonitoringPage /></RoleGuard>} />
+            <Route path="/deletion-requests" element={<RoleGuard roles={['super_admin']}><DeletionRequestsPage /></RoleGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
