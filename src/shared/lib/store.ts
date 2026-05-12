@@ -304,3 +304,70 @@ export const useSettlementStore = create<SettlementState>()(
     { name: 'gpu-cloud-settlements' }
   )
 );
+
+// Account Deletion Request store
+import { Role } from '../types/auth';
+
+export interface DeletionRequest {
+  id: string;
+  targetUserId: string;
+  targetName: string;
+  targetEmail: string;
+  targetRole: Role;
+  isSelf: boolean;
+  requestedById: string;
+  requestedByName: string;
+  requestedByRole: Role;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  resolvedAt?: string;
+  resolutionNote?: string;
+}
+
+interface DeletionRequestState {
+  requests: DeletionRequest[];
+  deletedUserIds: string[];
+  createRequest: (r: Omit<DeletionRequest, 'id' | 'status' | 'createdAt'>) => DeletionRequest;
+  approveRequest: (id: string, note?: string) => void;
+  rejectRequest: (id: string, note?: string) => void;
+  hasPendingForUser: (userId: string) => boolean;
+}
+
+export const useDeletionRequestStore = create<DeletionRequestState>()(
+  persist(
+    (set, get) => ({
+      requests: [],
+      deletedUserIds: [],
+      createRequest: (r) => {
+        const req: DeletionRequest = {
+          ...r,
+          id: `del-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+        };
+        set((s) => ({ requests: [req, ...s.requests] }));
+        return req;
+      },
+      approveRequest: (id, note) => set((s) => {
+        const req = s.requests.find(r => r.id === id);
+        if (!req) return s;
+        return {
+          requests: s.requests.map(r => r.id === id
+            ? { ...r, status: 'approved' as const, resolvedAt: new Date().toISOString(), resolutionNote: note }
+            : r),
+          deletedUserIds: s.deletedUserIds.includes(req.targetUserId)
+            ? s.deletedUserIds
+            : [...s.deletedUserIds, req.targetUserId],
+        };
+      }),
+      rejectRequest: (id, note) => set((s) => ({
+        requests: s.requests.map(r => r.id === id
+          ? { ...r, status: 'rejected' as const, resolvedAt: new Date().toISOString(), resolutionNote: note }
+          : r),
+      })),
+      hasPendingForUser: (userId) => get().requests.some(r => r.targetUserId === userId && r.status === 'pending'),
+    }),
+    { name: 'gpu-cloud-deletion-requests' }
+  )
+);
