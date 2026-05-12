@@ -183,6 +183,61 @@
   animation: aurora-drift-c 26s ease-in-out infinite;
 }
 
+/* Large glowing arc background (login) */
+.login-arc {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  will-change: transform, opacity;
+  mix-blend-mode: screen;
+}
+.login-arc-primary {
+  width: 75vmax;
+  height: 75vmax;
+  top: 50%;
+  left: -30vmax;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    circle at 70% 50%,
+    hsl(var(--gradient-end) / 0.55) 0%,
+    hsl(var(--gradient-start) / 0.45) 18%,
+    hsl(var(--gradient-start) / 0.15) 35%,
+    transparent 55%
+  );
+  filter: blur(60px);
+  animation: aurora-drift-a 24s ease-in-out infinite;
+}
+.login-arc-inner {
+  width: 40vmax;
+  height: 40vmax;
+  top: 50%;
+  left: -10vmax;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    circle at 70% 50%,
+    hsl(var(--primary) / 0.55) 0%,
+    hsl(var(--gradient-end) / 0.25) 30%,
+    transparent 65%
+  );
+  filter: blur(40px);
+  opacity: 0.85;
+  animation: aurora-drift-b 20s ease-in-out infinite;
+}
+.login-arc-accent {
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -25vmax;
+  right: -20vmax;
+  background: radial-gradient(
+    circle at 30% 30%,
+    hsl(var(--gradient-end) / 0.35),
+    transparent 60%
+  );
+  filter: blur(70px);
+  opacity: 0.6;
+  animation: aurora-drift-c 28s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .aurora-blob, .animate-login-up, .animate-login-in { animation: none !important; }
+  .aurora-blob, .login-arc, .animate-login-up, .animate-login-in { animation: none !important; }
 }
