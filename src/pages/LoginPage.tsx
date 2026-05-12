@@ -4,8 +4,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gamepad2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Gamepad2, Eye, EyeOff, AlertCircle, Apple, Loader2 } from 'lucide-react';
 import GPUBackground from '@/features/login/GPUBackground';
 
 export default function LoginPage() {
@@ -25,46 +24,62 @@ export default function LoginPage() {
     setTimeout(() => {
       const result = login(email, password);
       setLoading(false);
-
       if (!result.success) {
         setError(result.error || 'Login failed');
         return;
       }
-
-      if (result.requires2FA) {
-        navigate('/verify-2fa');
-      } else {
-        navigate('/dashboard');
-      }
+      if (result.requires2FA) navigate('/verify-2fa');
+      else navigate('/dashboard');
     }, 800);
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-[#05080d]">
+    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
       <GPUBackground />
-      <div className="absolute inset-0 z-10 bg-background/30 pointer-events-none" />
 
-      <Card className="w-full max-w-md relative z-20 bg-card/80 backdrop-blur-xl border-border/60 shadow-2xl shadow-primary/10">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
-            <Gamepad2 className="h-7 w-7 text-primary-foreground" />
+      <div
+        className="relative z-20 w-full max-w-md animate-login-up"
+        style={{ animationDelay: '120ms' }}
+      >
+        {/* Glow ring behind card */}
+        <div
+          aria-hidden
+          className="absolute -inset-px rounded-2xl bg-gradient-to-br from-primary/40 via-transparent to-[hsl(var(--gradient-end))]/40 blur-md opacity-60"
+        />
+
+        <div className="relative rounded-2xl border border-white/10 bg-[hsl(var(--card)/0.55)] backdrop-blur-2xl shadow-[0_30px_80px_-20px_hsl(var(--primary)/0.35)] p-8 sm:p-10">
+          {/* Brand */}
+          <div className="flex items-center gap-3 mb-8 animate-login-up" style={{ animationDelay: '220ms' }}>
+            <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/40">
+              <Gamepad2 className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-foreground">GPU Cloud</p>
+              <p className="text-xs text-muted-foreground">Beyond Hardware</p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-            <CardDescription className="mt-1">Sign in to GPU Cloud Gaming Platform</CardDescription>
+
+          <div className="mb-7 animate-login-up" style={{ animationDelay: '300ms' }}>
+            <h1 className="text-3xl sm:text-[2rem] font-bold tracking-tight text-foreground">
+              Welcome back
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Sign in to continue to your gaming command center.
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm animate-login-in">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2 animate-login-up" style={{ animationDelay: '380ms' }}>
+              <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground">
+                Email address
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -72,13 +87,16 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-11 bg-background/40 border-white/10 focus-visible:ring-primary/60 transition-all"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 animate-login-up" style={{ animationDelay: '460ms' }}>
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                <Label htmlFor="password" className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Password
+                </Label>
+                <Link to="/forgot-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -86,36 +104,87 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder="••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="h-11 pr-10 bg-background/40 border-white/10 focus-visible:ring-primary/60 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            <div className="animate-login-up" style={{ animationDelay: '540ms' }}>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 gradient-primary text-primary-foreground text-sm font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in…
+                  </>
+                ) : (
+                  'Log in'
+                )}
+              </Button>
+            </div>
 
-            <div className="mt-6 p-3 rounded-lg bg-muted text-xs text-muted-foreground space-y-1">
-              <p className="font-medium text-foreground text-sm mb-2">Demo Accounts</p>
-              <p><span className="font-mono">superadmin@gpucloud.io</span></p>
-              <p><span className="font-mono">admin@gpucloud.io</span></p>
-              <p><span className="font-mono">owner@gpucloud.io</span></p>
-              <p><span className="font-mono">manager@gpucloud.io</span></p>
+            <div className="flex items-center gap-3 py-1 animate-login-in" style={{ animationDelay: '620ms' }}>
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">or continue with</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 animate-login-up" style={{ animationDelay: '700ms' }}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 bg-background/40 border-white/10 hover:bg-background/60 hover:border-white/20 transition-all"
+                onClick={() => setError('Social sign-in is not configured yet.')}
+              >
+                <GoogleIcon />
+                Google
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 bg-background/40 border-white/10 hover:bg-background/60 hover:border-white/20 transition-all"
+                onClick={() => setError('Social sign-in is not configured yet.')}
+              >
+                <Apple className="h-4 w-4" />
+                Apple
+              </Button>
+            </div>
+
+            <div
+              className="mt-5 p-3 rounded-lg bg-background/40 border border-white/10 text-xs text-muted-foreground space-y-0.5 animate-login-in"
+              style={{ animationDelay: '780ms' }}
+            >
+              <p className="font-medium text-foreground text-xs mb-1.5">Demo accounts</p>
+              <p className="font-mono text-[11px]">superadmin@gpucloud.io</p>
+              <p className="font-mono text-[11px]">admin@gpucloud.io · owner@gpucloud.io · manager@gpucloud.io</p>
               <p className="mt-1">Password: <span className="font-mono">admin123</span></p>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.1 14.7 2 12 2 6.9 2 2.8 6.1 2.8 11.2S6.9 20.4 12 20.4c6.9 0 9.5-4.8 9.5-7.3 0-.5-.1-.9-.1-1.3H12z"/>
+    </svg>
   );
 }
