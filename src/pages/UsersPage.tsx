@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAuthStore } from '@/shared/lib/store';
+import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
 import { canCreateRole, canManageUser } from '@/shared/lib/rbac';
