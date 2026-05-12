@@ -193,12 +193,16 @@ const baseTabs = [
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'integrations', label: 'Integrations', icon: PlugZap, roles: ['super_admin'] as string[] },
   { id: 'general', label: 'General', icon: Settings2 },
+  { id: 'account', label: 'Account', icon: UserMinus, roles: ['cafe_owner'] as string[] },
 ] as const;
 
 type TabId = typeof baseTabs[number]['id'];
 
 export default function SettingsPage() {
   const { user, theme, toggleTheme, updateProfile, changePassword } = useAuthStore();
+  const { createRequest, hasPendingForUser } = useDeletionRequestStore();
+  const [showDeleteSelf, setShowDeleteSelf] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
