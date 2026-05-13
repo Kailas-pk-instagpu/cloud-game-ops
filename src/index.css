@@ -91,6 +91,18 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
+  /* Smooth transitions for all interactive elements */
+  a, button, input, textarea, select, [role="button"], [role="combobox"] {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Focus rings animate smoothly */
+  *:focus-visible {
+    transition: box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1), outline-offset 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
@@ -103,7 +115,7 @@
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.2);
     border-radius: 4px;
-    transition: background 0.3s ease;
+    transition: background 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.4);
