@@ -19,6 +19,7 @@ import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCh
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
+import ShiftManagementDialog from '@/features/branches/ShiftManagementDialog';
 
 interface BranchForm {
   name: string;
@@ -51,6 +52,7 @@ export default function BranchesPage() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSeatGrid, setShowSeatGrid] = useState(false);
+  const [showShiftDialog, setShowShiftDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
@@ -433,6 +435,11 @@ export default function BranchesPage() {
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
                   <LayoutGrid className="h-3.5 w-3.5" /> Seats
                 </Button>
+                {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
+                    <Clock className="h-3.5 w-3.5" /> Shifts
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
@@ -797,6 +804,12 @@ export default function BranchesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ShiftManagementDialog
+        open={showShiftDialog}
+        onOpenChange={setShowShiftDialog}
+        branch={selectedBranch}
+      />
     </div>
   );
 }
