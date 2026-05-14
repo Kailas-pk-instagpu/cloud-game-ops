@@ -52,6 +52,7 @@ export default function BranchesPage() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSeatGrid, setShowSeatGrid] = useState(false);
+  const [showShiftDialog, setShowShiftDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
