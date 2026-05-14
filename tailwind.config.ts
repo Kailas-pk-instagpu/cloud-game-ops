@@ -131,4 +131,7 @@ export default {
         "slide-in-up": "slide-in-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards",
         marquee: "marquee 8s linear infinite",
       },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;
