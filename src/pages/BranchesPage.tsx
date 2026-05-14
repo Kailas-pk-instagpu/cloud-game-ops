@@ -435,6 +435,11 @@ export default function BranchesPage() {
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
                   <LayoutGrid className="h-3.5 w-3.5" /> Seats
                 </Button>
+                {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
+                    <Clock className="h-3.5 w-3.5" /> Shifts
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
