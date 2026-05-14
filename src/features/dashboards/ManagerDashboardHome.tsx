@@ -1,9 +1,33 @@
-import { MOCK_SEATS, MOCK_BRANCHES, REVENUE_DATA } from '@/shared/lib/mock-data';
+import { MOCK_SEATS, MOCK_BRANCHES, MOCK_USERS, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer } from 'lucide-react';
+import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer, Calendar, Coffee, UserCircle2 } from 'lucide-react';
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { useShiftStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
+
+function formatTime12(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hh = h % 12 || 12;
+  return `${hh}:${m.toString().padStart(2, '0')} ${period}`;
+}
+
+function getTodayWeekday(): Weekday {
+  const map: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  return map[new Date().getDay()];
+}
+
+function isShiftCurrent(start: string, end: string, now: Date) {
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  const s = sh * 60 + sm;
+  const e = eh * 60 + em;
+  return s <= e ? mins >= s && mins <= e : mins >= s || mins <= e;
+}
 
 const HOURLY_SESSIONS = [
   { hour: '9AM', sessions: 4 }, { hour: '10AM', sessions: 8 }, { hour: '11AM', sessions: 12 },
