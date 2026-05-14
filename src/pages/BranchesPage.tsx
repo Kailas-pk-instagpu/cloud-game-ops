@@ -804,6 +804,12 @@ export default function BranchesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ShiftManagementDialog
+        open={showShiftDialog}
+        onOpenChange={setShowShiftDialog}
+        branch={selectedBranch}
+      />
     </div>
   );
 }
