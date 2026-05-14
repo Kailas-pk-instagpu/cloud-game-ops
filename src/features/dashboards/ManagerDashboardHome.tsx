@@ -53,6 +53,15 @@ export default function ManagerDashboardHome() {
   const totalSessions = REVENUE_DATA.reduce((a, b) => a + b.sessions, 0);
   const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
 
+  const branchShifts = useShiftStore(s => s.shifts).filter(s => s.branchId === 'branch-1' && s.active);
+  const today = getTodayWeekday();
+  const now = new Date();
+  const todayShifts = branchShifts.filter(s => s.weekdays.includes(today));
+  const currentShift = todayShifts.find(s => isShiftCurrent(s.startTime, s.endTime, now)) || todayShifts[0];
+  const shiftLabel = currentShift
+    ? `${currentShift.name}: ${formatTime12(currentShift.startTime)} - ${formatTime12(currentShift.endTime)}`
+    : 'Shift: 9:00 AM - 9:00 PM';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -60,10 +69,106 @@ export default function ManagerDashboardHome() {
           <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
           <p className="text-muted-foreground text-sm mt-1">Overview of {branch?.name || 'your branch'}</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Shift: 9:00 AM - 9:00 PM</span>
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>{shiftLabel}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-80 p-0">
+            {currentShift ? (
+              <div className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">{currentShift.name}</p>
+                    <p className="text-xs text-muted-foreground">{branch?.name}</p>
+                  </div>
+                  <Badge variant={isShiftCurrent(currentShift.startTime, currentShift.endTime, now) ? 'default' : 'secondary'}>
+                    {isShiftCurrent(currentShift.startTime, currentShift.endTime, now) ? 'Active now' : 'Scheduled'}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{formatTime12(currentShift.startTime)} – {formatTime12(currentShift.endTime)}</span>
+                </div>
+
+                {currentShift.breakStart && currentShift.breakEnd && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Coffee className="h-4 w-4 text-muted-foreground" />
+                    <span>Break: {formatTime12(currentShift.breakStart)} – {formatTime12(currentShift.breakEnd)}</span>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex flex-wrap gap-1">
+                    {WEEKDAYS.map(d => (
+                      <span
+                        key={d.id}
+                        className={cn(
+                          'text-[10px] px-1.5 py-0.5 rounded border',
+                          currentShift.weekdays.includes(d.id)
+                            ? 'bg-primary/10 text-primary border-primary/30'
+                            : 'text-muted-foreground border-border'
+                        )}
+                      >
+                        {d.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-sm">
+                  <UserCircle2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Assigned managers</p>
+                    {currentShift.managerIds.length ? (
+                      <div className="flex flex-wrap gap-1">
+                        {currentShift.managerIds.map(id => {
+                          const u = MOCK_USERS.find(u => u.id === id);
+                          return (
+                            <span key={id} className="text-xs px-2 py-0.5 rounded-full bg-muted">
+                              {u?.name || 'Unknown'}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs">No managers assigned</p>
+                    )}
+                  </div>
+                </div>
+
+                {todayShifts.length > 1 && (
+                  <div className="pt-2 border-t">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Other shifts today</p>
+                    <div className="space-y-1">
+                      {todayShifts.filter(s => s.id !== currentShift.id).map(s => (
+                        <div key={s.id} className="flex items-center justify-between text-xs">
+                          <span>{s.name}</span>
+                          <span className="text-muted-foreground">{formatTime12(s.startTime)} – {formatTime12(s.endTime)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 text-center space-y-2">
+                <Clock className="h-6 w-6 text-muted-foreground mx-auto" />
+                <p className="text-sm font-medium">No shift configured</p>
+                <p className="text-xs text-muted-foreground">
+                  Ask your Cafe Owner or Admin to set up shifts for this branch in Branches → Shifts.
+                </p>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Stats Row */}
