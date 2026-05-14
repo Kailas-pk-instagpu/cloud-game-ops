@@ -371,3 +371,67 @@ export const useDeletionRequestStore = create<DeletionRequestState>()(
     { name: 'gpu-cloud-deletion-requests' }
   )
 );
+
+// Shift Timing store - per-branch shift schedules
+export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+export const WEEKDAYS: { id: Weekday; label: string }[] = [
+  { id: 'mon', label: 'Mon' },
+  { id: 'tue', label: 'Tue' },
+  { id: 'wed', label: 'Wed' },
+  { id: 'thu', label: 'Thu' },
+  { id: 'fri', label: 'Fri' },
+  { id: 'sat', label: 'Sat' },
+  { id: 'sun', label: 'Sun' },
+];
+
+export interface Shift {
+  id: string;
+  branchId: string;
+  name: string;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm" (may be next day if < startTime)
+  weekdays: Weekday[];
+  breakStart?: string;
+  breakEnd?: string;
+  managerIds: string[];
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+}
+
+interface ShiftState {
+  shifts: Shift[];
+  getByBranch: (branchId: string) => Shift[];
+  addShift: (s: Omit<Shift, 'id' | 'createdAt'>) => Shift;
+  updateShift: (id: string, updates: Partial<Omit<Shift, 'id' | 'branchId' | 'createdBy' | 'createdAt'>>) => void;
+  deleteShift: (id: string) => void;
+  toggleShiftActive: (id: string) => void;
+}
+
+export const useShiftStore = create<ShiftState>()(
+  persist(
+    (set, get) => ({
+      shifts: [],
+      getByBranch: (branchId) => get().shifts.filter(s => s.branchId === branchId),
+      addShift: (s) => {
+        const shift: Shift = {
+          ...s,
+          id: `shift-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({ shifts: [...state.shifts, shift] }));
+        return shift;
+      },
+      updateShift: (id, updates) => set((state) => ({
+        shifts: state.shifts.map(s => s.id === id ? { ...s, ...updates } : s),
+      })),
+      deleteShift: (id) => set((state) => ({
+        shifts: state.shifts.filter(s => s.id !== id),
+      })),
+      toggleShiftActive: (id) => set((state) => ({
+        shifts: state.shifts.map(s => s.id === id ? { ...s, active: !s.active } : s),
+      })),
+    }),
+    { name: 'gpu-cloud-shifts' }
+  )
+);
