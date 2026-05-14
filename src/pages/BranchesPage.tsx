@@ -19,6 +19,7 @@ import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCh
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
+import ShiftManagementDialog from '@/features/branches/ShiftManagementDialog';
 
 interface BranchForm {
   name: string;
