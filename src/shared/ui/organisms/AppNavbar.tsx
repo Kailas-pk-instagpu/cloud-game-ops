@@ -14,8 +14,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose
 } from '@/components/ui/sheet';
+import { ArrowRight } from 'lucide-react';
 import { BillingStatusIndicator } from '@/shared/ui/atoms/BillingStatusIndicator';
 
 const typeIcon = {
@@ -163,6 +164,20 @@ export function AppNavbar() {
                 </div>
               )}
             </ScrollArea>
+            <Separator />
+            <div className="p-3">
+              <SheetClose asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center gap-1.5 text-xs"
+                  onClick={() => navigate('/notifications')}
+                >
+                  View all notifications
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </SheetClose>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
