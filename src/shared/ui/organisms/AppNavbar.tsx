@@ -14,8 +14,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose
 } from '@/components/ui/sheet';
+import { ArrowRight } from 'lucide-react';
 import { BillingStatusIndicator } from '@/shared/ui/atoms/BillingStatusIndicator';
 
 const typeIcon = {
