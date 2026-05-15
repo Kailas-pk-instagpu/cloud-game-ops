@@ -164,6 +164,20 @@ export function AppNavbar() {
                 </div>
               )}
             </ScrollArea>
+            <Separator />
+            <div className="p-3">
+              <SheetClose asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center gap-1.5 text-xs"
+                  onClick={() => navigate('/notifications')}
+                >
+                  View all notifications
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </SheetClose>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
