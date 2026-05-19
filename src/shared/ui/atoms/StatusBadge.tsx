@@ -26,9 +26,9 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     <Badge variant="outline" className={cn('capitalize font-medium', STATUS_STYLES[status] || '', className)}>
       <span className={cn(
         'w-1.5 h-1.5 rounded-full mr-1.5',
-        status === 'online' || status === 'active' || status === 'available' ? 'bg-success' :
-        status === 'occupied' ? 'bg-destructive' :
-        status === 'warning' || status === 'maintenance' ? 'bg-warning' : 'bg-muted-foreground'
+        status === 'online' || status === 'active' || status === 'available' || status === 'healthy' ? 'bg-success' :
+        status === 'occupied' || status === 'overloaded' || status === 'critical' ? 'bg-destructive' :
+        status === 'warning' || status === 'maintenance' || status === 'degraded' ? 'bg-warning' : 'bg-muted-foreground'
       )} />
       {status}
     </Badge>
