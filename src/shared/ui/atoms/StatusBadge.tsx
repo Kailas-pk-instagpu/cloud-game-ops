@@ -15,6 +15,10 @@ const STATUS_STYLES: Record<string, string> = {
   inactive: 'bg-muted text-muted-foreground border-muted',
   maintenance: 'bg-warning/10 text-warning border-warning/20',
   warning: 'bg-warning/10 text-warning border-warning/20',
+  overloaded: 'bg-destructive/10 text-destructive border-destructive/20',
+  healthy: 'bg-success/10 text-success border-success/20',
+  degraded: 'bg-warning/10 text-warning border-warning/20',
+  critical: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
