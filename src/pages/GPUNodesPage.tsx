@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { EmptyState } from '@/shared/ui/molecules/EmptyState';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
 import {
   Cpu, Thermometer, HardDrive, Search, X, Zap, Activity, Clock, Wifi, Wrench,
   CalendarDays, Users, Gauge, Fan, Server,
