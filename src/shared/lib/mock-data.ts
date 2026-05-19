@@ -60,16 +60,37 @@ export const GPU_MODEL_OPTIONS = [
   'RTX 3070',
 ] as const;
 
+export type GPUNodeStatus = 'online' | 'offline' | 'warning' | 'maintenance' | 'overloaded';
+export type GPUHealth = 'healthy' | 'degraded' | 'critical';
+
 export interface GPUNode {
   id: string;
   name: string;
-  status: 'online' | 'offline' | 'warning';
+  status: GPUNodeStatus;
   gpuModel: string;
   temperature: number;
   utilization: number;
   memoryUsed: number;
   memoryTotal: number;
   location: string;
+  branchId: string;
+  health: GPUHealth;
+  uptimeHours: number;
+  powerDrawW: number;
+  fanSpeed: number;
+  driverVersion: string;
+  cudaVersion: string;
+  vbiosVersion: string;
+  serialNumber: string;
+  ipAddress: string;
+  lastMaintenance: string;
+  installedAt: string;
+  activeSessions: number;
+  totalSessions: number;
+  avgSessionMinutes: number;
+  clockMhz: number;
+  memoryClockMhz: number;
+  pcieGen: string;
 }
 
 export const MOCK_BRANCHES: Branch[] = [
