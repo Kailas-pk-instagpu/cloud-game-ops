@@ -634,14 +634,21 @@ export default function BranchesPage() {
         ))}
       </div>
 
-      {visibleBranches.length === 0 && (
+      {displayedBranches.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold text-lg mb-1">No branches found</h3>
-            <p className="text-sm text-muted-foreground">
-              {canCreate ? 'Get started by adding your first branch' : 'No branches are assigned to you yet'}
+            <p className="text-sm text-muted-foreground mb-4">
+              {visibleBranches.length === 0
+                ? (canCreate ? 'Get started by adding your first branch' : 'No branches are assigned to you yet')
+                : 'No branches match your current search and filters'}
             </p>
+            {visibleBranches.length > 0 && (
+              <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5">
+                <X className="h-3.5 w-3.5" /> Clear filters
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
