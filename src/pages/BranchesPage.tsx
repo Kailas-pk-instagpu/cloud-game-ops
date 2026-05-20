@@ -79,6 +79,73 @@ export default function BranchesPage() {
     return branches.filter(b => b.managerId === currentUser.id);
   }, [branches, currentUser, userRole]);
 
+  const displayedBranches = useMemo(() => {
+    let list = [...visibleBranches];
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(b => {
+        const owner = getUserName(b.cafeOwnerId);
+        const mgr = getUserName(b.managerId);
+        const adm = getUserName(b.adminId);
+        return (
+          b.name.toLowerCase().includes(q) ||
+          b.address.toLowerCase().includes(q) ||
+          b.id.toLowerCase().includes(q) ||
+          owner?.name.toLowerCase().includes(q) ||
+          mgr?.name.toLowerCase().includes(q) ||
+          adm?.name.toLowerCase().includes(q)
+        );
+      });
+    }
+    if (filterStatus !== 'all') list = list.filter(b => b.status === filterStatus);
+    if (filterOwner !== 'all') list = list.filter(b => b.cafeOwnerId === filterOwner);
+    if (filterManager !== 'all') {
+      if (filterManager === 'unassigned') list = list.filter(b => !b.managerId);
+      else list = list.filter(b => b.managerId === filterManager);
+    }
+    if (filterAssignment === 'assigned') list = list.filter(b => b.adminId && b.cafeOwnerId && b.managerId);
+    if (filterAssignment === 'unassigned') list = list.filter(b => !b.adminId || !b.cafeOwnerId || !b.managerId);
+    if (filterCapacity !== 'all') {
+      list = list.filter(b => {
+        const pct = b.totalSeats > 0 ? b.activeSeats / b.totalSeats : 0;
+        if (filterCapacity === 'low') return pct < 0.4;
+        if (filterCapacity === 'med') return pct >= 0.4 && pct < 0.8;
+        if (filterCapacity === 'full') return pct >= 0.8;
+        return true;
+      });
+    }
+    list.sort((a, b) => {
+      switch (sortBy) {
+        case 'name-desc': return b.name.localeCompare(a.name);
+        case 'seats-desc': return b.totalSeats - a.totalSeats;
+        case 'seats-asc': return a.totalSeats - b.totalSeats;
+        case 'utilization-desc': return (b.activeSeats / Math.max(1, b.totalSeats)) - (a.activeSeats / Math.max(1, a.totalSeats));
+        case 'utilization-asc': return (a.activeSeats / Math.max(1, a.totalSeats)) - (b.activeSeats / Math.max(1, b.totalSeats));
+        case 'name-asc':
+        default: return a.name.localeCompare(b.name);
+      }
+    });
+    return list;
+  }, [visibleBranches, searchQuery, filterStatus, filterOwner, filterManager, filterAssignment, filterCapacity, sortBy]);
+
+  const activeFilterCount = [
+    filterStatus !== 'all',
+    filterOwner !== 'all',
+    filterManager !== 'all',
+    filterAssignment !== 'all',
+    filterCapacity !== 'all',
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilterStatus('all');
+    setFilterOwner('all');
+    setFilterManager('all');
+    setFilterAssignment('all');
+    setFilterCapacity('all');
+    setSortBy('name-asc');
+  };
+
   const admins = getUsersByRole('admin');
   const cafeOwners = getUsersByRole('cafe_owner');
   const managers = getUsersByRole('manager');
