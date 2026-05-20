@@ -52,7 +52,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       onClick={() => navigate(route.path)}
                       className={cn(
-                        'rounded-lg transition-all duration-200 h-10 group-data-[collapsible=icon]:justify-center',
+                        'rounded-lg h-10',
                         active
                           ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-primary/20'
                           : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
