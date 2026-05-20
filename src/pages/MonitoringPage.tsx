@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, AlertTriangle, Radar, ScrollText, History } from 'lucide-react';
+import { Activity, AlertTriangle, ScrollText, History } from 'lucide-react';
 import LiveSessionsMonitor from '@/features/monitoring/LiveSessionsMonitor';
 import FailedTransactionsMonitor from '@/features/monitoring/FailedTransactionsMonitor';
 import ApplicationLogsMonitor from '@/features/monitoring/ApplicationLogsMonitor';
@@ -14,8 +14,7 @@ export default function MonitoringPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Radar className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold tracking-tight">
             Network Monitoring
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
