@@ -80,7 +80,7 @@ export default function ManagerDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">🎮 Floor Manager</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
@@ -142,7 +142,7 @@ export default function ManagerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">📈 Hourly Sessions</CardTitle>
+            <CardTitle className="text-base font-semibold">Hourly Sessions</CardTitle>
             <CardDescription>Session starts throughout today</CardDescription>
           </CardHeader>
           <CardContent>
@@ -162,7 +162,7 @@ export default function ManagerDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">🕐 Recent Activity</CardTitle>
+            <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
             <CardDescription>Latest floor actions</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -190,7 +190,7 @@ export default function ManagerDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">📋 Shift Summary</CardTitle>
+            <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
             <CardDescription>Your current shift overview</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -217,7 +217,7 @@ export default function ManagerDashboard() {
       {/* Weekly Performance */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">📊 Weekly Performance</CardTitle>
+          <CardTitle className="text-base font-semibold">Weekly Performance</CardTitle>
           <CardDescription>Revenue and sessions this week</CardDescription>
         </CardHeader>
         <CardContent>
