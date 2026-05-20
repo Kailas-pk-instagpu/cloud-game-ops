@@ -115,8 +115,8 @@ export default function SettlementsPage() {
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Receipt className="h-6 w-6 text-primary" /> Session Settlements
+          <h1 className="text-2xl font-bold tracking-tight">
+            Session Settlements
           </h1>
           <p className="text-sm text-muted-foreground">
             Records of every ended billing session for your branches.
