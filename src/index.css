@@ -333,3 +333,93 @@
   border-color: hsl(220 14% 50%);
   background-color: hsl(220 14% 92%);
 }
+
+/* ==========================================================
+   iOS-style motion layer — applied globally without changing
+   any visual design. Tuned curves + GPU-friendly properties.
+   ========================================================== */
+
+/* Smoother Radix-driven overlays (Dialog/Sheet/Popover/Dropdown/Tooltip) */
+[data-radix-popper-content-wrapper] > * {
+  transform-origin: var(--radix-popper-transform-origin);
+}
+
+[data-state="open"][data-radix-dialog-content],
+[data-state="open"][data-radix-sheet-content] {
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
+/* Dialog/Sheet/Popover backdrop softening */
+[data-radix-dialog-overlay],
+[data-radix-sheet-overlay] {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Press-down feedback for interactive elements (no visual change at rest) */
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.975);
+  transition-duration: 90ms;
+}
+
+/* Card hover micro-depth (additive, optional via class) */
+.hover-lift {
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -12px hsl(var(--foreground) / 0.18);
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Row stagger appearance */
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.row-in {
+  animation: row-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* Promote common animated layers to GPU */
+[data-radix-dialog-content],
+[data-radix-sheet-content],
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content],
+[data-sidebar="sidebar"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Accessibility — honour reduced motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .hover-lift:hover { transform: none; }
+}
+
