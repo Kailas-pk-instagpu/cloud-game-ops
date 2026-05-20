@@ -61,7 +61,7 @@ export default function CafeOwnerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">💰 Weekly Earnings</CardTitle>
+            <CardTitle className="text-base font-semibold">Weekly Earnings</CardTitle>
             <CardDescription>Revenue across all your branches</CardDescription>
           </CardHeader>
           <CardContent>
@@ -87,7 +87,7 @@ export default function CafeOwnerDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">📊 Peak Hours</CardTitle>
+            <CardTitle className="text-base font-semibold">Peak Hours</CardTitle>
             <CardDescription>When your branches are busiest today</CardDescription>
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ export default function CafeOwnerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">👥 Customer Insights</CardTitle>
+            <CardTitle className="text-base font-semibold">Customer Insights</CardTitle>
             <CardDescription>Today's customer metrics</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -134,7 +134,7 @@ export default function CafeOwnerDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">👨‍💼 Manager Performance</CardTitle>
+            <CardTitle className="text-base font-semibold">Manager Performance</CardTitle>
             <CardDescription>Your branch managers' activity</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -176,7 +176,7 @@ export default function CafeOwnerDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold">🏢 My Branches</CardTitle>
+                <CardTitle className="text-base font-semibold">My Branches</CardTitle>
                 <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/branches')}>
                   View All <ArrowUpRight className="h-3 w-3" />
                 </Button>
