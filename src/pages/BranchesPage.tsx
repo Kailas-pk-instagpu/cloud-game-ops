@@ -482,9 +482,113 @@ export default function BranchesPage() {
         ))}
       </div>
 
+      {/* Search & Filters */}
+      <Card>
+        <CardContent className="p-3 sm:p-4 space-y-3">
+          <div className="flex flex-col lg:flex-row gap-2 lg:items-center">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, address, ID, owner or manager..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-muted"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[170px] h-10"><SlidersHorizontal className="h-3.5 w-3.5 mr-1" /><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name-asc">Name (A–Z)</SelectItem>
+                  <SelectItem value="name-desc">Name (Z–A)</SelectItem>
+                  <SelectItem value="seats-desc">Most seats</SelectItem>
+                  <SelectItem value="seats-asc">Fewest seats</SelectItem>
+                  <SelectItem value="utilization-desc">Highest utilization</SelectItem>
+                  <SelectItem value="utilization-asc">Lowest utilization</SelectItem>
+                </SelectContent>
+              </Select>
+              {activeFilterCount > 0 || searchQuery ? (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
+                  <X className="h-3.5 w-3.5" /> Clear
+                </Button>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterOwner} onValueChange={setFilterOwner}>
+              <SelectTrigger><SelectValue placeholder="Cafe Owner" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All owners</SelectItem>
+                {cafeOwners.map(o => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterManager} onValueChange={setFilterManager}>
+              <SelectTrigger><SelectValue placeholder="Manager" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All managers</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {managers.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterAssignment} onValueChange={setFilterAssignment}>
+              <SelectTrigger><SelectValue placeholder="Team status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any team</SelectItem>
+                <SelectItem value="assigned">Fully assigned</SelectItem>
+                <SelectItem value="unassigned">Missing roles</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterCapacity} onValueChange={setFilterCapacity}>
+              <SelectTrigger><SelectValue placeholder="Utilization" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any utilization</SelectItem>
+                <SelectItem value="low">Low (&lt; 40%)</SelectItem>
+                <SelectItem value="med">Medium (40–80%)</SelectItem>
+                <SelectItem value="full">High (≥ 80%)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-medium text-foreground">{displayedBranches.length}</span> of {visibleBranches.length} branches
+              {activeFilterCount > 0 && <span className="ml-1">· {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Branch Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visibleBranches.map(branch => (
+        {displayedBranches.map(branch => (
           <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' ? 'opacity-60' : ''}`}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
