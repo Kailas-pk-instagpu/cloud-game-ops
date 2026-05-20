@@ -59,6 +59,15 @@ export default function BranchesPage() {
   const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
   const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
 
+  // Search & filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterOwner, setFilterOwner] = useState<string>('all');
+  const [filterManager, setFilterManager] = useState<string>('all');
+  const [filterAssignment, setFilterAssignment] = useState<string>('all'); // all | assigned | unassigned
+  const [filterCapacity, setFilterCapacity] = useState<string>('all'); // all | low | med | full
+  const [sortBy, setSortBy] = useState<string>('name-asc');
+
   const userRole = currentUser?.role;
 
   // Filter branches based on role scope
