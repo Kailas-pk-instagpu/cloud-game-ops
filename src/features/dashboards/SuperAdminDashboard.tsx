@@ -39,8 +39,8 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
           <p className="text-muted-foreground text-sm mt-1">Complete platform overview and GPU infrastructure monitoring</p>
         </div>
@@ -50,7 +50,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Primary KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard title="Total Revenue" value="RM 138,400" icon={Banknote} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Active Sessions" value="186" icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
         <StatCard title="GPU Nodes" value={`${onlineNodes}/${MOCK_GPU_NODES.length}`} subtitle={`Avg ${avgUtilization}% util`} icon={Cpu} iconClassName="bg-primary/10 text-primary" />
@@ -267,7 +267,7 @@ export default function SuperAdminDashboard() {
           <CardDescription>Common administrative tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/users')}>
               <Users className="h-5 w-5 text-primary" />
               <span className="text-xs">Manage Users</span>

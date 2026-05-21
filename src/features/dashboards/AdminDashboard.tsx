@@ -33,8 +33,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage your portfolio of cafes and operators</p>
         </div>
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard title="Portfolio Revenue" value="RM 95,200" icon={Banknote} trend={{ value: 15, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="Cafe Owners" value={cafeOwners.length} icon={Users} subtitle="Active operators" iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Branches" value={MOCK_BRANCHES.length} icon={Building2} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} iconClassName="bg-info/10 text-info" />
@@ -193,7 +193,7 @@ export default function AdminDashboard() {
           <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/users')}>
               <Users className="h-5 w-5 text-primary" />
               <span className="text-xs">Manage Users</span>
