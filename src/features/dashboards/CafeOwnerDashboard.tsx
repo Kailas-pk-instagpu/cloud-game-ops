@@ -48,7 +48,7 @@ export default function CafeOwnerDashboard() {
       <BillingStatusBanner />
 
       {/* Primary KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatCard title="This Week's Earnings" value="RM 12,400" icon={Banknote} trend={{ value: 8, positive: true }} iconClassName="bg-success/10 text-success" />
         <StatCard title="My Branches" value={myBranches.length} icon={Building2} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Seat Occupancy" value={`${occupancy}%`} subtitle={`${activeSeats}/${totalSeats} seats`} icon={Users} iconClassName="bg-info/10 text-info" />
