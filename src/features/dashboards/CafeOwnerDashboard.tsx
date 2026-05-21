@@ -40,9 +40,6 @@ export default function CafeOwnerDashboard() {
           <h1 className="text-2xl font-bold tracking-tight">My Business</h1>
           <p className="text-muted-foreground text-sm mt-1">Overview of your gaming cafes and operations</p>
         </div>
-        <Button className="gradient-primary text-primary-foreground gap-2" onClick={() => navigate('/branches')}>
-          <Plus className="h-4 w-4" /> Add Branch
-        </Button>
       </div>
 
       <BillingStatusBanner />
