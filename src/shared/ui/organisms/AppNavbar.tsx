@@ -51,7 +51,7 @@ export function AppNavbar() {
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="hidden sm:flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors focus:outline-none">
+              <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors focus:outline-none">
                 {user.logoUrl ? (
                   <img src={user.logoUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
                 ) : (
