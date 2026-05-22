@@ -40,7 +40,7 @@ export function AppNavbar() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="sticky top-2 z-40 ml-0 mr-2 mt-2 h-14 rounded-2xl border-2 border-border dark:border-sidebar-border bg-background/10 dark:bg-sidebar/10 backdrop-blur-md flex items-center justify-between px-4">
+    <header className="sticky top-2 z-40 ml-0 mr-2 mt-2 h-14 rounded-2xl border-[1.5px] border-border dark:border-sidebar-border bg-background/10 dark:bg-sidebar/10 backdrop-blur-md flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-sidebar-foreground/70 hover:text-sidebar-accent-foreground" />
       </div>
