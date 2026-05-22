@@ -58,6 +58,8 @@ export default function BranchesPage() {
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
   const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
   const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
+  const [baselineGpu, setBaselineGpu] = useState<string>('RTX 4070');
+  const [canSaveSeatConfig, setCanSaveSeatConfig] = useState(false);
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,6 +207,8 @@ export default function BranchesPage() {
     // Open seat grid so the owner can immediately configure GPUs
     const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
     setSelectedBranch(newBranch);
+    setBaselineGpu(defaultGpu);
+    setCanSaveSeatConfig(false);
     setShowSeatGrid(true);
   };
 
@@ -612,7 +616,7 @@ export default function BranchesPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
                   <LayoutGrid className="h-3.5 w-3.5" /> Seats
                 </Button>
                 {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
@@ -718,7 +722,7 @@ export default function BranchesPage() {
 
 
       {/* Seat Grid Dialog */}
-      <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) setEditingSeat(null); }}>
+      <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) { setEditingSeat(null); setCanSaveSeatConfig(false); setBaselineGpu(defaultGpu); } else { setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -759,7 +763,7 @@ export default function BranchesPage() {
                   <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg border bg-muted/30">
                     <div className="flex-1 min-w-[180px]">
                       <Label className="text-xs flex items-center gap-1.5"><Cpu className="h-3 w-3" /> Default GPU for new/unassigned seats</Label>
-                      <Select value={defaultGpu} onValueChange={setDefaultGpu}>
+                      <Select value={defaultGpu} onValueChange={(v) => { setDefaultGpu(v); setCanSaveSeatConfig(false); }}>
                         <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {GPU_MODEL_OPTIONS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
@@ -770,6 +774,7 @@ export default function BranchesPage() {
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
+                      disabled={defaultGpu === baselineGpu}
                       onClick={() => {
                         let count = 0;
                         const actor = currentUser;
@@ -794,6 +799,8 @@ export default function BranchesPage() {
                           }
                         });
                         toast.success(`Applied ${defaultGpu} to ${count} seat${count === 1 ? '' : 's'}`);
+                        setBaselineGpu(defaultGpu);
+                        setCanSaveSeatConfig(true);
                       }}
                     >
                       <Cpu className="h-3.5 w-3.5" /> Apply to all
@@ -801,13 +808,16 @@ export default function BranchesPage() {
                     <Button
                       size="sm"
                       className="gap-1.5 gradient-primary text-primary-foreground"
+                      disabled={!canSaveSeatConfig}
                       onClick={() => {
                         toast.success('Seat configuration saved');
+                        setCanSaveSeatConfig(false);
                         setShowSeatGrid(false);
                       }}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" /> Save Changes
                     </Button>
+
                   </div>
                 )}
 
