@@ -59,7 +59,7 @@ export function AppSidebar() {
                       )}
                     >
                       <Icon className="h-4 w-4" />
-                      <span>{route.label}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">{route.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
