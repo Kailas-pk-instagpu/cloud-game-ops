@@ -25,34 +25,35 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarHeader className="border-b border-sidebar-border overflow-hidden px-3 py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 transition-all duration-200">
-        <div className="flex items-center gap-3 min-w-0 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="border-b border-sidebar-border overflow-hidden px-3 py-3 group-data-[collapsible=icon]:hidden transition-all duration-200">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 min-w-[2rem] rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
             <Gamepad2 className="h-4 w-4 text-primary-foreground" />
           </div>
-          <div className="overflow-hidden transition-all duration-200 ease-in-out group-data-[collapsible=icon]:hidden">
+          <div className="overflow-hidden transition-all duration-200 ease-in-out">
             <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight whitespace-nowrap">GPU Cloud</h2>
             <p className="text-[10px] italic font-medium text-muted-foreground mt-0.5 whitespace-nowrap">Beyond Hardware</p>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0 transition-all duration-200">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 font-semibold px-3 mb-1">
+      <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 transition-all duration-200">
+        <SidebarGroup className="group-data-[collapsible=icon]:p-0">
+          <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 font-semibold px-3 mb-1 group-data-[collapsible=icon]:hidden">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="group-data-[collapsible=icon]:items-center">
               {routes.map((route) => {
                 const Icon = ICON_MAP[route.icon] || LayoutDashboard;
                 const active = location.pathname === route.path;
                 return (
-                  <SidebarMenuItem key={route.path}>
+                  <SidebarMenuItem key={route.path} className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                     <SidebarMenuButton
                       onClick={() => navigate(route.path)}
+                      tooltip={route.label}
                       className={cn(
-                        'rounded-lg h-10',
+                        'rounded-lg h-10 group-data-[collapsible=icon]:!w-10 group-data-[collapsible=icon]:!h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-0',
                         active
                           ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-primary/20'
                           : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
