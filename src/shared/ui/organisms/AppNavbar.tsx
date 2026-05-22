@@ -40,10 +40,11 @@ export function AppNavbar() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
+    <header className="sticky top-2 z-40 mx-2 mt-2 h-14 rounded-2xl border border-sidebar-border bg-sidebar/80 backdrop-blur-xl shadow-lg shadow-black/5 flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+        <SidebarTrigger className="text-sidebar-foreground/70 hover:text-sidebar-accent-foreground" />
       </div>
+
 
       <div className="flex items-center gap-2">
         <BillingStatusIndicator />
