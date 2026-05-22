@@ -58,6 +58,8 @@ export default function BranchesPage() {
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
   const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
   const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
+  const [baselineGpu, setBaselineGpu] = useState<string>('RTX 4070');
+  const [canSaveSeatConfig, setCanSaveSeatConfig] = useState(false);
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('');
