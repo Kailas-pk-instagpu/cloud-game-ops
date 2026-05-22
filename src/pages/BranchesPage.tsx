@@ -720,7 +720,7 @@ export default function BranchesPage() {
 
 
       {/* Seat Grid Dialog */}
-      <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) setEditingSeat(null); }}>
+      <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) { setEditingSeat(null); setCanSaveSeatConfig(false); setBaselineGpu(defaultGpu); } else { setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
