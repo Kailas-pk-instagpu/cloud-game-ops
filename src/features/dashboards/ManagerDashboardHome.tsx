@@ -238,18 +238,15 @@ export default function ManagerDashboardHome() {
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { label: 'Total Check-ins', value: '42', icon: '✅' },
-              { label: 'Total Check-outs', value: '28', icon: '🚪' },
-              { label: 'Revenue Collected', value: `RM ${todayEarnings}`, icon: '💰' },
-              { label: 'Avg Wait Time', value: '3 min', icon: '⏱️' },
-              { label: 'Issues Reported', value: '2', icon: '⚠️' },
-              { label: 'Customer Complaints', value: '0', icon: '😊' },
+              { label: 'Total Check-ins', value: '42' },
+              { label: 'Total Check-outs', value: '28' },
+              { label: 'Revenue Collected', value: `RM ${todayEarnings}` },
+              { label: 'Avg Wait Time', value: '3 min' },
+              { label: 'Issues Reported', value: '2' },
+              { label: 'Customer Complaints', value: '0' },
             ].map((item, i) => (
               <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-2">
-                  <span>{item.icon}</span>
-                  <span className="text-sm">{item.label}</span>
-                </div>
+                <span className="text-sm">{item.label}</span>
                 <span className="text-sm font-semibold">{item.value}</span>
               </div>
             ))}
