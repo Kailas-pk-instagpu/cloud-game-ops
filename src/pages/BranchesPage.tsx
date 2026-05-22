@@ -616,7 +616,7 @@ export default function BranchesPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowSeatGrid(true); }}>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
                   <LayoutGrid className="h-3.5 w-3.5" /> Seats
                 </Button>
                 {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
