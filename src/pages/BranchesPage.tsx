@@ -763,7 +763,7 @@ export default function BranchesPage() {
                   <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg border bg-muted/30">
                     <div className="flex-1 min-w-[180px]">
                       <Label className="text-xs flex items-center gap-1.5"><Cpu className="h-3 w-3" /> Default GPU for new/unassigned seats</Label>
-                      <Select value={defaultGpu} onValueChange={setDefaultGpu}>
+                      <Select value={defaultGpu} onValueChange={(v) => { setDefaultGpu(v); setCanSaveSeatConfig(false); }}>
                         <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {GPU_MODEL_OPTIONS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
@@ -774,6 +774,7 @@ export default function BranchesPage() {
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
+                      disabled={defaultGpu === baselineGpu}
                       onClick={() => {
                         let count = 0;
                         const actor = currentUser;
@@ -798,6 +799,8 @@ export default function BranchesPage() {
                           }
                         });
                         toast.success(`Applied ${defaultGpu} to ${count} seat${count === 1 ? '' : 's'}`);
+                        setBaselineGpu(defaultGpu);
+                        setCanSaveSeatConfig(true);
                       }}
                     >
                       <Cpu className="h-3.5 w-3.5" /> Apply to all
@@ -805,13 +808,16 @@ export default function BranchesPage() {
                     <Button
                       size="sm"
                       className="gap-1.5 gradient-primary text-primary-foreground"
+                      disabled={!canSaveSeatConfig}
                       onClick={() => {
                         toast.success('Seat configuration saved');
+                        setCanSaveSeatConfig(false);
                         setShowSeatGrid(false);
                       }}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" /> Save Changes
                     </Button>
+
                   </div>
                 )}
 
