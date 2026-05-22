@@ -93,30 +93,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2 group-data-[collapsible=icon]:p-1">
-        <button
-          onClick={() => navigate('/settings')}
-          className={cn(
-            'w-full flex items-center gap-3 rounded-2xl p-2 text-left transition-all duration-300',
-            'bg-sidebar-accent/40 hover:bg-sidebar-accent',
-            'group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1.5'
-          )}
-        >
-          <Avatar className="h-9 w-9 rounded-xl shrink-0 ring-2 ring-sidebar-border">
-            <AvatarImage src={(user as any).avatar} alt={user.name} />
-            <AvatarFallback className="rounded-xl bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden">
-            <p className="text-[10px] text-sidebar-foreground/60 leading-tight truncate">{greeting()}</p>
-            <p className="text-[13px] font-semibold text-sidebar-accent-foreground leading-tight truncate">
-              {user.name || user.email}
-            </p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-sidebar-foreground/50 shrink-0 group-data-[collapsible=icon]:hidden" />
-        </button>
+      <SidebarFooter className="p-3 group-data-[collapsible=icon]:hidden">
+        <div className="min-w-0 overflow-hidden">
+          <p className="text-[10px] text-sidebar-foreground/60 leading-tight truncate">{greeting()}</p>
+          <p className="text-[13px] font-semibold text-sidebar-accent-foreground leading-tight truncate">
+            {user.name || user.email}
+          </p>
+        </div>
       </SidebarFooter>
+
     </Sidebar>
   );
 }
