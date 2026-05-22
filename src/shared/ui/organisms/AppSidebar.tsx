@@ -25,7 +25,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarHeader className="border-b border-sidebar-border overflow-hidden px-3 py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 transition-all duration-200">
+      <SidebarHeader className="border-b border-sidebar-border overflow-hidden px-3 py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:border-b-0 group-data-[collapsible=icon]:h-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center transition-all duration-200">
         <div className="flex items-center gap-3 min-w-0 group-data-[collapsible=icon]:justify-center">
           <div className="w-8 h-8 min-w-[2rem] rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
             <Gamepad2 className="h-4 w-4 text-primary-foreground" />
@@ -37,7 +37,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0 transition-all duration-200">
+      <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:hidden transition-all duration-200">
         <SidebarGroup>
           <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-sidebar-foreground/40 font-semibold px-3 mb-1">
             Navigation
