@@ -183,13 +183,13 @@ export default function ManagerDashboardHome() {
 
       {/* Hourly Sessions + Recent Activity + Shift Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Hourly Sessions</CardTitle>
             <CardDescription>Session starts throughout today</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-48">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={HOURLY_SESSIONS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
