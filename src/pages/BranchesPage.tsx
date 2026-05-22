@@ -207,6 +207,8 @@ export default function BranchesPage() {
     // Open seat grid so the owner can immediately configure GPUs
     const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
     setSelectedBranch(newBranch);
+    setBaselineGpu(defaultGpu);
+    setCanSaveSeatConfig(false);
     setShowSeatGrid(true);
   };
 
