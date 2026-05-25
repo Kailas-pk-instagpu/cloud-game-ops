@@ -4,7 +4,7 @@ import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
 import CafeOwnerActiveSessionsOverview from '@/features/billing/CafeOwnerActiveSessionsOverview';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
+import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
