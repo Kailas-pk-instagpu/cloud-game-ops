@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
+import CafeOwnerActiveSessionsOverview from '@/features/billing/CafeOwnerActiveSessionsOverview';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
@@ -100,6 +101,12 @@ export default function BillingSessionPage() {
   // Super admins and admins are restricted to viewing/downloading settlements only.
   if (isSettlementViewer) {
     return <SettlementsPage />;
+  }
+
+  // Cafe owners see an overview of all active sessions across their branches.
+  // The detailed view is opened by clicking a session (which adds customerId to the URL).
+  if (user?.role === 'cafe_owner' && !urlCustomerId) {
+    return <CafeOwnerActiveSessionsOverview />;
   }
 
   if (!branch) {
