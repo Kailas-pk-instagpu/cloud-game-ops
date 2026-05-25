@@ -203,12 +203,12 @@ export default function ManagerDashboardHome() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
             <CardDescription>Latest floor actions</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {RECENT_ACTIVITY.map((log, i) => (
               <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
                 <span className={cn(
@@ -231,12 +231,12 @@ export default function ManagerDashboardHome() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
             <CardDescription>Your current shift overview</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {[
               { label: 'Total Check-ins', value: '42' },
               { label: 'Total Check-outs', value: '28' },
