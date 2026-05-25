@@ -118,10 +118,17 @@ export default function BillingSessionPage() {
     );
   }
 
+  const showBack = user?.role === 'cafe_owner';
+
   return (
     <div className="space-y-4">
       {canManage && (
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center gap-2">
+          {showBack ? (
+            <Button variant="ghost" size="sm" onClick={() => navigate('/billing/session')}>
+              <ArrowLeft className="h-4 w-4" /> Back to sessions
+            </Button>
+          ) : <span />}
           <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
             <Receipt className="h-4 w-4" /> View Settlements
           </Button>
