@@ -61,13 +61,13 @@ export default function SuperAdminDashboard() {
 
       {/* Revenue + GPU Status Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
             <CardDescription>Monthly platform revenue across all branches</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-64">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={MONTHLY_REVENUE}>
                   <defs>
@@ -87,14 +87,14 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold">GPU Fleet Status</CardTitle>
               <AlertTriangle className="h-4 w-4 text-warning" />
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {MOCK_GPU_NODES.map(node => (
               <div key={node.id} className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -122,13 +122,13 @@ export default function SuperAdminDashboard() {
 
       {/* Platform Load + User Distribution + System Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Platform Load (Today)</CardTitle>
             <CardDescription>Hourly session load across all branches</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-48">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={HOURLY_LOAD}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -142,13 +142,13 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">User Distribution</CardTitle>
             <CardDescription>Active users by role</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-48 flex items-center justify-center">
+          <CardContent className="flex-1 flex flex-col pb-4">
+            <div className="flex-1 min-h-[160px] flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={ROLE_DISTRIBUTION} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={4} dataKey="value">
@@ -160,7 +160,7 @@ export default function SuperAdminDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-4 mt-2">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-3">
               {ROLE_DISTRIBUTION.map((r, i) => (
                 <span key={i} className="flex items-center gap-1.5 text-xs">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color }} />
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold">System Health</CardTitle>
@@ -179,7 +179,7 @@ export default function SuperAdminDashboard() {
             </div>
             <CardDescription>Infrastructure service status</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2.5">
+          <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {SYSTEM_METRICS.map((metric, i) => (
               <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                 <span className="text-sm">{metric.name}</span>
@@ -195,12 +195,12 @@ export default function SuperAdminDashboard() {
 
       {/* Weekly Sessions + Branch Performance + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Sessions</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-48">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -214,12 +214,12 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Branch Performance</CardTitle>
             <CardDescription>Seat occupancy by branch</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {MOCK_BRANCHES.map(branch => {
               const occ = Math.round((branch.activeSeats / branch.totalSeats) * 100);
               return (
@@ -235,11 +235,11 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Recent Alerts</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {[
               { msg: 'Node Gamma temperature exceeds 80°C', type: 'warning', time: '5 min ago' },
               { msg: 'Node Delta went offline', type: 'error', time: '5 hours ago' },
