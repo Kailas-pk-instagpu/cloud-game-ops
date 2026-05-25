@@ -29,6 +29,7 @@ function fmtDate(iso: string) {
 }
 
 export default function SettlementsPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
   const settlements = useSettlementStore((s) => s.settlements);
