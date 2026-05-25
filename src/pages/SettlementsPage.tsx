@@ -12,8 +12,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  Receipt, Search, Building2, Banknote, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download,
+  Receipt, Search, Building2, Banknote, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download, ArrowLeft,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function formatDuration(totalSec: number) {
   const h = Math.floor(totalSec / 3600);
