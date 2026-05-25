@@ -56,13 +56,13 @@ export default function CafeOwnerDashboard() {
 
       {/* Earnings Chart + Peak Hours */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Earnings</CardTitle>
             <CardDescription>Revenue across all your branches</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-56">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={REVENUE_DATA}>
                   <defs>
@@ -82,13 +82,13 @@ export default function CafeOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Peak Hours</CardTitle>
             <CardDescription>When your branches are busiest today</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-56">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={PEAK_HOURS}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -105,12 +105,12 @@ export default function CafeOwnerDashboard() {
 
       {/* Customer Insights + Manager Performance + Branches */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Customer Insights</CardTitle>
             <CardDescription>Today's customer metrics</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {[
               { label: 'Total Customers Today', value: CUSTOMER_STATS.totalToday, icon: '👤' },
               { label: 'Average Spend', value: CUSTOMER_STATS.avgSpend, icon: '💵' },
@@ -129,12 +129,12 @@ export default function CafeOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Manager Performance</CardTitle>
             <CardDescription>Your branch managers' activity</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {myManagers.map(manager => {
               const branch = MOCK_BRANCHES.find(b => b.managerId === manager.id);
               return (
@@ -169,33 +169,31 @@ export default function CafeOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold">My Branches</CardTitle>
-                <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/branches')}>
-                  View All <ArrowUpRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {myBranches.map(branch => (
-                <div key={branch.id} className="p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold">{branch.name}</h3>
-                    <StatusBadge status={branch.status} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2">{branch.address}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs"><strong>{branch.activeSeats}</strong>/{branch.totalSeats} seats</span>
-                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/branches')}>Manage</Button>
-                  </div>
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">My Branches</CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/branches')}>
+                View All <ArrowUpRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
+            {myBranches.map(branch => (
+              <div key={branch.id} className="p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">{branch.name}</h3>
+                  <StatusBadge status={branch.status} />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+                <p className="text-xs text-muted-foreground mb-2">{branch.address}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs"><strong>{branch.activeSeats}</strong>/{branch.totalSeats} seats</span>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/branches')}>Manage</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
