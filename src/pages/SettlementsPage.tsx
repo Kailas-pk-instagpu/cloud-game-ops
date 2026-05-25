@@ -12,8 +12,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  Receipt, Search, Building2, Banknote, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download,
+  Receipt, Search, Building2, Banknote, TrendingDown, Wallet, Lock, Clock, Hash, User as UserIcon, Calendar, Download, ArrowLeft,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function formatDuration(totalSec: number) {
   const h = Math.floor(totalSec / 3600);
@@ -28,6 +29,7 @@ function fmtDate(iso: string) {
 }
 
 export default function SettlementsPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const branches = useBranchStore((s) => s.branches);
   const settlements = useSettlementStore((s) => s.settlements);
@@ -113,6 +115,9 @@ export default function SettlementsPage() {
 
   return (
     <div className="space-y-4">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2">
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Button>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
