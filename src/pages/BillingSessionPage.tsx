@@ -103,6 +103,12 @@ export default function BillingSessionPage() {
     return <SettlementsPage />;
   }
 
+  // Cafe owners see an overview of all active sessions across their branches.
+  // The detailed view is opened by clicking a session (which adds customerId to the URL).
+  if (user?.role === 'cafe_owner' && !urlCustomerId) {
+    return <CafeOwnerActiveSessionsOverview />;
+  }
+
   if (!branch) {
     return (
       <Alert>
