@@ -54,13 +54,13 @@ export default function AdminDashboard() {
 
       {/* Revenue + Branch Revenue Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Revenue</CardTitle>
             <CardDescription>Revenue trend across your portfolio</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-56">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={REVENUE_DATA}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -74,13 +74,13 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Revenue by Branch</CardTitle>
             <CardDescription>Compare branch performance</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-56">
+          <CardContent className="flex-1 min-h-0 pb-4">
+            <div className="h-full min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BRANCH_REVENUE} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -97,12 +97,12 @@ export default function AdminDashboard() {
 
       {/* Cafe Owner Performance + Branch Overview + Compliance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Cafe Owner Performance</CardTitle>
             <CardDescription>Revenue and occupancy by operator</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {OWNER_PERFORMANCE.map((owner, i) => (
               <div key={i} className="p-3 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex items-center justify-between">
@@ -129,18 +129,18 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Branch Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {MOCK_BRANCHES.map(branch => (
               <div key={branch.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="text-sm font-medium">{branch.name}</p>
-                  <p className="text-xs text-muted-foreground">{branch.address}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{branch.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{branch.address}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
                     <span className="text-sm font-medium">{branch.activeSeats}/{branch.totalSeats}</span>
                     <p className="text-[10px] text-muted-foreground">seats</p>
@@ -152,36 +152,40 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Compliance & Security</CardTitle>
             <CardDescription>Platform security overview</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {COMPLIANCE_DATA.map((item, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>{item.label}</span>
-                  <span className="font-medium">{item.count}/{item.total}</span>
-                </div>
-                <Progress value={(item.count / item.total) * 100} className="h-2" />
-              </div>
-            ))}
-            <div className="border-t pt-3 mt-3 space-y-2">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Recent Activity</h4>
-              {[
-                { action: 'New manager added', user: 'Sam Rivera', time: '2h ago' },
-                { action: 'Branch status changed', user: 'System', time: '5h ago' },
-                { action: 'Password reset', user: 'Casey Park', time: '1d ago' },
-              ].map((log, i) => (
-                <div key={i} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
-                  <div>
-                    <span className="font-medium">{log.action}</span>
-                    <span className="text-muted-foreground"> · {log.user}</span>
+          <CardContent className="flex-1 flex flex-col gap-4">
+            <div className="space-y-3">
+              {COMPLIANCE_DATA.map((item, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>{item.label}</span>
+                    <span className="font-medium">{item.count}/{item.total}</span>
                   </div>
-                  <span className="text-muted-foreground">{log.time}</span>
+                  <Progress value={(item.count / item.total) * 100} className="h-2" />
                 </div>
               ))}
+            </div>
+            <div className="border-t pt-3 flex-1 flex flex-col gap-2">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Recent Activity</h4>
+              <div className="flex-1 flex flex-col justify-between gap-2">
+                {[
+                  { action: 'New manager added', user: 'Sam Rivera', time: '2h ago' },
+                  { action: 'Branch status changed', user: 'System', time: '5h ago' },
+                  { action: 'Password reset', user: 'Casey Park', time: '1d ago' },
+                ].map((log, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
+                    <div>
+                      <span className="font-medium">{log.action}</span>
+                      <span className="text-muted-foreground"> · {log.user}</span>
+                    </div>
+                    <span className="text-muted-foreground">{log.time}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
