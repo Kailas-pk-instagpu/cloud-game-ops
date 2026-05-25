@@ -118,7 +118,7 @@ export default function BillingSessionPage() {
     );
   }
 
-  const showBack = user?.role === 'cafe_owner';
+  const showBack = user?.role === 'cafe_owner' || user?.role === 'manager';
 
   return (
     <div className="space-y-4">
