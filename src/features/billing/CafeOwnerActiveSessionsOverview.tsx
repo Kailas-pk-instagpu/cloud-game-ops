@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Activity, Building2, Monitor, Clock, User as UserIcon, Wallet, ChevronRight, Receipt } from 'lucide-react';
 import { useAuthStore, useBranchStore, useSeatStore } from '@/shared/lib/store';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
-import { EmptyState } from '@/shared/ui/molecules/EmptyState';
+import EmptyState from '@/shared/ui/molecules/EmptyState';
 
 function formatRelative(date: Date) {
   const diffMs = Date.now() - date.getTime();
