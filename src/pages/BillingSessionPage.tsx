@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
+import CafeOwnerActiveSessionsOverview from '@/features/billing/CafeOwnerActiveSessionsOverview';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt } from 'lucide-react';
