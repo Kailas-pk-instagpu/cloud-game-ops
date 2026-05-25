@@ -37,10 +37,11 @@ export default function CafeOwnerActiveSessionsOverview() {
   const seats = useSeatStore((s) => s.seats);
   const navigate = useNavigate();
 
-  const ownerBranches = useMemo(
-    () => (user ? branches.filter((b) => b.cafeOwnerId === user.id) : []),
-    [branches, user]
-  );
+  const ownerBranches = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'manager') return branches.filter((b) => b.managerId === user.id);
+    return branches.filter((b) => b.cafeOwnerId === user.id);
+  }, [branches, user]);
 
   const allSessions = useMemo(() => {
     return ownerBranches.flatMap((branch) => {

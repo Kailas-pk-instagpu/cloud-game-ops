@@ -105,7 +105,7 @@ export default function BillingSessionPage() {
 
   // Cafe owners see an overview of all active sessions across their branches.
   // The detailed view is opened by clicking a session (which adds customerId to the URL).
-  if (user?.role === 'cafe_owner' && !urlCustomerId) {
+  if ((user?.role === 'cafe_owner' || user?.role === 'manager') && !urlCustomerId) {
     return <CafeOwnerActiveSessionsOverview />;
   }
 
@@ -118,7 +118,7 @@ export default function BillingSessionPage() {
     );
   }
 
-  const showBack = user?.role === 'cafe_owner';
+  const showBack = user?.role === 'cafe_owner' || user?.role === 'manager';
 
   return (
     <div className="space-y-4">
