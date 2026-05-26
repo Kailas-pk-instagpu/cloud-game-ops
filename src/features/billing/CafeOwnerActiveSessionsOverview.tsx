@@ -36,6 +36,7 @@ export default function CafeOwnerActiveSessionsOverview() {
   const branches = useBranchStore((s) => s.branches);
   const seats = useSeatStore((s) => s.seats);
   const navigate = useNavigate();
+  const isManager = user?.role === 'manager';
 
   const ownerBranches = useMemo(() => {
     if (!user) return [];
