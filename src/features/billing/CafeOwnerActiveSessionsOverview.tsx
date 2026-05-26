@@ -243,7 +243,7 @@ export default function CafeOwnerActiveSessionsOverview() {
         <div
           className={
             isManager
-              ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'
               : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'
           }
         >
@@ -268,56 +268,49 @@ export default function CafeOwnerActiveSessionsOverview() {
                   onClick={() =>
                     navigate(`/billing/session?branchId=${s.branch.id}&customerId=${s.customer.id}`)
                   }
-                  className="group text-left rounded-2xl border border-border/60 bg-card p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_30px_hsl(var(--primary)/0.12)] hover:-translate-y-0.5"
+                  className="group text-left rounded-xl border border-border/60 bg-card p-3 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_25px_hsl(var(--primary)/0.12)] hover:-translate-y-0.5"
                 >
-                  {/* Top: customer + live */}
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <UserIcon className="h-5 w-5" />
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <UserIcon className="h-3.5 w-3.5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-base truncate">{s.customer.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{s.customer.phone}</p>
+                        <p className="font-semibold text-sm truncate leading-tight">{s.customer.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{s.customer.phone}</p>
                       </div>
                     </div>
-                    <Badge className="bg-success/10 text-success border-success/30 font-medium text-xs px-2 py-0.5 shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-success mr-1.5 animate-pulse" />
+                    <Badge className="bg-success/10 text-success border-success/30 font-medium text-[10px] px-1.5 py-0 h-5 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success mr-1 animate-pulse" />
                       Live
                     </Badge>
                   </div>
 
-                  {/* Big info tiles */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="rounded-xl bg-muted/40 px-3 py-2.5">
-                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                        <Monitor className="h-3 w-3" /> Seat
-                      </div>
-                      <p className="font-semibold text-sm">#{s.seat?.number ?? '—'}</p>
+                  {/* Info row */}
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] mb-2">
+                    <div className="flex items-center gap-1 text-muted-foreground min-w-0">
+                      <Monitor className="h-3 w-3 shrink-0" />
+                      <span className="truncate">Seat #{s.seat?.number ?? '—'}</span>
                     </div>
-                    <div className="rounded-xl bg-muted/40 px-3 py-2.5">
-                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                        <Clock className="h-3 w-3" /> Duration
-                      </div>
-                      <p className="font-semibold text-sm">{formatRelative(s.start)}</p>
+                    <div className="flex items-center gap-1 text-muted-foreground min-w-0 justify-end">
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span>{formatRelative(s.start)}</span>
                     </div>
                   </div>
 
                   {/* Usage + status */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs uppercase tracking-wide text-muted-foreground">Wallet Usage</span>
-                      <Badge variant="outline" className={`font-medium text-[10px] ${statusClasses}`}>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-mono font-semibold">
+                        RM {s.usage.toFixed(2)}
+                        <span className="text-muted-foreground"> / {s.customer.lockedAmount.toFixed(0)}</span>
+                      </span>
+                      <Badge variant="outline" className={`font-medium text-[9px] px-1.5 py-0 h-4 ${statusClasses}`}>
                         {statusLabel}
                       </Badge>
                     </div>
-                    <div className="flex items-baseline justify-between">
-                      <span className="font-mono text-lg font-bold">RM {s.usage.toFixed(2)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        of RM {s.customer.lockedAmount.toFixed(2)} locked
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                       <div
                         className={`h-full transition-all ${
                           tone === 'destructive' ? 'bg-destructive'
@@ -327,17 +320,14 @@ export default function CafeOwnerActiveSessionsOverview() {
                         style={{ width: `${s.usagePct}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      {Math.round(s.usagePct)}% of wallet used • tap card to manage session
+                    <p className="text-[10px] text-muted-foreground">
+                      {Math.round(s.usagePct)}% used • tap to manage
                     </p>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-1 mt-3 text-xs font-medium text-primary">
-                    Open session <ChevronRight className="h-3.5 w-3.5" />
                   </div>
                 </button>
               );
             }
+
 
             return (
               <button
