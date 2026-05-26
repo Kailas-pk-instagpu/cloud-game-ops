@@ -117,7 +117,9 @@ export default function CafeOwnerActiveSessionsOverview() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Active Billing Sessions</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Live overview of all running sessions across your branches.
+            {isManager
+              ? 'Live view of every customer currently using a seat at your branch.'
+              : 'Live overview of all running sessions across your branches.'}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
@@ -126,7 +128,7 @@ export default function CafeOwnerActiveSessionsOverview() {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 ${isManager ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-3`}>
         <Card className="border-border/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
@@ -135,14 +137,16 @@ export default function CafeOwnerActiveSessionsOverview() {
             <p className="font-mono text-2xl font-bold">{totalActive}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
-              <Building2 className="h-3.5 w-3.5" /> Branches
-            </div>
-            <p className="font-mono text-2xl font-bold">{ownerBranches.length}</p>
-          </CardContent>
-        </Card>
+        {!isManager && (
+          <Card className="border-border/60">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                <Building2 className="h-3.5 w-3.5" /> Branches
+              </div>
+              <p className="font-mono text-2xl font-bold">{ownerBranches.length}</p>
+            </CardContent>
+          </Card>
+        )}
         <Card className="border-border/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
