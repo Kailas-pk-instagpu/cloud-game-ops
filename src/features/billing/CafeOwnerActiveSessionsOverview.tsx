@@ -36,6 +36,7 @@ export default function CafeOwnerActiveSessionsOverview() {
   const branches = useBranchStore((s) => s.branches);
   const seats = useSeatStore((s) => s.seats);
   const navigate = useNavigate();
+  const isManager = user?.role === 'manager';
 
   const ownerBranches = useMemo(() => {
     if (!user) return [];
@@ -116,7 +117,9 @@ export default function CafeOwnerActiveSessionsOverview() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Active Billing Sessions</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Live overview of all running sessions across your branches.
+            {isManager
+              ? 'Live view of every customer currently using a seat at your branch.'
+              : 'Live overview of all running sessions across your branches.'}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
@@ -125,7 +128,7 @@ export default function CafeOwnerActiveSessionsOverview() {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 ${isManager ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-3`}>
         <Card className="border-border/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
@@ -134,14 +137,16 @@ export default function CafeOwnerActiveSessionsOverview() {
             <p className="font-mono text-2xl font-bold">{totalActive}</p>
           </CardContent>
         </Card>
-        <Card className="border-border/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
-              <Building2 className="h-3.5 w-3.5" /> Branches
-            </div>
-            <p className="font-mono text-2xl font-bold">{ownerBranches.length}</p>
-          </CardContent>
-        </Card>
+        {!isManager && (
+          <Card className="border-border/60">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                <Building2 className="h-3.5 w-3.5" /> Branches
+              </div>
+              <p className="font-mono text-2xl font-bold">{ownerBranches.length}</p>
+            </CardContent>
+          </Card>
+        )}
         <Card className="border-border/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
@@ -173,17 +178,19 @@ export default function CafeOwnerActiveSessionsOverview() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Select value={branchFilter} onValueChange={setBranchFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Branch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All branches</SelectItem>
-                {ownerBranches.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isManager && (
+              <Select value={branchFilter} onValueChange={setBranchFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All branches</SelectItem>
+                  {ownerBranches.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
@@ -233,12 +240,105 @@ export default function CafeOwnerActiveSessionsOverview() {
           description={totalActive === 0 ? "There are no live sessions right now." : "No sessions match your filters."}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div
+          className={
+            isManager
+              ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'
+              : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'
+          }
+        >
           {filtered.map((s) => {
             const tone =
               s.usagePct >= 80 ? 'destructive'
               : s.usagePct >= 50 ? 'warning'
               : 'success';
+            const statusLabel =
+              tone === 'destructive' ? 'Near limit'
+              : tone === 'warning' ? 'Warning'
+              : 'Normal';
+            const statusClasses =
+              tone === 'destructive' ? 'bg-destructive/10 text-destructive border-destructive/30'
+              : tone === 'warning' ? 'bg-warning/10 text-warning border-warning/30'
+              : 'bg-success/10 text-success border-success/30';
+
+            if (isManager) {
+              return (
+                <button
+                  key={s.id}
+                  onClick={() =>
+                    navigate(`/billing/session?branchId=${s.branch.id}&customerId=${s.customer.id}`)
+                  }
+                  className="group text-left rounded-2xl border border-border/60 bg-card p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_30px_hsl(var(--primary)/0.12)] hover:-translate-y-0.5"
+                >
+                  {/* Top: customer + live */}
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <UserIcon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-base truncate">{s.customer.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{s.customer.phone}</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-success/10 text-success border-success/30 font-medium text-xs px-2 py-0.5 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success mr-1.5 animate-pulse" />
+                      Live
+                    </Badge>
+                  </div>
+
+                  {/* Big info tiles */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="rounded-xl bg-muted/40 px-3 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                        <Monitor className="h-3 w-3" /> Seat
+                      </div>
+                      <p className="font-semibold text-sm">#{s.seat?.number ?? '—'}</p>
+                    </div>
+                    <div className="rounded-xl bg-muted/40 px-3 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                        <Clock className="h-3 w-3" /> Duration
+                      </div>
+                      <p className="font-semibold text-sm">{formatRelative(s.start)}</p>
+                    </div>
+                  </div>
+
+                  {/* Usage + status */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-wide text-muted-foreground">Wallet Usage</span>
+                      <Badge variant="outline" className={`font-medium text-[10px] ${statusClasses}`}>
+                        {statusLabel}
+                      </Badge>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-lg font-bold">RM {s.usage.toFixed(2)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        of RM {s.customer.lockedAmount.toFixed(2)} locked
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          tone === 'destructive' ? 'bg-destructive'
+                          : tone === 'warning' ? 'bg-warning'
+                          : 'bg-success'
+                        }`}
+                        style={{ width: `${s.usagePct}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {Math.round(s.usagePct)}% of wallet used • tap card to manage session
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-1 mt-3 text-xs font-medium text-primary">
+                    Open session <ChevronRight className="h-3.5 w-3.5" />
+                  </div>
+                </button>
+              );
+            }
+
             return (
               <button
                 key={s.id}
