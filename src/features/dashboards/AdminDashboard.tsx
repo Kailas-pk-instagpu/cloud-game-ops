@@ -135,7 +135,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {MOCK_BRANCHES.map(branch => (
-              <div key={branch.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div key={branch.id} className="flex items-center justify-between p-3 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{branch.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{branch.address}</p>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
                     <span className="text-sm font-medium">{branch.activeSeats}/{branch.totalSeats}</span>
-                    <p className="text-[10px] text-muted-foreground">seats</p>
+                    <p className="text-[11px] sm:text-[10px] text-muted-foreground">seats</p>
                   </div>
                   <StatusBadge status={branch.status} />
                 </div>
