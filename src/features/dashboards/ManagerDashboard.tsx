@@ -165,11 +165,11 @@ export default function ManagerDashboard() {
             <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
             <CardDescription>Latest floor actions</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2.5 sm:space-y-2">
             {RECENT_ACTIVITY.map((log, i) => (
-              <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center gap-3 p-3 sm:p-2 rounded-lg bg-muted/50">
                 <span className={cn(
-                  'w-2 h-2 rounded-full flex-shrink-0',
+                  'w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0',
                   log.type === 'checkin' && 'bg-success',
                   log.type === 'checkout' && 'bg-info',
                   log.type === 'restart' && 'bg-warning',
@@ -182,7 +182,7 @@ export default function ManagerDashboard() {
                     <span className="text-muted-foreground"> · Seat {log.seat}</span>
                   </p>
                 </div>
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{log.time}</span>
+                <span className="text-[11px] sm:text-[10px] text-muted-foreground whitespace-nowrap">{log.time}</span>
               </div>
             ))}
           </CardContent>
