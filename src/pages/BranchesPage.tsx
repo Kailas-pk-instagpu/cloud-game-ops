@@ -667,7 +667,7 @@ export default function BranchesPage() {
           <BranchFormFields isEdit={false} />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button className="gradient-primary text-primary-foreground" onClick={submitAdd}>Create Branch</Button>
+            <Button className="gradient-primary text-primary-foreground" onClick={submitAdd} disabled={!form.name.trim() || !form.address.trim()}>Create Branch</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -682,7 +682,7 @@ export default function BranchesPage() {
           <BranchFormFields isEdit={true} />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowManageDialog(false)}>Cancel</Button>
-            <Button className="gradient-primary text-primary-foreground" onClick={submitUpdate}>Save Changes</Button>
+            <Button className="gradient-primary text-primary-foreground" onClick={submitUpdate} disabled={!form.name.trim() || !form.address.trim()}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
