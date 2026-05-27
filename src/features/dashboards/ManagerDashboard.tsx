@@ -193,7 +193,7 @@ export default function ManagerDashboard() {
             <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
             <CardDescription>Your current shift overview</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2.5 sm:space-y-3">
             {[
               { label: 'Total Check-ins', value: '42', icon: '✅' },
               { label: 'Total Check-outs', value: '28', icon: '🚪' },
@@ -202,7 +202,7 @@ export default function ManagerDashboard() {
               { label: 'Issues Reported', value: '2', icon: '⚠️' },
               { label: 'Customer Complaints', value: '0', icon: '😊' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center justify-between p-3 sm:p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
                   <span>{item.icon}</span>
                   <span className="text-sm">{item.label}</span>
