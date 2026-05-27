@@ -260,9 +260,9 @@ export default function ManagerDashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground">GPU: {selectedSeat?.gpuModel}</p>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckIn} disabled={!playerName.trim()} className="bg-success text-success-foreground hover:bg-success/90">Check In</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleCheckIn} disabled={!playerName.trim()} className="bg-success text-success-foreground hover:bg-success/90 sm:size-default">Check In</Button>
               </DialogFooter>
             </>
           )}
