@@ -297,9 +297,9 @@ export default function ManagerDashboard() {
                 </DialogTitle>
                 <DialogDescription>This will clear the maintenance status and make the seat available</DialogDescription>
               </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleRestart} className="bg-warning text-warning-foreground hover:bg-warning/90">Restart</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleRestart} className="bg-warning text-warning-foreground hover:bg-warning/90 sm:size-default">Restart</Button>
               </DialogFooter>
             </>
           )}
