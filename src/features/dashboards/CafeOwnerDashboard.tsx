@@ -182,15 +182,15 @@ export default function CafeOwnerDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {myBranches.map(branch => (
-              <div key={branch.id} className="p-3 rounded-lg bg-muted/50">
+              <div key={branch.id} className="p-3.5 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold">{branch.name}</h3>
                   <StatusBadge status={branch.status} />
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">{branch.address}</p>
+                <p className="text-xs text-muted-foreground mb-2.5 sm:mb-2">{branch.address}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs"><strong>{branch.activeSeats}</strong>/{branch.totalSeats} seats</span>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/branches')}>Manage</Button>
+                  <Button variant="outline" size="sm" className="h-9 sm:h-7 text-xs px-4 sm:px-3 touch-manipulation" onClick={() => navigate('/branches')}>Manage</Button>
                 </div>
               </div>
             ))}
