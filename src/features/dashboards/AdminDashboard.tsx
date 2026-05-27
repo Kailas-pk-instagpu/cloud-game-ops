@@ -177,12 +177,12 @@ export default function AdminDashboard() {
                   { action: 'Branch status changed', user: 'System', time: '5h ago' },
                   { action: 'Password reset', user: 'Casey Park', time: '1d ago' },
                 ].map((log, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
-                    <div>
+                  <div key={i} className="flex items-center justify-between text-xs p-3 sm:p-2 rounded-lg sm:rounded bg-muted/30 touch-manipulation gap-2">
+                    <div className="min-w-0">
                       <span className="font-medium">{log.action}</span>
                       <span className="text-muted-foreground"> · {log.user}</span>
                     </div>
-                    <span className="text-muted-foreground">{log.time}</span>
+                    <span className="text-[11px] sm:text-xs text-muted-foreground flex-shrink-0">{log.time}</span>
                   </div>
                 ))}
               </div>
