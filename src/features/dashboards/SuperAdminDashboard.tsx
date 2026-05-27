@@ -246,13 +246,13 @@ export default function SuperAdminDashboard() {
               { msg: 'Monthly revenue target exceeded', type: 'success', time: '1 day ago' },
               { msg: 'New cafe owner registered', type: 'info', time: '2 days ago' },
             ].map((alert, i) => (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/50">
-                <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+              <div key={i} className="flex items-start gap-3 p-3 sm:p-2.5 rounded-lg bg-muted/50">
+                <span className={`w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full mt-1.5 flex-shrink-0 ${
                   alert.type === 'error' ? 'bg-destructive' : alert.type === 'warning' ? 'bg-warning' : alert.type === 'success' ? 'bg-success' : 'bg-info'
                 }`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{alert.msg}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{alert.time}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{alert.time}</p>
                 </div>
               </div>
             ))}
