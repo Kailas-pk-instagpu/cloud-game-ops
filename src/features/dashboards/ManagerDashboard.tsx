@@ -115,20 +115,20 @@ export default function ManagerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-2">
             {seats.map(seat => (
               <button
                 key={seat.id}
                 onClick={() => handleSeatClick(seat)}
                 className={cn(
-                  'aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2',
+                  'aspect-square min-h-[72px] sm:min-h-0 rounded-xl flex flex-col items-center justify-center gap-1 sm:gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2 touch-manipulation',
                   seat.status === 'available' && 'bg-success/10 border-success/30 text-success hover:bg-success/20',
                   seat.status === 'occupied' && 'bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20',
                   seat.status === 'maintenance' && 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
                 )}
               >
-                <Monitor className="h-4 w-4" />
-                <span className="font-bold">{seat.number}</span>
+                <Monitor className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="font-bold text-sm sm:text-xs">{seat.number}</span>
                 {seat.playerName && (
                   <span className="text-[10px] truncate max-w-full px-1">{seat.playerName}</span>
                 )}
