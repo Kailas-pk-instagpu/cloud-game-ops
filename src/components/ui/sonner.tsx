@@ -43,11 +43,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: false,
         classNames: {
           toast:
-            "group toast pointer-events-auto flex items-center gap-3 w-full rounded-2xl border bg-card/95 backdrop-blur px-4 py-3 pr-10 shadow-lg text-foreground " +
-            "data-[type=success]:border-success/40 data-[type=success]:bg-success/5 " +
-            "data-[type=error]:border-destructive/40 data-[type=error]:bg-destructive/5 " +
-            "data-[type=warning]:border-warning/40 data-[type=warning]:bg-warning/5 " +
-            "data-[type=info]:border-primary/40 data-[type=info]:bg-primary/5",
+            "group toast pointer-events-auto flex items-center gap-3 w-full rounded-2xl border bg-card px-4 py-3 pr-10 shadow-lg text-foreground " +
+            "data-[type=success]:border-success/40 " +
+            "data-[type=error]:border-destructive/40 " +
+            "data-[type=warning]:border-warning/40 " +
+            "data-[type=info]:border-primary/40",
           title: "text-sm font-medium leading-snug",
           description: "text-xs text-muted-foreground leading-snug mt-0.5",
           icon: "shrink-0",
