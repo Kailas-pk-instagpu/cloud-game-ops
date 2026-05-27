@@ -140,7 +140,7 @@ export default function ForgotPasswordPage() {
                 />
                 <p className="text-xs text-muted-foreground">Enter any 6-digit code for demo</p>
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || code.length !== 6}>
                 {loading ? 'Verifying...' : 'Verify Code'}
               </Button>
               <div className="text-center">
