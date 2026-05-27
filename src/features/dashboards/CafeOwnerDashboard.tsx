@@ -1,7 +1,7 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MOCK_BRANCHES, MOCK_USERS, MOCK_SEATS, REVENUE_DATA } from '@/shared/lib/mock-data';
-import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar } from 'lucide-react';
+import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar, User, Wallet, Repeat, Gamepad2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -112,15 +112,17 @@ export default function CafeOwnerDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {[
-              { label: 'Total Customers Today', value: CUSTOMER_STATS.totalToday, icon: '👤' },
-              { label: 'Average Spend', value: CUSTOMER_STATS.avgSpend, icon: '💵' },
-              { label: 'Repeat Customer Rate', value: CUSTOMER_STATS.repeatRate, icon: '🔄' },
-              { label: 'Peak Time', value: CUSTOMER_STATS.peakTime, icon: '⏰' },
-              { label: 'Avg Session Duration', value: CUSTOMER_STATS.avgSessionTime, icon: '🎮' },
+              { label: 'Total Customers Today', value: CUSTOMER_STATS.totalToday, icon: User },
+              { label: 'Average Spend', value: CUSTOMER_STATS.avgSpend, icon: Wallet },
+              { label: 'Repeat Customer Rate', value: CUSTOMER_STATS.repeatRate, icon: Repeat },
+              { label: 'Peak Time', value: CUSTOMER_STATS.peakTime, icon: Clock },
+              { label: 'Avg Session Duration', value: CUSTOMER_STATS.avgSessionTime, icon: Gamepad2 },
             ].map((stat, i) => (
               <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{stat.icon}</span>
+                  <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                    <stat.icon className="h-3.5 w-3.5" />
+                  </div>
                   <span className="text-sm">{stat.label}</span>
                 </div>
                 <span className="text-sm font-semibold">{stat.value}</span>
