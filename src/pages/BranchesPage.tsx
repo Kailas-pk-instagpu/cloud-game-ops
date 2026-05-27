@@ -682,7 +682,7 @@ export default function BranchesPage() {
           <BranchFormFields isEdit={true} />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowManageDialog(false)}>Cancel</Button>
-            <Button className="gradient-primary text-primary-foreground" onClick={submitUpdate}>Save Changes</Button>
+            <Button className="gradient-primary text-primary-foreground" onClick={submitUpdate} disabled={!form.name.trim() || !form.address.trim()}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
