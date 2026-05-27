@@ -282,9 +282,9 @@ export default function ManagerDashboard() {
                   <p className="text-sm"><strong>GPU:</strong> {selectedSeat?.gpuModel}</p>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckOut} variant="destructive">End Session</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleCheckOut} variant="destructive" className="sm:size-default">End Session</Button>
               </DialogFooter>
             </>
           )}
