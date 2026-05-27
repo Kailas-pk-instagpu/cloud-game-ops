@@ -175,7 +175,7 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || !newPassword || !confirmPassword}>
                 {loading ? 'Resetting...' : 'Reset Password'}
               </Button>
             </form>
