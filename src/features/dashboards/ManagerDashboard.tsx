@@ -115,20 +115,20 @@ export default function ManagerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-2">
             {seats.map(seat => (
               <button
                 key={seat.id}
                 onClick={() => handleSeatClick(seat)}
                 className={cn(
-                  'aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2',
+                  'aspect-square min-h-[72px] sm:min-h-0 rounded-xl flex flex-col items-center justify-center gap-1 sm:gap-0.5 text-xs font-medium transition-all hover:scale-105 active:scale-95 border-2 touch-manipulation',
                   seat.status === 'available' && 'bg-success/10 border-success/30 text-success hover:bg-success/20',
                   seat.status === 'occupied' && 'bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20',
                   seat.status === 'maintenance' && 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
                 )}
               >
-                <Monitor className="h-4 w-4" />
-                <span className="font-bold">{seat.number}</span>
+                <Monitor className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="font-bold text-sm sm:text-xs">{seat.number}</span>
                 {seat.playerName && (
                   <span className="text-[10px] truncate max-w-full px-1">{seat.playerName}</span>
                 )}
@@ -165,11 +165,11 @@ export default function ManagerDashboard() {
             <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
             <CardDescription>Latest floor actions</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2.5 sm:space-y-2">
             {RECENT_ACTIVITY.map((log, i) => (
-              <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center gap-3 p-3 sm:p-2 rounded-lg bg-muted/50">
                 <span className={cn(
-                  'w-2 h-2 rounded-full flex-shrink-0',
+                  'w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0',
                   log.type === 'checkin' && 'bg-success',
                   log.type === 'checkout' && 'bg-info',
                   log.type === 'restart' && 'bg-warning',
@@ -182,7 +182,7 @@ export default function ManagerDashboard() {
                     <span className="text-muted-foreground"> · Seat {log.seat}</span>
                   </p>
                 </div>
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{log.time}</span>
+                <span className="text-[11px] sm:text-[10px] text-muted-foreground whitespace-nowrap">{log.time}</span>
               </div>
             ))}
           </CardContent>
@@ -193,7 +193,7 @@ export default function ManagerDashboard() {
             <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
             <CardDescription>Your current shift overview</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2.5 sm:space-y-3">
             {[
               { label: 'Total Check-ins', value: '42', icon: '✅' },
               { label: 'Total Check-outs', value: '28', icon: '🚪' },
@@ -202,7 +202,7 @@ export default function ManagerDashboard() {
               { label: 'Issues Reported', value: '2', icon: '⚠️' },
               { label: 'Customer Complaints', value: '0', icon: '😊' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center justify-between p-3 sm:p-2 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
                   <span>{item.icon}</span>
                   <span className="text-sm">{item.label}</span>
@@ -260,9 +260,9 @@ export default function ManagerDashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground">GPU: {selectedSeat?.gpuModel}</p>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckIn} disabled={!playerName.trim()} className="bg-success text-success-foreground hover:bg-success/90">Check In</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleCheckIn} disabled={!playerName.trim()} className="bg-success text-success-foreground hover:bg-success/90 sm:size-default">Check In</Button>
               </DialogFooter>
             </>
           )}
@@ -282,9 +282,9 @@ export default function ManagerDashboard() {
                   <p className="text-sm"><strong>GPU:</strong> {selectedSeat?.gpuModel}</p>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleCheckOut} variant="destructive">End Session</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleCheckOut} variant="destructive" className="sm:size-default">End Session</Button>
               </DialogFooter>
             </>
           )}
@@ -297,9 +297,9 @@ export default function ManagerDashboard() {
                 </DialogTitle>
                 <DialogDescription>This will clear the maintenance status and make the seat available</DialogDescription>
               </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-                <Button onClick={handleRestart} className="bg-warning text-warning-foreground hover:bg-warning/90">Restart</Button>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="lg" onClick={closeDialog} className="sm:size-default">Cancel</Button>
+                <Button size="lg" onClick={handleRestart} className="bg-warning text-warning-foreground hover:bg-warning/90 sm:size-default">Restart</Button>
               </DialogFooter>
             </>
           )}
