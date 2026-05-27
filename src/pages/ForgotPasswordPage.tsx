@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || !email.trim()}>
                 <Mail className="h-4 w-4 mr-2" />
                 {loading ? 'Sending...' : 'Send Reset Code'}
               </Button>
