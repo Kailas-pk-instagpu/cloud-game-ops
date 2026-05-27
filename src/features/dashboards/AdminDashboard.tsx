@@ -198,20 +198,20 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/users')}>
-              <Users className="h-5 w-5 text-primary" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/users')}>
+              <Users className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
               <span className="text-xs">Manage Users</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/branches')}>
-              <Building2 className="h-5 w-5 text-info" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/branches')}>
+              <Building2 className="h-6 w-6 sm:h-5 sm:w-5 text-info" />
               <span className="text-xs">Add Branch</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/analytics')}>
-              <TrendingUp className="h-5 w-5 text-success" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/analytics')}>
+              <TrendingUp className="h-6 w-6 sm:h-5 sm:w-5 text-success" />
               <span className="text-xs">View Analytics</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/settings')}>
-              <Star className="h-5 w-5 text-warning" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/settings')}>
+              <Star className="h-6 w-6 sm:h-5 sm:w-5 text-warning" />
               <span className="text-xs">Settings</span>
             </Button>
           </div>
