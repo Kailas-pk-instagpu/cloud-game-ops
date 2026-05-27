@@ -387,7 +387,12 @@ export default function BookingsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }}>Cancel</Button>
-            <Button onClick={handleCreate}>Create Booking</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!formBranch || !formSeat || !formName.trim() || !formDate || !formStartTime || !formEndTime}
+            >
+              Create Booking
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
