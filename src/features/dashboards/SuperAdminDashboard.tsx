@@ -181,11 +181,11 @@ export default function SuperAdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {SYSTEM_METRICS.map((metric, i) => (
-              <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center justify-between p-3 sm:p-2 rounded-lg bg-muted/50 touch-manipulation">
                 <span className="text-sm">{metric.name}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{metric.value}</span>
-                  <span className="w-2 h-2 rounded-full bg-success" />
+                  <span className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-success" />
                 </div>
               </div>
             ))}
