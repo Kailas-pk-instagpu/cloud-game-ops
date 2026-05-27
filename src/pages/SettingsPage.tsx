@@ -364,7 +364,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-center pt-2">
-                  <Button className="gradient-primary text-primary-foreground px-10" onClick={handleSaveProfile} disabled={isSaving}>
+                  <Button className="gradient-primary text-primary-foreground px-10" onClick={handleSaveProfile} disabled={isSaving || !name.trim() || !email.trim()}>
                     {isSaving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
