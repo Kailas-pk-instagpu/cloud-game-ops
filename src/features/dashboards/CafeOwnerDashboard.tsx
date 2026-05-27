@@ -118,10 +118,10 @@ export default function CafeOwnerDashboard() {
               { label: 'Peak Time', value: CUSTOMER_STATS.peakTime, icon: Clock },
               { label: 'Avg Session Duration', value: CUSTOMER_STATS.avgSessionTime, icon: Gamepad2 },
             ].map((stat, i) => (
-              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
-                    <stat.icon className="h-3.5 w-3.5" />
+              <div key={i} className="flex items-center justify-between p-3 sm:p-2.5 rounded-lg bg-muted/50 touch-manipulation">
+                <div className="flex items-center gap-2.5 sm:gap-2">
+                  <div className="h-8 w-8 sm:h-7 sm:w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                    <stat.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                   </div>
                   <span className="text-sm">{stat.label}</span>
                 </div>
@@ -182,15 +182,15 @@ export default function CafeOwnerDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {myBranches.map(branch => (
-              <div key={branch.id} className="p-3 rounded-lg bg-muted/50">
+              <div key={branch.id} className="p-3.5 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold">{branch.name}</h3>
                   <StatusBadge status={branch.status} />
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">{branch.address}</p>
+                <p className="text-xs text-muted-foreground mb-2.5 sm:mb-2">{branch.address}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs"><strong>{branch.activeSeats}</strong>/{branch.totalSeats} seats</span>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/branches')}>Manage</Button>
+                  <Button variant="outline" size="sm" className="h-9 sm:h-7 text-xs px-4 sm:px-3 touch-manipulation" onClick={() => navigate('/branches')}>Manage</Button>
                 </div>
               </div>
             ))}

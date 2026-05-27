@@ -135,7 +135,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {MOCK_BRANCHES.map(branch => (
-              <div key={branch.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div key={branch.id} className="flex items-center justify-between p-3 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{branch.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{branch.address}</p>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
                     <span className="text-sm font-medium">{branch.activeSeats}/{branch.totalSeats}</span>
-                    <p className="text-[10px] text-muted-foreground">seats</p>
+                    <p className="text-[11px] sm:text-[10px] text-muted-foreground">seats</p>
                   </div>
                   <StatusBadge status={branch.status} />
                 </div>
@@ -177,12 +177,12 @@ export default function AdminDashboard() {
                   { action: 'Branch status changed', user: 'System', time: '5h ago' },
                   { action: 'Password reset', user: 'Casey Park', time: '1d ago' },
                 ].map((log, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
-                    <div>
+                  <div key={i} className="flex items-center justify-between text-xs p-3 sm:p-2 rounded-lg sm:rounded bg-muted/30 touch-manipulation gap-2">
+                    <div className="min-w-0">
                       <span className="font-medium">{log.action}</span>
                       <span className="text-muted-foreground"> · {log.user}</span>
                     </div>
-                    <span className="text-muted-foreground">{log.time}</span>
+                    <span className="text-[11px] sm:text-xs text-muted-foreground flex-shrink-0">{log.time}</span>
                   </div>
                 ))}
               </div>
@@ -198,20 +198,20 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/users')}>
-              <Users className="h-5 w-5 text-primary" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/users')}>
+              <Users className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
               <span className="text-xs">Manage Users</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/branches')}>
-              <Building2 className="h-5 w-5 text-info" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/branches')}>
+              <Building2 className="h-6 w-6 sm:h-5 sm:w-5 text-info" />
               <span className="text-xs">Add Branch</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/analytics')}>
-              <TrendingUp className="h-5 w-5 text-success" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/analytics')}>
+              <TrendingUp className="h-6 w-6 sm:h-5 sm:w-5 text-success" />
               <span className="text-xs">View Analytics</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/settings')}>
-              <Star className="h-5 w-5 text-warning" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/settings')}>
+              <Star className="h-6 w-6 sm:h-5 sm:w-5 text-warning" />
               <span className="text-xs">Settings</span>
             </Button>
           </div>

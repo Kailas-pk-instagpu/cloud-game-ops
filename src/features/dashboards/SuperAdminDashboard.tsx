@@ -181,11 +181,11 @@ export default function SuperAdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-2">
             {SYSTEM_METRICS.map((metric, i) => (
-              <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+              <div key={i} className="flex items-center justify-between p-3 sm:p-2 rounded-lg bg-muted/50 touch-manipulation">
                 <span className="text-sm">{metric.name}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{metric.value}</span>
-                  <span className="w-2 h-2 rounded-full bg-success" />
+                  <span className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-success" />
                 </div>
               </div>
             ))}
@@ -246,13 +246,13 @@ export default function SuperAdminDashboard() {
               { msg: 'Monthly revenue target exceeded', type: 'success', time: '1 day ago' },
               { msg: 'New cafe owner registered', type: 'info', time: '2 days ago' },
             ].map((alert, i) => (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/50">
-                <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+              <div key={i} className="flex items-start gap-3 p-3 sm:p-2.5 rounded-lg bg-muted/50">
+                <span className={`w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full mt-1.5 flex-shrink-0 ${
                   alert.type === 'error' ? 'bg-destructive' : alert.type === 'warning' ? 'bg-warning' : alert.type === 'success' ? 'bg-success' : 'bg-info'
                 }`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{alert.msg}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{alert.time}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{alert.time}</p>
                 </div>
               </div>
             ))}
@@ -268,20 +268,20 @@ export default function SuperAdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/users')}>
-              <Users className="h-5 w-5 text-primary" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/users')}>
+              <Users className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
               <span className="text-xs">Manage Users</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/branches')}>
-              <Building2 className="h-5 w-5 text-info" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/branches')}>
+              <Building2 className="h-6 w-6 sm:h-5 sm:w-5 text-info" />
               <span className="text-xs">View Branches</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/gpu-nodes')}>
-              <Server className="h-5 w-5 text-warning" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/gpu-nodes')}>
+              <Server className="h-6 w-6 sm:h-5 sm:w-5 text-warning" />
               <span className="text-xs">GPU Nodes</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-4" onClick={() => navigate('/analytics')}>
-              <TrendingUp className="h-5 w-5 text-success" />
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/analytics')}>
+              <TrendingUp className="h-6 w-6 sm:h-5 sm:w-5 text-success" />
               <span className="text-xs">Analytics</span>
             </Button>
           </div>
