@@ -1,7 +1,7 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MOCK_BRANCHES, MOCK_USERS, MOCK_SEATS, REVENUE_DATA } from '@/shared/lib/mock-data';
-import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar } from 'lucide-react';
+import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar, User, Wallet, Repeat, Gamepad2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
