@@ -98,7 +98,7 @@ export default function Verify2FAPage() {
             ))}
           </div>
 
-          <Button onClick={() => handleVerify()} className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+          <Button onClick={() => handleVerify()} className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || code.join('').length !== 6}>
             {loading ? 'Verifying...' : 'Verify Code'}
           </Button>
 

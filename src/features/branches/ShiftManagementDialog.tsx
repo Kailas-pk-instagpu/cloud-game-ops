@@ -379,7 +379,11 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
 
             <DialogFooter>
               <Button variant="outline" onClick={resetForm}>Cancel</Button>
-              <Button className="gradient-primary text-primary-foreground" onClick={handleSubmit}>
+              <Button
+                className="gradient-primary text-primary-foreground"
+                onClick={handleSubmit}
+                disabled={!form.name.trim() || !form.startTime || !form.endTime || form.weekdays.length === 0}
+              >
                 {editingId ? 'Save Changes' : 'Create Shift'}
               </Button>
             </DialogFooter>

@@ -124,7 +124,7 @@ export default function LoginPage() {
             <div className="animate-login-up" style={{ animationDelay: '540ms' }}>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !email.trim() || !password}
                 className="w-full h-12 gradient-primary text-primary-foreground text-sm font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
               >
                 {loading ? (

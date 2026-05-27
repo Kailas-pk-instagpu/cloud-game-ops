@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || !email.trim()}>
                 <Mail className="h-4 w-4 mr-2" />
                 {loading ? 'Sending...' : 'Send Reset Code'}
               </Button>
@@ -140,7 +140,7 @@ export default function ForgotPasswordPage() {
                 />
                 <p className="text-xs text-muted-foreground">Enter any 6-digit code for demo</p>
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || code.length !== 6}>
                 {loading ? 'Verifying...' : 'Verify Code'}
               </Button>
               <div className="text-center">
@@ -175,7 +175,7 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading}>
+              <Button type="submit" className="w-full gradient-primary text-primary-foreground h-11" disabled={loading || !newPassword || !confirmPassword}>
                 {loading ? 'Resetting...' : 'Reset Password'}
               </Button>
             </form>
