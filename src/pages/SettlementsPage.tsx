@@ -53,6 +53,8 @@ export default function SettlementsPage() {
   const [branchFilter, setBranchFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Settlement | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     return scoped.filter((s) => {
