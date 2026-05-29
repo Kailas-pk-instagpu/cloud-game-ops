@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore, useBookingStore, useBranchStore } from '@/shared/lib/store';
-import { MOCK_BRANCHES, Booking } from '@/shared/lib/mock-data';
+import { MOCK_BRANCHES, MOCK_SEATS, Booking } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
