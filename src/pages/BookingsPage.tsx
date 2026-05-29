@@ -79,6 +79,28 @@ export default function BookingsPage() {
     cancelled: filteredBookings.filter(b => b.status === 'cancelled').length,
   }), [filteredBookings]);
 
+  // Compute available seats for the selected branch/date/time slot
+  const availableSeats = useMemo(() => {
+    if (!formBranch) return [];
+    const branch = branches.find(b => b.id === formBranch) || MOCK_BRANCHES.find(b => b.id === formBranch);
+    if (!branch) return [];
+    const branchSeats = MOCK_SEATS.filter(s => s.branchId === formBranch);
+    return Array.from({ length: branch.totalSeats }, (_, i) => i + 1).filter(num => {
+      const seat = branchSeats.find(s => s.number === num);
+      if (seat?.status === 'maintenance') return false;
+      if (!formDate || !formStartTime || !formEndTime) return true;
+      const clash = bookings.some(b =>
+        b.branchId === formBranch &&
+        b.seatNumber === num &&
+        b.date === formDate &&
+        b.status === 'upcoming' &&
+        formStartTime < b.endTime &&
+        formEndTime > b.startTime
+      );
+      return !clash;
+    });
+  }, [formBranch, formDate, formStartTime, formEndTime, bookings, branches]);
+
   const resetForm = () => {
     setFormBranch('');
     setFormSeat('');
