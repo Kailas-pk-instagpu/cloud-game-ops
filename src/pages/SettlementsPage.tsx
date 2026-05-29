@@ -219,7 +219,7 @@ export default function SettlementsPage() {
         <CardHeader>
           <CardTitle className="text-base">Settlement Records</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Receipt className="h-10 w-10 mx-auto mb-3 opacity-40" />
@@ -227,52 +227,62 @@ export default function SettlementsPage() {
               <p className="text-sm">End a billing session to create a settlement record.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>When</TableHead>
-                    <TableHead>Branch · Customer</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Locked</TableHead>
-                    <TableHead className="text-right">Usage</TableHead>
-                    <TableHead className="text-right">Refund</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((s) => (
-                    <TableRow
-                      key={s.id}
-                      className="cursor-pointer"
-                      onClick={() => setSelected(s)}
-                    >
-                      <TableCell className="text-xs">
-                        <div className="font-medium">{fmtDate(s.endTime)}</div>
-                        <div className="text-muted-foreground font-mono">{s.sessionId.slice(0, 8)}…</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{s.branchName}</div>
-                        <div className="text-xs text-muted-foreground">{s.customerName}</div>
-                      </TableCell>
-                      <TableCell className="font-mono">{formatDuration(s.durationSec)}</TableCell>
-                      <TableCell className="text-right font-mono">RM {s.lockedAmount.toFixed(2)}</TableCell>
-                      <TableCell className="text-right font-mono text-destructive">
-                        RM {s.usageCost.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-success">
-                        RM {s.refund.toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="border-success/30 text-success bg-success/10">
-                          Settled
-                        </Badge>
-                      </TableCell>
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>When</TableHead>
+                      <TableHead>Branch · Customer</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead className="text-right">Locked</TableHead>
+                      <TableHead className="text-right">Usage</TableHead>
+                      <TableHead className="text-right">Refund</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginated.map((s) => (
+                      <TableRow
+                        key={s.id}
+                        className="cursor-pointer"
+                        onClick={() => setSelected(s)}
+                      >
+                        <TableCell className="text-xs">
+                          <div className="font-medium">{fmtDate(s.endTime)}</div>
+                          <div className="text-muted-foreground font-mono">{s.sessionId.slice(0, 8)}…</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{s.branchName}</div>
+                          <div className="text-xs text-muted-foreground">{s.customerName}</div>
+                        </TableCell>
+                        <TableCell className="font-mono">{formatDuration(s.durationSec)}</TableCell>
+                        <TableCell className="text-right font-mono">RM {s.lockedAmount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-mono text-destructive">
+                          RM {s.usageCost.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-success">
+                          RM {s.refund.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="border-success/30 text-success bg-success/10">
+                            Settled
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <TablePagination
+                total={filtered.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="settlements"
+              />
+            </>
           )}
         </CardContent>
       </Card>
