@@ -117,7 +117,7 @@ export default function BookingsPage() {
       return;
     }
 
-    addBooking({
+    const payload = {
       branchId: formBranch,
       seatNumber: parseInt(formSeat),
       customerName: formName,
@@ -125,14 +125,17 @@ export default function BookingsPage() {
       date: formDate,
       startTime: formStartTime,
       endTime: formEndTime,
-      status: 'upcoming',
+      status: 'upcoming' as const,
       gpuPreference: formGpu || undefined,
       notes: formNotes || undefined,
       createdBy: user?.id || '',
-    });
+    };
+    const newId = addBooking(payload);
     toast.success('Booking created successfully');
     setShowCreateDialog(false);
+    setConfirmedBooking({ ...payload, id: newId, createdAt: new Date().toISOString().split('T')[0] });
     resetForm();
+  };
   };
 
   const handleCancel = (id: string) => {
