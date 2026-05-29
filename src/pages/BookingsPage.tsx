@@ -433,6 +433,37 @@ export default function BookingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!confirmedBooking} onOpenChange={(open) => !open && setConfirmedBooking(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarCheck className="h-5 w-5 text-primary" />
+              Booking Confirmed
+            </DialogTitle>
+            <DialogDescription>Share this reference ID with the customer.</DialogDescription>
+          </DialogHeader>
+          {confirmedBooking && (
+            <div className="space-y-3 py-2">
+              <div className="rounded-md border border-border bg-muted/40 p-4 text-center">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Booking ID</p>
+                <p className="text-lg font-mono font-semibold mt-1 select-all">{confirmedBooking.id}</p>
+              </div>
+              <div className="text-sm space-y-1.5">
+                <div className="flex justify-between"><span className="text-muted-foreground">Customer</span><span className="font-medium">{confirmedBooking.customerName}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Branch</span><span className="font-medium">{getBranchName(confirmedBooking.branchId)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Seat</span><span className="font-medium">#{confirmedBooking.seatNumber}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="font-medium">{confirmedBooking.date}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="font-medium">{confirmedBooking.startTime} – {confirmedBooking.endTime}</span></div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { if (confirmedBooking) { navigator.clipboard?.writeText(confirmedBooking.id); toast.success('Booking ID copied'); } }}>Copy ID</Button>
+            <Button onClick={() => setConfirmedBooking(null)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
