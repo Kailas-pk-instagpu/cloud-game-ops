@@ -365,8 +365,20 @@ export default function BookingsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Seat Number *</Label>
-                <Input type="number" min={1} placeholder="e.g. 5" value={formSeat} onChange={e => setFormSeat(e.target.value)} />
+                <Label>Available Seat *</Label>
+                <Select value={formSeat} onValueChange={setFormSeat} disabled={!formBranch}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formBranch ? 'Select branch first' : availableSeats.length === 0 ? 'No seats available' : 'Pick a seat'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSeats.map(n => (
+                      <SelectItem key={n} value={String(n)}>Seat #{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formBranch && formDate && formStartTime && formEndTime && (
+                  <p className="text-xs text-muted-foreground">{availableSeats.length} seat(s) free for this slot</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
