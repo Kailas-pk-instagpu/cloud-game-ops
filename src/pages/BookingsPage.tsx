@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck, CalendarDays, List } from 'lucide-react';
-import BookingCalendarView from '@/features/bookings/BookingCalendarView';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck, CalendarDays, List, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUS_CONFIG: Record<Booking['status'], { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
