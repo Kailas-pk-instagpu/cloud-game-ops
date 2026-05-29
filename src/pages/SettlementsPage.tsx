@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore, useBranchStore, useSettlementStore, type Settlement } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import TablePagination from '@/shared/ui/molecules/TablePagination';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -52,6 +53,8 @@ export default function SettlementsPage() {
   const [branchFilter, setBranchFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Settlement | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     return scoped.filter((s) => {
@@ -67,6 +70,13 @@ export default function SettlementsPage() {
       return true;
     });
   }, [scoped, branchFilter, search]);
+
+  useEffect(() => { setPage(1); }, [branchFilter, search, pageSize]);
+
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize],
+  );
 
   const totals = useMemo(() => {
     return filtered.reduce(
@@ -209,7 +219,7 @@ export default function SettlementsPage() {
         <CardHeader>
           <CardTitle className="text-base">Settlement Records</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Receipt className="h-10 w-10 mx-auto mb-3 opacity-40" />
@@ -217,52 +227,62 @@ export default function SettlementsPage() {
               <p className="text-sm">End a billing session to create a settlement record.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>When</TableHead>
-                    <TableHead>Branch · Customer</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Locked</TableHead>
-                    <TableHead className="text-right">Usage</TableHead>
-                    <TableHead className="text-right">Refund</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((s) => (
-                    <TableRow
-                      key={s.id}
-                      className="cursor-pointer"
-                      onClick={() => setSelected(s)}
-                    >
-                      <TableCell className="text-xs">
-                        <div className="font-medium">{fmtDate(s.endTime)}</div>
-                        <div className="text-muted-foreground font-mono">{s.sessionId.slice(0, 8)}…</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{s.branchName}</div>
-                        <div className="text-xs text-muted-foreground">{s.customerName}</div>
-                      </TableCell>
-                      <TableCell className="font-mono">{formatDuration(s.durationSec)}</TableCell>
-                      <TableCell className="text-right font-mono">RM {s.lockedAmount.toFixed(2)}</TableCell>
-                      <TableCell className="text-right font-mono text-destructive">
-                        RM {s.usageCost.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-success">
-                        RM {s.refund.toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="border-success/30 text-success bg-success/10">
-                          Settled
-                        </Badge>
-                      </TableCell>
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>When</TableHead>
+                      <TableHead>Branch · Customer</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead className="text-right">Locked</TableHead>
+                      <TableHead className="text-right">Usage</TableHead>
+                      <TableHead className="text-right">Refund</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginated.map((s) => (
+                      <TableRow
+                        key={s.id}
+                        className="cursor-pointer"
+                        onClick={() => setSelected(s)}
+                      >
+                        <TableCell className="text-xs">
+                          <div className="font-medium">{fmtDate(s.endTime)}</div>
+                          <div className="text-muted-foreground font-mono">{s.sessionId.slice(0, 8)}…</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{s.branchName}</div>
+                          <div className="text-xs text-muted-foreground">{s.customerName}</div>
+                        </TableCell>
+                        <TableCell className="font-mono">{formatDuration(s.durationSec)}</TableCell>
+                        <TableCell className="text-right font-mono">RM {s.lockedAmount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-mono text-destructive">
+                          RM {s.usageCost.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-success">
+                          RM {s.refund.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="border-success/30 text-success bg-success/10">
+                            Settled
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <TablePagination
+                total={filtered.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="settlements"
+              />
+            </>
           )}
         </CardContent>
       </Card>
