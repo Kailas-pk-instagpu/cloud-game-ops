@@ -68,7 +68,14 @@ export default function SettlementsPage() {
         );
       }
       return true;
-    });
+  }, [scoped, branchFilter, search]);
+
+  useEffect(() => { setPage(1); }, [branchFilter, search, pageSize]);
+
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize],
+  );
   }, [scoped, branchFilter, search]);
 
   const totals = useMemo(() => {
