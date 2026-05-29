@@ -136,7 +136,6 @@ export default function BookingsPage() {
     setConfirmedBooking({ ...payload, id: newId, createdAt: new Date().toISOString().split('T')[0] });
     resetForm();
   };
-  };
 
   const handleCancel = (id: string) => {
     cancelBooking(id);
