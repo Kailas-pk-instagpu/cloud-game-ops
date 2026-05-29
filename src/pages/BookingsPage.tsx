@@ -353,7 +353,6 @@ export default function BookingsPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  ))}
                 </TableBody>
               </Table>
             </div>
