@@ -28,6 +28,7 @@ export default function BookingsPage() {
   const { branches } = useBranchStore();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewTab, setViewTab] = useState<'list' | 'calendar'>('calendar');
