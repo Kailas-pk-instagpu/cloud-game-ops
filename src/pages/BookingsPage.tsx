@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck, CalendarDays, List } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { CalendarCheck, Plus, X, Clock, User, Phone, Monitor, StickyNote, Filter, UserCheck, CalendarDays, List, MoreHorizontal } from 'lucide-react';
 import BookingCalendarView from '@/features/bookings/BookingCalendarView';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -281,6 +282,7 @@ export default function BookingsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Booking ID</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Branch</TableHead>
                     <TableHead>Seat</TableHead>
@@ -294,6 +296,9 @@ export default function BookingsPage() {
                 <TableBody>
                   {filteredBookings.map(booking => (
                     <TableRow key={booking.id}>
+                      <TableCell>
+                        <span className="font-mono text-xs select-all">{booking.id}</span>
+                      </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium text-sm">{booking.customerName}</p>
@@ -321,15 +326,29 @@ export default function BookingsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {booking.status === 'upcoming' && (
-                          <div className="flex items-center justify-end gap-2">
-                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleMarkCompleted(booking.id)}>
-                              <UserCheck className="h-3 w-3" /> Completed
-                            </Button>
-                            <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={() => handleCancel(booking.id)}>
-                              <X className="h-3 w-3" /> Cancelled
-                            </Button>
-                          </div>
+                        {booking.status === 'upcoming' ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="icon" variant="ghost" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={() => handleMarkCompleted(booking.id)}>
+                                <UserCheck className="h-4 w-4 mr-2" /> Mark Completed
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleCancel(booking.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <X className="h-4 w-4 mr-2" /> Cancel Booking
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </TableCell>
                     </TableRow>
