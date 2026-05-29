@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore, useBookingStore, useBranchStore } from '@/shared/lib/store';
-import { MOCK_BRANCHES, Booking } from '@/shared/lib/mock-data';
+import { MOCK_BRANCHES, MOCK_SEATS, Booking } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,7 @@ export default function BookingsPage() {
   const { branches } = useBranchStore();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewTab, setViewTab] = useState<'list' | 'calendar'>('calendar');
@@ -78,6 +79,28 @@ export default function BookingsPage() {
     cancelled: filteredBookings.filter(b => b.status === 'cancelled').length,
   }), [filteredBookings]);
 
+  // Compute available seats for the selected branch/date/time slot
+  const availableSeats = useMemo(() => {
+    if (!formBranch) return [];
+    const branch = branches.find(b => b.id === formBranch) || MOCK_BRANCHES.find(b => b.id === formBranch);
+    if (!branch) return [];
+    const branchSeats = MOCK_SEATS.filter(s => s.branchId === formBranch);
+    return Array.from({ length: branch.totalSeats }, (_, i) => i + 1).filter(num => {
+      const seat = branchSeats.find(s => s.number === num);
+      if (seat?.status === 'maintenance') return false;
+      if (!formDate || !formStartTime || !formEndTime) return true;
+      const clash = bookings.some(b =>
+        b.branchId === formBranch &&
+        b.seatNumber === num &&
+        b.date === formDate &&
+        b.status === 'upcoming' &&
+        formStartTime < b.endTime &&
+        formEndTime > b.startTime
+      );
+      return !clash;
+    });
+  }, [formBranch, formDate, formStartTime, formEndTime, bookings, branches]);
+
   const resetForm = () => {
     setFormBranch('');
     setFormSeat('');
@@ -116,7 +139,7 @@ export default function BookingsPage() {
       return;
     }
 
-    addBooking({
+    const payload = {
       branchId: formBranch,
       seatNumber: parseInt(formSeat),
       customerName: formName,
@@ -124,13 +147,15 @@ export default function BookingsPage() {
       date: formDate,
       startTime: formStartTime,
       endTime: formEndTime,
-      status: 'upcoming',
+      status: 'upcoming' as const,
       gpuPreference: formGpu || undefined,
       notes: formNotes || undefined,
       createdBy: user?.id || '',
-    });
+    };
+    const newId = addBooking(payload);
     toast.success('Booking created successfully');
     setShowCreateDialog(false);
+    setConfirmedBooking({ ...payload, id: newId, createdAt: new Date().toISOString().split('T')[0] });
     resetForm();
   };
 
@@ -340,8 +365,20 @@ export default function BookingsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Seat Number *</Label>
-                <Input type="number" min={1} placeholder="e.g. 5" value={formSeat} onChange={e => setFormSeat(e.target.value)} />
+                <Label>Available Seat *</Label>
+                <Select value={formSeat} onValueChange={setFormSeat} disabled={!formBranch}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formBranch ? 'Select branch first' : availableSeats.length === 0 ? 'No seats available' : 'Pick a seat'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSeats.map(n => (
+                      <SelectItem key={n} value={String(n)}>Seat #{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formBranch && formDate && formStartTime && formEndTime && (
+                  <p className="text-xs text-muted-foreground">{availableSeats.length} seat(s) free for this slot</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -393,6 +430,37 @@ export default function BookingsPage() {
             >
               Create Booking
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmedBooking} onOpenChange={(open) => !open && setConfirmedBooking(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarCheck className="h-5 w-5 text-primary" />
+              Booking Confirmed
+            </DialogTitle>
+            <DialogDescription>Share this reference ID with the customer.</DialogDescription>
+          </DialogHeader>
+          {confirmedBooking && (
+            <div className="space-y-3 py-2">
+              <div className="rounded-md border border-border bg-muted/40 p-4 text-center">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Booking ID</p>
+                <p className="text-lg font-mono font-semibold mt-1 select-all">{confirmedBooking.id}</p>
+              </div>
+              <div className="text-sm space-y-1.5">
+                <div className="flex justify-between"><span className="text-muted-foreground">Customer</span><span className="font-medium">{confirmedBooking.customerName}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Branch</span><span className="font-medium">{getBranchName(confirmedBooking.branchId)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Seat</span><span className="font-medium">#{confirmedBooking.seatNumber}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="font-medium">{confirmedBooking.date}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="font-medium">{confirmedBooking.startTime} – {confirmedBooking.endTime}</span></div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { if (confirmedBooking) { navigator.clipboard?.writeText(confirmedBooking.id); toast.success('Booking ID copied'); } }}>Copy ID</Button>
+            <Button onClick={() => setConfirmedBooking(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

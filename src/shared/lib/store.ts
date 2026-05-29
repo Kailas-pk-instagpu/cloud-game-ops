@@ -240,7 +240,7 @@ import { Booking, MOCK_BOOKINGS } from './mock-data';
 
 interface BookingState {
   bookings: Booking[];
-  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => string;
   cancelBooking: (id: string) => void;
   updateBookingStatus: (id: string, status: Booking['status']) => void;
   getBookingsByBranch: (branchId: string) => Booking[];
@@ -248,9 +248,13 @@ interface BookingState {
 
 export const useBookingStore = create<BookingState>((set, get) => ({
   bookings: [...MOCK_BOOKINGS],
-  addBooking: (booking) => set((s) => ({
-    bookings: [...s.bookings, { ...booking, id: `bk-${Date.now()}`, createdAt: new Date().toISOString().split('T')[0] }],
-  })),
+  addBooking: (booking) => {
+    const id = `bk-${Date.now()}`;
+    set((s) => ({
+      bookings: [...s.bookings, { ...booking, id, createdAt: new Date().toISOString().split('T')[0] }],
+    }));
+    return id;
+  },
   cancelBooking: (id) => set((s) => ({
     bookings: s.bookings.map(b => b.id === id ? { ...b, status: 'cancelled' as const } : b),
   })),
