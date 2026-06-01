@@ -256,6 +256,12 @@ export default function ManagerDashboardHome() {
         </Card>
       </div>
 
+      {/* Customer Experience Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RecentFeedbackWidget branchId="branch-1" />
+        <LoyaltyLeaderboard branchId="branch-1" />
+      </div>
+
       {/* Weekly Performance */}
       <Card>
         <CardHeader className="pb-2">
