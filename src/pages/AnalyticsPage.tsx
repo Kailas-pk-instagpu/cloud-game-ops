@@ -10,6 +10,7 @@ import { Download, CalendarDays, ArrowUpRight, ArrowDownRight, Percent, BarChart
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { SatisfactionAnalyticsPanel } from '@/features/feedback/SatisfactionAnalyticsPanel';
 
 // Revenue growth rate (month-over-month)
 const GROWTH_RATE = MONTHLY_REVENUE.map((m, i) => ({
@@ -297,6 +298,9 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Customer Satisfaction */}
+      <SatisfactionAnalyticsPanel />
     </div>
   );
 }

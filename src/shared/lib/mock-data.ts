@@ -18,8 +18,8 @@ export const MOCK_CREDENTIALS: Record<string, { password: string; userId: string
 };
 
 export interface BranchBilling {
-  costPerMinute: number; // in MYR (RM)
-  lockedAmount: number; // default reserved amount
+  costPerMinute: number;
+  lockedAmount: number;
   currency: 'MYR';
 }
 
@@ -50,14 +50,7 @@ export interface Seat {
 }
 
 export const GPU_MODEL_OPTIONS = [
-  'RTX 4090',
-  'RTX 4080',
-  'RTX 4070 Ti',
-  'RTX 4070',
-  'RTX 4060 Ti',
-  'RTX 3090',
-  'RTX 3080',
-  'RTX 3070',
+  'RTX 4090', 'RTX 4080', 'RTX 4070 Ti', 'RTX 4070', 'RTX 4060 Ti', 'RTX 3090', 'RTX 3080', 'RTX 3070',
 ] as const;
 
 export type GPUNodeStatus = 'online' | 'offline' | 'warning' | 'maintenance' | 'overloaded';
@@ -156,14 +149,50 @@ export interface Booking {
   seatNumber: number;
   customerName: string;
   customerPhone: string;
-  date: string; // YYYY-MM-DD
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
+  date: string;
+  startTime: string;
+  endTime: string;
   status: 'upcoming' | 'completed' | 'cancelled' | 'no_show';
   gpuPreference?: string;
   notes?: string;
-  createdBy: string; // userId
+  createdBy: string;
   createdAt: string;
+}
+
+// ===== Loyalty tier system =====
+export type LoyaltyTier = 'bronze' | 'silver' | 'gold';
+
+export const LOYALTY_TIERS: Record<LoyaltyTier, { label: string; min: number; max: number; multiplier: number }> = {
+  bronze: { label: 'Bronze', min: 0, max: 500, multiplier: 1 },
+  silver: { label: 'Silver', min: 501, max: 2000, multiplier: 1.25 },
+  gold:   { label: 'Gold',   min: 2001, max: Infinity, multiplier: 1.5 },
+};
+
+export function tierFromPoints(points: number): LoyaltyTier {
+  if (points >= LOYALTY_TIERS.gold.min) return 'gold';
+  if (points >= LOYALTY_TIERS.silver.min) return 'silver';
+  return 'bronze';
+}
+
+export function nextTierProgress(points: number) {
+  const t = tierFromPoints(points);
+  if (t === 'gold') return { tier: t, next: null as LoyaltyTier | null, toNext: 0, pct: 100 };
+  const next: LoyaltyTier = t === 'bronze' ? 'silver' : 'gold';
+  const span = LOYALTY_TIERS[next].min - LOYALTY_TIERS[t].min;
+  const done = points - LOYALTY_TIERS[t].min;
+  return { tier: t, next, toNext: LOYALTY_TIERS[next].min - points, pct: Math.min(100, Math.round((done / span) * 100)) };
+}
+
+export type WalletTxnType = 'topup' | 'charge' | 'refund' | 'redeem' | 'bonus';
+
+export interface WalletTransaction {
+  id: string;
+  walletId: string;
+  type: WalletTxnType;
+  amount: number; // MYR; +/-
+  pointsDelta?: number;
+  note?: string;
+  timestamp: string;
 }
 
 export interface CustomerWallet {
@@ -171,19 +200,57 @@ export interface CustomerWallet {
   name: string;
   phone: string;
   branchId: string;
-  balance: number; // total wallet balance in MYR (RM)
-  lockedAmount: number; // currently reserved for an active session
+  balance: number;
+  lockedAmount: number;
+  points: number;
+  lastActivity: string;
 }
 
+export const LOW_BALANCE_THRESHOLD = 50;
+
 export const MOCK_CUSTOMER_WALLETS: CustomerWallet[] = [
-  { id: 'cw-1', name: 'Aiden Cole', phone: '+1555000111', branchId: 'branch-1', balance: 500, lockedAmount: 100 },
-  { id: 'cw-2', name: 'Maya Lin', phone: '+1555000222', branchId: 'branch-1', balance: 1200, lockedAmount: 200 },
-  { id: 'cw-3', name: 'Derek Shaw', phone: '+1555000333', branchId: 'branch-1', balance: 320, lockedAmount: 80 },
-  { id: 'cw-4', name: 'Priya Nair', phone: '+1555000444', branchId: 'branch-2', balance: 750, lockedAmount: 150 },
-  { id: 'cw-5', name: 'Leo Tanaka', phone: '+1555000555', branchId: 'branch-2', balance: 250, lockedAmount: 100 },
-  { id: 'cw-6', name: 'Sara Ahmed', phone: '+1555000666', branchId: 'branch-3', balance: 900, lockedAmount: 120 },
-  { id: 'cw-7', name: 'Omar Hassan', phone: '+1555000777', branchId: 'branch-3', balance: 450, lockedAmount: 100 },
-  { id: 'cw-8', name: 'Nina Park', phone: '+1555000888', branchId: 'branch-4', balance: 600, lockedAmount: 80 },
+  { id: 'cw-1', name: 'Aiden Cole', phone: '+1555000111', branchId: 'branch-1', balance: 500, lockedAmount: 100, points: 820, lastActivity: '2026-05-30' },
+  { id: 'cw-2', name: 'Maya Lin', phone: '+1555000222', branchId: 'branch-1', balance: 1200, lockedAmount: 200, points: 2450, lastActivity: '2026-05-31' },
+  { id: 'cw-3', name: 'Derek Shaw', phone: '+1555000333', branchId: 'branch-1', balance: 32, lockedAmount: 0, points: 180, lastActivity: '2026-05-28' },
+  { id: 'cw-4', name: 'Priya Nair', phone: '+1555000444', branchId: 'branch-2', balance: 750, lockedAmount: 150, points: 1340, lastActivity: '2026-05-30' },
+  { id: 'cw-5', name: 'Leo Tanaka', phone: '+1555000555', branchId: 'branch-2', balance: 25, lockedAmount: 0, points: 420, lastActivity: '2026-05-25' },
+  { id: 'cw-6', name: 'Sara Ahmed', phone: '+1555000666', branchId: 'branch-3', balance: 900, lockedAmount: 120, points: 3120, lastActivity: '2026-05-31' },
+  { id: 'cw-7', name: 'Omar Hassan', phone: '+1555000777', branchId: 'branch-3', balance: 450, lockedAmount: 100, points: 680, lastActivity: '2026-05-29' },
+  { id: 'cw-8', name: 'Nina Park', phone: '+1555000888', branchId: 'branch-4', balance: 600, lockedAmount: 80, points: 1880, lastActivity: '2026-05-30' },
+];
+
+export const MOCK_WALLET_TRANSACTIONS: WalletTransaction[] = [
+  { id: 'tx-1', walletId: 'cw-1', type: 'topup',  amount: 200, note: 'Cash top-up', timestamp: '2026-05-25T10:00:00Z' },
+  { id: 'tx-2', walletId: 'cw-1', type: 'charge', amount: -45, note: 'Session 2h 15m', timestamp: '2026-05-28T14:00:00Z' },
+  { id: 'tx-3', walletId: 'cw-1', type: 'bonus',  amount: 0, pointsDelta: 30, note: 'Feedback bonus', timestamp: '2026-05-28T16:30:00Z' },
+  { id: 'tx-4', walletId: 'cw-2', type: 'topup',  amount: 500, note: 'Card top-up', timestamp: '2026-05-20T09:30:00Z' },
+  { id: 'tx-5', walletId: 'cw-2', type: 'charge', amount: -180, note: 'Session 3h', timestamp: '2026-05-31T18:00:00Z' },
+  { id: 'tx-6', walletId: 'cw-3', type: 'topup',  amount: 100, note: 'Cash top-up', timestamp: '2026-05-15T11:00:00Z' },
+  { id: 'tx-7', walletId: 'cw-3', type: 'charge', amount: -68, note: 'Session 2h', timestamp: '2026-05-28T17:00:00Z' },
+];
+
+// ===== Feedback =====
+export type FeedbackChip = 'GPU performance' | 'Seat comfort' | 'Staff' | 'Internet speed' | 'Cleanliness' | 'Pricing';
+export const FEEDBACK_CHIPS: FeedbackChip[] = ['GPU performance', 'Seat comfort', 'Staff', 'Internet speed', 'Cleanliness', 'Pricing'];
+
+export interface Feedback {
+  id: string;
+  walletId: string;
+  customerName: string;
+  branchId: string;
+  seatNumber?: number;
+  rating: 1 | 2 | 3 | 4 | 5;
+  chips: FeedbackChip[];
+  comment?: string;
+  timestamp: string;
+}
+
+export const MOCK_FEEDBACK: Feedback[] = [
+  { id: 'fb-1', walletId: 'cw-2', customerName: 'Maya Lin', branchId: 'branch-1', seatNumber: 7, rating: 5, chips: ['GPU performance', 'Staff'], comment: 'Smooth as butter on 4090.', timestamp: '2026-05-31T18:30:00Z' },
+  { id: 'fb-2', walletId: 'cw-1', customerName: 'Aiden Cole', branchId: 'branch-1', seatNumber: 3, rating: 4, chips: ['Seat comfort'], comment: 'Chair could be better.', timestamp: '2026-05-30T20:00:00Z' },
+  { id: 'fb-3', walletId: 'cw-3', customerName: 'Derek Shaw', branchId: 'branch-1', seatNumber: 1, rating: 2, chips: ['Internet speed', 'GPU performance'], comment: 'High ping all session.', timestamp: '2026-05-28T21:00:00Z' },
+  { id: 'fb-4', walletId: 'cw-4', customerName: 'Priya Nair', branchId: 'branch-2', seatNumber: 5, rating: 5, chips: ['Staff', 'Cleanliness'], timestamp: '2026-05-30T19:00:00Z' },
+  { id: 'fb-5', walletId: 'cw-6', customerName: 'Sara Ahmed', branchId: 'branch-3', seatNumber: 4, rating: 4, chips: ['GPU performance'], timestamp: '2026-05-31T17:00:00Z' },
 ];
 
 export const MOCK_BOOKINGS: Booking[] = [

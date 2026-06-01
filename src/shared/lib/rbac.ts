@@ -27,6 +27,7 @@ export const ROUTES: RouteConfig[] = [
   { path: '/branches', label: 'Branches', icon: 'Building2', roles: ['super_admin', 'admin', 'cafe_owner'] },
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', roles: ['manager'] },
   { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', roles: ['cafe_owner', 'manager'] },
+  { path: '/wallets', label: 'Customers', icon: 'Wallet', roles: ['cafe_owner', 'manager'] },
   { path: '/billing/session', label: 'Billing Session', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/monitoring', label: 'Monitoring', icon: 'Radar', roles: ['super_admin'] },
   { path: '/deletion-requests', label: 'Deletion Requests', icon: 'UserMinus', roles: ['super_admin'] },
