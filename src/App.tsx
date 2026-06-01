@@ -13,6 +13,7 @@ import GPUNodesPage from "./pages/GPUNodesPage";
 import BranchesPage from "./pages/BranchesPage";
 import SeatsPage from "./pages/SeatsPage";
 import BookingsPage from "./pages/BookingsPage";
+import WalletsPage from "./pages/WalletsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
