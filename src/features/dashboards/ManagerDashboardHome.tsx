@@ -7,6 +7,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { useShiftStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
+import { RecentFeedbackWidget } from '@/features/feedback/RecentFeedbackWidget';
+import { LoyaltyLeaderboard } from '@/features/loyalty/LoyaltyLeaderboard';
 
 function formatTime12(t: string) {
   const [h, m] = t.split(':').map(Number);
