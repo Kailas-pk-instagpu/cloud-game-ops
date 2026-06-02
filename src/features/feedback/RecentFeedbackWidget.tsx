@@ -14,8 +14,12 @@ function formatRelative(ts: string) {
 }
 
 export function RecentFeedbackWidget({ branchId }: { branchId: string }) {
-  const list = useFeedbackStore(s => s.getByBranch(branchId)).slice(0, 5);
-  const avg = useFeedbackStore(s => s.getAverageRating(branchId));
+  const feedback = useFeedbackStore(s => s.feedback);
+  const branchFeedback = feedback.filter(f => f.branchId === branchId);
+  const list = branchFeedback.slice(0, 5);
+  const avg = branchFeedback.length
+    ? branchFeedback.reduce((a, b) => a + b.rating, 0) / branchFeedback.length
+    : 0;
 
   return (
     <Card className="flex flex-col">
