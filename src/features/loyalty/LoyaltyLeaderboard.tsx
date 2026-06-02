@@ -4,8 +4,9 @@ import { Trophy } from 'lucide-react';
 import { LoyaltyTierBadge } from './LoyaltyTierBadge';
 
 export function LoyaltyLeaderboard({ branchId }: { branchId: string }) {
-  const wallets = useWalletStore(s => s.getByBranch(branchId))
-    .slice()
+  const allWallets = useWalletStore(s => s.wallets);
+  const wallets = allWallets
+    .filter(w => w.branchId === branchId)
     .sort((a, b) => b.points - a.points)
     .slice(0, 5);
 
