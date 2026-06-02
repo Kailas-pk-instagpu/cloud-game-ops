@@ -7,8 +7,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { useShiftStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
-import { RecentFeedbackWidget } from '@/features/feedback/RecentFeedbackWidget';
-import { LoyaltyLeaderboard } from '@/features/loyalty/LoyaltyLeaderboard';
 
 function formatTime12(t: string) {
   const [h, m] = t.split(':').map(Number);
@@ -254,12 +252,6 @@ export default function ManagerDashboardHome() {
             ))}
           </CardContent>
         </Card>
-      </div>
-
-      {/* Customer Experience Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RecentFeedbackWidget branchId="branch-1" />
-        <LoyaltyLeaderboard branchId="branch-1" />
       </div>
 
       {/* Weekly Performance */}
