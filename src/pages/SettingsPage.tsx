@@ -271,6 +271,79 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDownloadData = () => {
+    if (!user) return;
+    const doc = new jsPDF();
+    const left = 15;
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Personal Data Export', left, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, left, y);
+    doc.setTextColor(0);
+    y += 10;
+
+    doc.setDrawColor(200);
+    doc.line(left, y, 195, y);
+    y += 10;
+
+    const section = (title: string) => {
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, left, y);
+      y += 7;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+    };
+
+    const row = (label: string, value: string) => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, left, y);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(value || '—', 130);
+      doc.text(lines, left + 45, y);
+      y += 7 * lines.length;
+    };
+
+    section('Account Information');
+    row('User ID', user.id);
+    row('Full Name', user.name);
+    row('Email', user.email);
+    row('Role', ROLE_LABELS[user.role]);
+    row('Phone', user.phone || '—');
+    row('Address', user.address || '—');
+    row('Account Created', user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—');
+    y += 4;
+
+    section('Security');
+    row('2FA Enabled', user.is2FAEnabled ? 'Yes' : 'No');
+    row('2FA Method', user.twoFAMethod || '—');
+    y += 4;
+
+    section('Preferences');
+    row('Theme', theme === 'dark' ? 'Dark' : 'Light');
+
+    y += 8;
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    const footer = doc.splitTextToSize(
+      'This document contains personal data associated with your account. Keep it confidential.',
+      180
+    );
+    doc.text(footer, left, y);
+
+    doc.save(`personal-data-${user.email}-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Personal data downloaded');
+  };
+
+
   return (
     <div className="space-y-6">
       <div>
