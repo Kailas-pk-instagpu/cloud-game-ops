@@ -545,6 +545,16 @@ export default function SettingsPage() {
                   </div>
                   <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
                 </div>
+
+                <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 border border-border/50">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">Download Personal Data</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Export your account information and preferences as a PDF</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleDownloadData} className="shrink-0">
+                    <Download className="h-4 w-4 mr-2" /> Download PDF
+                  </Button>
+                </div>
               </div>
             )}
 
