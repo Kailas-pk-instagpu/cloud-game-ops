@@ -13,7 +13,7 @@ import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, L
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
-import { ROLE_LABELS as ROLE_LABELS_PDF } from '@/shared/types/auth';
+
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
