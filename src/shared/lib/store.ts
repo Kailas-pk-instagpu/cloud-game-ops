@@ -219,6 +219,7 @@ interface Notification {
 
 interface NotificationState {
   notifications: Notification[];
+  lastIncoming: Notification | null;
   addNotification: (n: Omit<Notification, 'id' | 'timestamp' | 'read'> & { timestamp?: string; read?: boolean }) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
