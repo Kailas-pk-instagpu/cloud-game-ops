@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
+import { notifyLogin } from './loginNotification';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
         }
         
         set({ is2FAVerified: true, isAuthenticated: true });
+        notifyLogin(user);
         return { success: true, requires2FA: false };
       },
 
@@ -35,6 +37,8 @@ export const useAuthStore = create<AuthState>()(
         // Accept any 6-digit code for demo
         if (code.length === 6 && /^\d+$/.test(code)) {
           set({ is2FAVerified: true, isAuthenticated: true });
+          const u = get().user;
+          if (u) notifyLogin(u);
           return true;
         }
         return false;
@@ -215,6 +219,7 @@ interface Notification {
 
 interface NotificationState {
   notifications: Notification[];
+  addNotification: (n: Omit<Notification, 'id' | 'timestamp' | 'read'> & { timestamp?: string; read?: boolean }) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (id: string) => void;
@@ -229,6 +234,12 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     { id: '4', title: 'Node Offline', message: 'Node Delta went offline in Westside Lounge', type: 'error', timestamp: '5 hours ago', read: false },
     { id: '5', title: 'System Maintenance Scheduled', message: 'The platform will undergo scheduled maintenance tonight between 2:00 AM and 4:00 AM UTC to apply critical security patches and upgrade the database cluster. During this window, all services may experience brief interruptions. Please save your work and log out before the maintenance window begins to avoid data loss.', type: 'info', timestamp: '10 min ago', read: false },
   ],
+  addNotification: (n) => set((s) => ({
+    notifications: [
+      { id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, timestamp: n.timestamp ?? 'Just now', read: n.read ?? false, title: n.title, message: n.message, type: n.type },
+      ...s.notifications,
+    ],
+  })),
   markAsRead: (id) => set((s) => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
   markAllAsRead: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
   deleteNotification: (id) => set((s) => ({ notifications: s.notifications.filter(n => n.id !== id) })),
