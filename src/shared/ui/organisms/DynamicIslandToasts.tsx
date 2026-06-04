@@ -44,7 +44,9 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
       const el = anchorRef.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
-      setAnchor({ x: r.left + r.width / 2, y: r.bottom });
+      // Use document.documentElement.clientWidth so the scrollbar is excluded
+      const vw = document.documentElement.clientWidth;
+      setAnchor({ x: r.right, y: r.bottom, vw });
     };
     measure();
     window.addEventListener('resize', measure);
