@@ -142,4 +142,3 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
     document.body
   );
 }
-}
