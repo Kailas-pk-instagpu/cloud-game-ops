@@ -192,6 +192,7 @@ export function AppNavbar() {
           </SheetContent>
         </Sheet>
       </div>
+      <DynamicIslandToasts anchorRef={bellRef} onCollapse={() => setBellPulse((n) => n + 1)} />
     </header>
   );
 }
