@@ -29,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
         }
         
         set({ is2FAVerified: true, isAuthenticated: true });
+        notifyLogin(user);
         return { success: true, requires2FA: false };
       },
 
@@ -36,6 +37,8 @@ export const useAuthStore = create<AuthState>()(
         // Accept any 6-digit code for demo
         if (code.length === 6 && /^\d+$/.test(code)) {
           set({ is2FAVerified: true, isAuthenticated: true });
+          const u = get().user;
+          if (u) notifyLogin(u);
           return true;
         }
         return false;
