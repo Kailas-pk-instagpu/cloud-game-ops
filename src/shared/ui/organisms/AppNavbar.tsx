@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react';
 import { Bell, Moon, Sun, Check, CheckCheck, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut, Settings } from 'lucide-react';
+import { DynamicIslandToasts } from './DynamicIslandToasts';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
 import { useNotificationStore } from '@/shared/lib/store';
