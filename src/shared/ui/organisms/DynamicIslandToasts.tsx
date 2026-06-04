@@ -35,7 +35,7 @@ interface Props {
 export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
   const lastIncoming = useNotificationStore((s) => s.lastIncoming);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
-  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number; vw: number } | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
 
   // Measure anchor position (bell icon) and keep updated on resize/scroll
@@ -44,7 +44,9 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
       const el = anchorRef.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
-      setAnchor({ x: r.left + r.width / 2, y: r.bottom });
+      // Use document.documentElement.clientWidth so the scrollbar is excluded
+      const vw = document.documentElement.clientWidth;
+      setAnchor({ x: r.right, y: r.bottom, vw });
     };
     measure();
     window.addEventListener('resize', measure);
@@ -82,16 +84,16 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
 
   if (!anchor) return null;
 
-  // Position stack just below the bell icon, right-aligned to it
-  const TOAST_WIDTH = 320;
-  const left = Math.max(8, Math.min(window.innerWidth - TOAST_WIDTH - 8, anchor.x - TOAST_WIDTH + 16));
+  // Anchor stack's right edge to the bell's right edge, so it never overflows
+  const right = Math.max(8, anchor.vw - anchor.x);
   const top = anchor.y + 8;
+  const maxWidth = Math.min(340, anchor.vw - right - 8);
 
   return (
     <div
       aria-live="polite"
       className="pointer-events-none fixed z-[60] flex flex-col gap-2"
-      style={{ top, left, width: TOAST_WIDTH }}
+      style={{ top, right, width: maxWidth }}
     >
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
