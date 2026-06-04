@@ -40,6 +40,8 @@ export function AppNavbar() {
   const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const [bellPulse, setBellPulse] = useState(0);
 
   return (
     <header className="sticky top-2 z-40 ml-0 mr-2 mt-2 h-14 rounded-2xl border-[1.5px] border-border dark:border-sidebar-border bg-background/10 dark:bg-sidebar/10 backdrop-blur-md flex items-center justify-between px-4">
