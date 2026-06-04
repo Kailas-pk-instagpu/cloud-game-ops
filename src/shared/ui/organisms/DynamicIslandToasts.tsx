@@ -90,12 +90,13 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
   const top = anchor.y + 8;
   const maxWidth = Math.min(340, anchor.vw - right - 8);
 
-  return (
+  return createPortal(
     <div
       aria-live="polite"
       className="pointer-events-none fixed z-[60] flex flex-col gap-2"
       style={{ top, right, width: maxWidth }}
     >
+
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div
