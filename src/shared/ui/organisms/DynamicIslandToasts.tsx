@@ -138,6 +138,8 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
           </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body
   );
+}
 }
