@@ -92,10 +92,16 @@ export function AppNavbar() {
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 relative text-muted-foreground hover:text-foreground">
+            <Button
+              ref={bellRef}
+              variant="ghost"
+              size="icon"
+              className={`h-9 w-9 relative text-muted-foreground hover:text-foreground transition-transform ${bellPulse ? 'animate-[pulse_0.6s_ease-out]' : ''}`}
+              key={bellPulse}
+            >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground border-0">
+                <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground border-0 shadow-[0_0_0_2px_hsl(var(--background))]">
                   {unreadCount}
                 </Badge>
               )}
