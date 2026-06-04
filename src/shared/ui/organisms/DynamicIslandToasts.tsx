@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import { useNotificationStore } from '@/shared/lib/store';
@@ -89,12 +90,13 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
   const top = anchor.y + 8;
   const maxWidth = Math.min(340, anchor.vw - right - 8);
 
-  return (
+  return createPortal(
     <div
       aria-live="polite"
       className="pointer-events-none fixed z-[60] flex flex-col gap-2"
       style={{ top, right, width: maxWidth }}
     >
+
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div
@@ -136,6 +138,7 @@ export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
           </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body
   );
 }
