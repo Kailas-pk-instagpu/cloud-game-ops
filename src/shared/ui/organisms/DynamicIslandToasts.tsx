@@ -35,7 +35,7 @@ interface Props {
 export function DynamicIslandToasts({ anchorRef, onCollapse }: Props) {
   const lastIncoming = useNotificationStore((s) => s.lastIncoming);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
-  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number; vw: number } | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
 
   // Measure anchor position (bell icon) and keep updated on resize/scroll
