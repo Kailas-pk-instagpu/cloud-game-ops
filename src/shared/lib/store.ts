@@ -219,6 +219,7 @@ interface Notification {
 
 interface NotificationState {
   notifications: Notification[];
+  lastIncoming: Notification | null;
   addNotification: (n: Omit<Notification, 'id' | 'timestamp' | 'read'> & { timestamp?: string; read?: boolean }) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -234,12 +235,21 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     { id: '4', title: 'Node Offline', message: 'Node Delta went offline in Westside Lounge', type: 'error', timestamp: '5 hours ago', read: false },
     { id: '5', title: 'System Maintenance Scheduled', message: 'The platform will undergo scheduled maintenance tonight between 2:00 AM and 4:00 AM UTC to apply critical security patches and upgrade the database cluster. During this window, all services may experience brief interruptions. Please save your work and log out before the maintenance window begins to avoid data loss.', type: 'info', timestamp: '10 min ago', read: false },
   ],
-  addNotification: (n) => set((s) => ({
-    notifications: [
-      { id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, timestamp: n.timestamp ?? 'Just now', read: n.read ?? false, title: n.title, message: n.message, type: n.type },
-      ...s.notifications,
-    ],
-  })),
+  lastIncoming: null,
+  addNotification: (n) => set((s) => {
+    const created: Notification = {
+      id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: n.timestamp ?? 'Just now',
+      read: n.read ?? false,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+    };
+    return {
+      notifications: [created, ...s.notifications],
+      lastIncoming: created,
+    };
+  }),
   markAsRead: (id) => set((s) => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n) })),
   markAllAsRead: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, read: true })) })),
   deleteNotification: (id) => set((s) => ({ notifications: s.notifications.filter(n => n.id !== id) })),
