@@ -65,7 +65,7 @@ const ToastItem = memo(function ToastItem({ toast, reduceMotion, onDismiss }: To
       exit={exit}
       transition={transition}
       style={{ transformOrigin: 'top right', willChange: 'transform, opacity' }}
-      className="pointer-events-auto relative overflow-hidden rounded-3xl border border-border/40 bg-background/90 px-3 py-2.5 backdrop-blur-xl [transform:translateZ(0)]"
+      className="pointer-events-auto relative isolate overflow-hidden rounded-[22px] border border-primary/25 bg-gradient-to-br from-primary/10 via-background/85 to-background/80 px-3.5 py-3 ring-1 ring-inset ring-white/5 backdrop-blur-2xl backdrop-saturate-150 [transform:translateZ(0)]"
     >
       <div className="flex items-start gap-2.5">
         <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${TYPE_BG[toast.type]}`}>
