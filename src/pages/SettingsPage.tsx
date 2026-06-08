@@ -208,6 +208,7 @@ export default function SettingsPage() {
   const [deleteReason, setDeleteReason] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const [integrationTab, setIntegrationTab] = useState<'e2link' | 'horizon'>('e2link');
   const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
 
   // Deep-link support: e.g. /settings#integrations opens the matching tab.
