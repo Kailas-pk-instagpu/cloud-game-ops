@@ -199,10 +199,10 @@
 /* Default (light mode): warm parchment wash */
 .login-bg-wash {
   background:
-    linear-gradient(135deg, hsl(38 30% 97%) 0%, hsl(36 25% 96%) 45%, hsl(42 30% 95%) 100%);
+    linear-gradient(135deg, hsl(38 30% 94%) 0%, hsl(36 25% 93%) 45%, hsl(42 30% 92%) 100%);
 }
 .login-bg-vignette {
-  background: radial-gradient(ellipse at center, transparent 40%, hsl(35 20% 84% / 0.5) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, hsl(35 20% 78% / 0.5) 100%);
 }
 
 /* Dark mode: deep cosmic canvas */
