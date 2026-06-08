@@ -6,24 +6,24 @@
 
 @layer base {
   :root {
-    --background: 220 10% 95%;
-    --foreground: 220 15% 20%;
-    --card: 220 10% 98%;
-    --card-foreground: 220 15% 20%;
-    --popover: 220 10% 98%;
-    --popover-foreground: 220 15% 20%;
+    --background: 38 14% 96%;
+    --foreground: 30 15% 18%;
+    --card: 38 12% 98%;
+    --card-foreground: 30 15% 18%;
+    --popover: 38 12% 98%;
+    --popover-foreground: 30 15% 18%;
     --primary: 234 89% 64%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 8% 93%;
-    --secondary-foreground: 220 15% 25%;
-    --muted: 220 8% 93%;
-    --muted-foreground: 220 6% 50%;
-    --accent: 220 8% 91%;
-    --accent-foreground: 220 15% 20%;
+    --secondary: 36 10% 93%;
+    --secondary-foreground: 30 15% 25%;
+    --muted: 36 10% 93%;
+    --muted-foreground: 30 8% 48%;
+    --accent: 36 10% 91%;
+    --accent-foreground: 30 15% 18%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 8% 88%;
-    --input: 220 12% 72%;
+    --border: 36 12% 88%;
+    --input: 36 12% 72%;
     --ring: 234 89% 64%;
     --radius: 0.625rem;
     --success: 152 55% 42%;
@@ -196,13 +196,13 @@
 }
 
 /* ===== Login background — themed for light & dark ===== */
-/* Default (light mode): soft, airy lavender/indigo wash */
+/* Default (light mode): warm parchment wash */
 .login-bg-wash {
   background:
-    linear-gradient(135deg, hsl(220 40% 98%) 0%, hsl(230 45% 96%) 45%, hsl(255 50% 95%) 100%);
+    linear-gradient(135deg, hsl(38 30% 97%) 0%, hsl(36 25% 96%) 45%, hsl(42 30% 95%) 100%);
 }
 .login-bg-vignette {
-  background: radial-gradient(ellipse at center, transparent 40%, hsl(225 30% 88% / 0.55) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, hsl(35 20% 84% / 0.5) 100%);
 }
 
 /* Dark mode: deep cosmic canvas */
@@ -330,8 +330,8 @@
 }
 :root:not(.dark) button.border-input:hover,
 :root:not(.dark) a.border-input:hover {
-  border-color: hsl(220 14% 50%);
-  background-color: hsl(220 14% 92%);
+  border-color: hsl(30 14% 50%);
+  background-color: hsl(35 14% 92%);
 }
 
 /* ==========================================================
