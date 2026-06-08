@@ -529,7 +529,28 @@ export default function SettingsPage() {
 
             {/* ===== INTEGRATIONS TAB (Super Admin only) ===== */}
             {activeTab === 'integrations' && user.role === 'super_admin' && (
-              <E2LinkIntegrationPanel />
+              <div className="space-y-6">
+                <div className="inline-flex p-1 rounded-lg bg-muted border border-border/60">
+                  {([
+                    { id: 'e2link' as const, label: 'E2Link' },
+                    { id: 'horizon' as const, label: 'VMware Horizon' },
+                  ]).map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() => setIntegrationTab(id)}
+                      className={cn(
+                        'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
+                        integrationTab === id
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {integrationTab === 'e2link' ? <E2LinkIntegrationPanel /> : <VMwareHorizonIntegrationPanel />}
+              </div>
             )}
 
             {/* ===== GENERAL TAB ===== */}
