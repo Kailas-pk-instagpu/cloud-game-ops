@@ -31,6 +31,8 @@ export function IntegrationsStatusIndicator() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const isSuperAdmin = user?.role === 'super_admin';
+  const canView = isSuperAdmin || user?.role === 'admin';
+  if (!canView) return null;
 
   const summaryLabel =
     overall === 'operational'
