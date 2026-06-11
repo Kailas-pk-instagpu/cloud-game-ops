@@ -51,7 +51,7 @@ export function AppNavbar() {
 
 
       <div className="flex items-center gap-2">
-        <BillingStatusIndicator />
+        <IntegrationsStatusIndicator />
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
