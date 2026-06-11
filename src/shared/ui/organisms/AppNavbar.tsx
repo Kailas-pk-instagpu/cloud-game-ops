@@ -19,7 +19,7 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose
 } from '@/components/ui/sheet';
 import { ArrowRight } from 'lucide-react';
-import { BillingStatusIndicator } from '@/shared/ui/atoms/BillingStatusIndicator';
+import { IntegrationsStatusIndicator } from '@/shared/ui/atoms/IntegrationsStatusIndicator';
 
 const typeIcon = {
   error: <AlertCircle className="h-4 w-4 text-destructive" />,
