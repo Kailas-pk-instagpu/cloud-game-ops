@@ -212,10 +212,16 @@ export default function SettingsPage() {
   const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
 
   // Deep-link support: e.g. /settings#integrations opens the matching tab.
+  // Sub-tab deep-link: /settings#integrations/horizon selects the Horizon panel.
   useEffect(() => {
     const applyHash = () => {
-      const hash = window.location.hash.replace('#', '') as TabId;
-      if (hash && tabs.some(t => t.id === hash)) setActiveTab(hash);
+      const raw = window.location.hash.replace('#', '');
+      if (!raw) return;
+      const [tab, sub] = raw.split('/') as [TabId, string | undefined];
+      if (tab && tabs.some(t => t.id === tab)) setActiveTab(tab);
+      if (tab === 'integrations' && (sub === 'e2link' || sub === 'horizon')) {
+        setIntegrationTab(sub);
+      }
     };
     applyHash();
     window.addEventListener('hashchange', applyHash);
