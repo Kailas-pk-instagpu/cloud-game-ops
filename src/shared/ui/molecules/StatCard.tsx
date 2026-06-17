@@ -137,25 +137,12 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className,
           <p className="text-[11px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium leading-tight">
             {title}
           </p>
-          <div className="relative">
+            <div className="relative">
             <p className="text-xl sm:text-2xl lg:text-[1.6rem] font-bold tracking-tight leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
               <span key={`val-${pulseKey}`} className="kpi-value-pop">
                 {display}
               </span>
             </p>
-            {delta && (
-              <span
-                key={`delta-${delta.key}`}
-                className={cn(
-                  'kpi-delta-rise absolute -top-1 right-0 text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded-md pointer-events-none',
-                  delta.positive
-                    ? 'bg-success/15 text-success'
-                    : 'bg-destructive/15 text-destructive'
-                )}
-              >
-                {delta.text}
-              </span>
-            )}
           </div>
           {subtitle && (
             <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight truncate">
