@@ -106,7 +106,6 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className,
 
   return (
     <Card
-      key-flash={pulseKey}
       className={cn(
         'group relative overflow-hidden border-border/60 bg-card/80 backdrop-blur-sm',
         'transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
