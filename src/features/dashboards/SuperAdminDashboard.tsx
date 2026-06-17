@@ -7,6 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const ROLE_DISTRIBUTION = [
   { name: 'Admins', value: MOCK_USERS.filter(u => u.role === 'admin').length, color: 'hsl(234, 89%, 64%)' },
