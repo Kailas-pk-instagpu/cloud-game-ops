@@ -399,6 +399,32 @@ button:not(:disabled):active,
   animation: row-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
+/* ===== Notification bell ring animation ===== */
+@keyframes bell-ring {
+  0%   { transform: rotate(0deg) scale(1); }
+  12%  { transform: rotate(14deg) scale(1.12); }
+  24%  { transform: rotate(-11deg) scale(1.08); }
+  36%  { transform: rotate(7deg) scale(1.04); }
+  48%  { transform: rotate(-4deg) scale(1.02); }
+  60%  { transform: rotate(2deg) scale(1); }
+  80%  { transform: rotate(-1deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+.bell-ring {
+  animation: bell-ring 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+}
+
+@keyframes badge-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.badge-pop {
+  animation: badge-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Promote common animated layers to GPU */
 [data-radix-dialog-content],
 [data-radix-sheet-content],
