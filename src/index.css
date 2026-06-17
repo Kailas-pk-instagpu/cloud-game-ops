@@ -447,15 +447,6 @@ button:not(:disabled):active,
   animation: kpi-card-flash 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@keyframes kpi-delta-rise {
-  0%   { opacity: 0; transform: translateY(8px) scale(0.9); }
-  20%  { opacity: 1; transform: translateY(0) scale(1); }
-  80%  { opacity: 1; transform: translateY(-2px) scale(1); }
-  100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-}
-.kpi-delta-rise {
-  animation: kpi-delta-rise 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
 
 /* Promote common animated layers to GPU */
 [data-radix-dialog-content],
