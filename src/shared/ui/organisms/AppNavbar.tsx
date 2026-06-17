@@ -38,10 +38,22 @@ const typeBg = {
 export function AppNavbar() {
   const { user, theme, toggleTheme, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead, lastIncoming } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
   const bellRef = useRef<HTMLButtonElement>(null);
   const [bellPulse, setBellPulse] = useState(0);
+  const [badgePop, setBadgePop] = useState(0);
+  const lastIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (lastIncoming && lastIncoming.id !== lastIdRef.current) {
+      lastIdRef.current = lastIncoming.id;
+      setBellPulse((n) => n + 1);
+      if (!lastIncoming.read) {
+        setBadgePop((n) => n + 1);
+      }
+    }
+  }, [lastIncoming]);
 
   return (
     <header className="sticky top-2 z-40 ml-0 mr-2 mt-2 h-14 rounded-2xl border-[1.5px] border-border dark:border-sidebar-border bg-background/10 dark:bg-sidebar/10 backdrop-blur-md flex items-center justify-between px-4">
@@ -96,12 +108,15 @@ export function AppNavbar() {
               ref={bellRef}
               variant="ghost"
               size="icon"
-              className={`h-9 w-9 relative text-muted-foreground hover:text-foreground transition-transform ${bellPulse ? 'animate-[pulse_0.6s_ease-out]' : ''}`}
+              className={`h-9 w-9 relative text-muted-foreground hover:text-foreground transition-transform ${bellPulse ? 'bell-ring' : ''}`}
               key={bellPulse}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground border-0 shadow-[0_0_0_2px_hsl(var(--background))]">
+                <Badge
+                  key={badgePop}
+                  className={`absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground border-0 shadow-[0_0_0_2px_hsl(var(--background))] ${badgePop ? 'badge-pop' : ''}`}
+                >
                   {unreadCount}
                 </Badge>
               )}
