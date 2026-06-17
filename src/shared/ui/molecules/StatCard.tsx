@@ -95,7 +95,7 @@ function useAnimatedValue(value: string | number) {
 }
 
 export function StatCard({ title, value, subtitle, icon: Icon, trend, className, iconClassName }: StatCardProps) {
-  const { display, pulseKey, delta } = useAnimatedValue(value);
+  const { display, pulseKey } = useAnimatedValue(value);
 
   return (
     <Card
