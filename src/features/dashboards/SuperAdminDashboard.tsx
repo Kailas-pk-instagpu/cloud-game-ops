@@ -33,10 +33,30 @@ const SYSTEM_METRICS = [
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const totalSeats = MOCK_BRANCHES.reduce((a, b) => a + b.totalSeats, 0);
-  const activeSeats = MOCK_BRANCHES.reduce((a, b) => a + b.activeSeats, 0);
-  const occupancyRate = Math.round((activeSeats / totalSeats) * 100);
+  const baseActiveSeats = MOCK_BRANCHES.reduce((a, b) => a + b.activeSeats, 0);
   const onlineNodes = MOCK_GPU_NODES.filter(n => n.status === 'online').length;
-  const avgUtilization = Math.round(MOCK_GPU_NODES.filter(n => n.status !== 'offline').reduce((a, b) => a + b.utilization, 0) / MOCK_GPU_NODES.filter(n => n.status !== 'offline').length);
+  const baseAvgUtil = Math.round(MOCK_GPU_NODES.filter(n => n.status !== 'offline').reduce((a, b) => a + b.utilization, 0) / MOCK_GPU_NODES.filter(n => n.status !== 'offline').length);
+
+  // Live-updating KPI values — refreshed every few seconds to demonstrate
+  // the StatCard count-up + flash animations.
+  const [revenue, setRevenue] = useState(138400);
+  const [sessions, setSessions] = useState(186);
+  const [activeSeats, setActiveSeats] = useState(baseActiveSeats);
+  const [avgUtilization, setAvgUtilization] = useState(baseAvgUtil);
+
+  useEffect(() => {
+    const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const tick = () => {
+      setRevenue(r => Math.max(0, r + rand(-120, 480)));
+      setSessions(s => Math.max(0, Math.min(totalSeats, s + rand(-3, 5))));
+      setActiveSeats(a => Math.max(0, Math.min(totalSeats, a + rand(-2, 3))));
+      setAvgUtilization(u => Math.max(10, Math.min(98, u + rand(-4, 4))));
+    };
+    const id = window.setInterval(tick, 3500);
+    return () => window.clearInterval(id);
+  }, [totalSeats]);
+
+  const occupancyRate = Math.round((activeSeats / totalSeats) * 100);
 
   return (
     <div className="space-y-6">
