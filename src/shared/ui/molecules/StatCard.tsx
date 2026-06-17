@@ -43,7 +43,6 @@ function useAnimatedValue(value: string | number) {
   const parsed = splitValue(value);
   const [display, setDisplay] = useState<string>(String(value));
   const [pulseKey, setPulseKey] = useState(0);
-  const [delta, setDelta] = useState<{ key: number; text: string; positive: boolean } | null>(null);
   const prevRef = useRef<string>(String(value));
   const rafRef = useRef<number | null>(null);
 
@@ -67,12 +66,6 @@ function useAnimatedValue(value: string | number) {
     if (canTween && prevParsed.num !== parsed.num) {
       const from = prevParsed.num!;
       const to = parsed.num!;
-      const diff = to - from;
-      setDelta({
-        key: Date.now(),
-        text: `${diff > 0 ? '+' : ''}${formatNum(diff, parsed.hasCommas, parsed.decimals)}`,
-        positive: diff > 0,
-      });
 
       const start = performance.now();
       const duration = 650;
@@ -98,7 +91,7 @@ function useAnimatedValue(value: string | number) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  return { display, pulseKey, delta };
+  return { display, pulseKey };
 }
 
 export function StatCard({ title, value, subtitle, icon: Icon, trend, className, iconClassName }: StatCardProps) {
