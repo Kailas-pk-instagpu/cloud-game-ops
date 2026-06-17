@@ -72,8 +72,8 @@ export default function SuperAdminDashboard() {
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-        <StatCard title="Total Revenue" value="RM 138,400" icon={Banknote} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
-        <StatCard title="Active Sessions" value="186" icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
+        <StatCard title="Total Revenue" value={`RM ${revenue.toLocaleString()}`} icon={Banknote} trend={{ value: 12.5, positive: true }} iconClassName="bg-success/10 text-success" />
+        <StatCard title="Active Sessions" value={sessions} icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
         <StatCard title="GPU Nodes" value={`${onlineNodes}/${MOCK_GPU_NODES.length}`} subtitle={`Avg ${avgUtilization}% util`} icon={Cpu} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Total Users" value={MOCK_USERS.length} subtitle="Across all roles" icon={Users} iconClassName="bg-warning/10 text-warning" />
         <StatCard title="Branches" value={MOCK_BRANCHES.length} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} icon={Building2} iconClassName="bg-accent-foreground/10 text-accent-foreground" />
