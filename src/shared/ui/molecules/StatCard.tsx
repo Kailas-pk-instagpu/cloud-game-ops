@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface StatCardProps {
   title: string;
@@ -12,7 +13,97 @@ interface StatCardProps {
   iconClassName?: string;
 }
 
+/**
+ * Parse the first numeric run out of a string/number.
+ * Returns { prefix, num, suffix } so we can tween only the number portion
+ * (e.g. "RM 138,400" → prefix "RM ", num 138400, suffix "").
+ */
+function splitValue(v: string | number): { prefix: string; num: number | null; suffix: string; hasCommas: boolean; decimals: number } {
+  const str = String(v);
+  const match = str.match(/-?\d[\d,]*(?:\.\d+)?/);
+  if (!match) return { prefix: str, num: null, suffix: '', hasCommas: false, decimals: 0 };
+  const raw = match[0];
+  const prefix = str.slice(0, match.index);
+  const suffix = str.slice((match.index ?? 0) + raw.length);
+  const hasCommas = raw.includes(',');
+  const decimals = raw.includes('.') ? raw.split('.')[1].length : 0;
+  const num = Number(raw.replace(/,/g, ''));
+  return { prefix, num, suffix, hasCommas, decimals };
+}
+
+function formatNum(n: number, hasCommas: boolean, decimals: number): string {
+  const fixed = n.toFixed(decimals);
+  if (!hasCommas) return fixed;
+  const [whole, dec] = fixed.split('.');
+  const withCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return dec ? `${withCommas}.${dec}` : withCommas;
+}
+
+function useAnimatedValue(value: string | number) {
+  const parsed = splitValue(value);
+  const [display, setDisplay] = useState<string>(String(value));
+  const [pulseKey, setPulseKey] = useState(0);
+  const [delta, setDelta] = useState<{ key: number; text: string; positive: boolean } | null>(null);
+  const prevRef = useRef<string>(String(value));
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const next = String(value);
+    if (next === prevRef.current) return;
+
+    const prevParsed = splitValue(prevRef.current);
+    prevRef.current = next;
+
+    // Trigger card flash + value pop on every change.
+    setPulseKey(k => k + 1);
+
+    // If both prev and next have numeric portions and same formatting shape, tween.
+    const canTween =
+      prevParsed.num !== null &&
+      parsed.num !== null &&
+      prevParsed.prefix === parsed.prefix &&
+      prevParsed.suffix === parsed.suffix;
+
+    if (canTween && prevParsed.num !== parsed.num) {
+      const from = prevParsed.num!;
+      const to = parsed.num!;
+      const diff = to - from;
+      setDelta({
+        key: Date.now(),
+        text: `${diff > 0 ? '+' : ''}${formatNum(diff, parsed.hasCommas, parsed.decimals)}`,
+        positive: diff > 0,
+      });
+
+      const start = performance.now();
+      const duration = 650;
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        // easeOutCubic
+        const eased = 1 - Math.pow(1 - t, 3);
+        const current = from + (to - from) * eased;
+        setDisplay(`${parsed.prefix}${formatNum(current, parsed.hasCommas, parsed.decimals)}${parsed.suffix}`);
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+        }
+      };
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(tick);
+    } else {
+      setDisplay(next);
+    }
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return { display, pulseKey, delta };
+}
+
 export function StatCard({ title, value, subtitle, icon: Icon, trend, className, iconClassName }: StatCardProps) {
+  const { display, pulseKey, delta } = useAnimatedValue(value);
+
   return (
     <Card
       className={cn(
@@ -23,6 +114,8 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className,
       )}
     >
       <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+      {/* Flash overlay re-keyed on each value change */}
+      <div key={`flash-${pulseKey}`} className="pointer-events-none absolute inset-0 rounded-[inherit] kpi-card-flash" />
       <CardContent className="relative p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div
@@ -51,9 +144,26 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className,
           <p className="text-[11px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium leading-tight">
             {title}
           </p>
-          <p className="text-xl sm:text-2xl lg:text-[1.6rem] font-bold tracking-tight leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
-            {value}
-          </p>
+          <div className="relative">
+            <p className="text-xl sm:text-2xl lg:text-[1.6rem] font-bold tracking-tight leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+              <span key={`val-${pulseKey}`} className="kpi-value-pop">
+                {display}
+              </span>
+            </p>
+            {delta && (
+              <span
+                key={`delta-${delta.key}`}
+                className={cn(
+                  'kpi-delta-rise absolute -top-1 right-0 text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded-md pointer-events-none',
+                  delta.positive
+                    ? 'bg-success/15 text-success'
+                    : 'bg-destructive/15 text-destructive'
+                )}
+              >
+                {delta.text}
+              </span>
+            )}
+          </div>
           {subtitle && (
             <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight truncate">
               {subtitle}
