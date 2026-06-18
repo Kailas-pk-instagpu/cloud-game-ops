@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2, PlugZap, UserMinus, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
