@@ -393,6 +393,7 @@ export default function SettingsPage() {
                 { key: 'Mobile number', filled: !!phone.trim() },
                 { key: 'Residential address', filled: !!address.trim() },
                 { key: 'Profile photo', filled: !!logoPreview },
+                { key: 'Two-factor authentication', filled: user.is2FAEnabled },
               ];
               const completed = fields.filter(f => f.filled).length;
               const percent = Math.round((completed / fields.length) * 100);
