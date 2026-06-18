@@ -386,8 +386,44 @@ export default function SettingsPage() {
           {/* Tab Content */}
           <div className="flex-1 p-5 md:p-8 overflow-y-auto">
             {/* ===== PROFILE TAB ===== */}
-            {activeTab === 'profile' && (
+            {activeTab === 'profile' && (() => {
+              const fields = [
+                { key: 'Full name', filled: !!name.trim() },
+                { key: 'Email address', filled: !!email.trim() && /\S+@\S+\.\S+/.test(email) },
+                { key: 'Mobile number', filled: !!phone.trim() },
+                { key: 'Residential address', filled: !!address.trim() },
+                { key: 'Profile photo', filled: !!logoPreview },
+              ];
+              const completed = fields.filter(f => f.filled).length;
+              const percent = Math.round((completed / fields.length) * 100);
+              const missing = fields.filter(f => !f.filled).map(f => f.key);
+              const tone =
+                percent === 100 ? 'text-emerald-500'
+                : percent >= 60 ? 'text-primary'
+                : 'text-amber-500';
+              return (
               <div className="space-y-8">
+                {/* Profile completion meter */}
+                <div className="rounded-xl border border-border bg-muted/30 p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div>
+                      <p className="text-sm font-semibold">Profile completion</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {percent === 100
+                          ? 'All set — your profile is complete.'
+                          : `Add ${missing.join(', ')} to reach 100%.`}
+                      </p>
+                    </div>
+                    <span className={cn('text-2xl font-bold tabular-nums transition-colors', tone)}>
+                      {percent}%
+                    </span>
+                  </div>
+                  <Progress value={percent} className="h-2" />
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    {completed} of {fields.length} fields completed
+                  </p>
+                </div>
+
                 {/* Avatar centered */}
                 <div className="flex flex-col items-center gap-4">
                   <div
