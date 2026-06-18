@@ -489,7 +489,8 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* ===== PASSWORD TAB ===== */}
             {activeTab === 'password' && (
