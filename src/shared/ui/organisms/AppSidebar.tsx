@@ -4,7 +4,7 @@ import { getRoutesForRole } from '@/shared/lib/rbac';
 
 import {
   LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2,
-  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ChevronRight,
+  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ChevronRight,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle,
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList,
 };
 
 function greeting() {
