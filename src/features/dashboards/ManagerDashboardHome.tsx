@@ -1,12 +1,20 @@
+import { useState } from 'react';
 import { MOCK_SEATS, MOCK_BRANCHES, MOCK_USERS, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer, Calendar, Coffee, UserCircle2 } from 'lucide-react';
+import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer, Calendar, Coffee, UserCircle2, ClipboardList, Plus, CheckCircle2, Trash2 } from 'lucide-react';
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { useShiftStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { useShiftStore, useAuthStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
+import { useHandoverStore, PRIORITY_META, type HandoverPriority } from '@/shared/lib/handoverStore';
+import { toast } from 'sonner';
 
 function formatTime12(t: string) {
   const [h, m] = t.split(':').map(Number);
