@@ -293,3 +293,212 @@ export default function ManagerDashboardHome() {
     </div>
   );
 }
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function HandoverPanel({ branchId, branchName, shiftLabel }: { branchId: string; branchName: string; shiftLabel: string }) {
+  const { user } = useAuthStore();
+  const { notes, createNote, acknowledge, deleteNote } = useHandoverStore();
+  const [createOpen, setCreateOpen] = useState(false);
+
+  if (!user) return null;
+
+  const branchNotes = notes
+    .filter(n => n.branchId === branchId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
+
+  return (
+    <div className="pt-3 border-t space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Shift Handover Notes</p>
+        </div>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-1">
+              <Plus className="h-3 w-3" /> Add
+            </Button>
+          </DialogTrigger>
+          <CreateHandoverDialog
+            defaultShiftLabel={shiftLabel}
+            onSubmit={(values) => {
+              createNote({
+                ...values,
+                branchId,
+                branchName,
+                authorId: user.id,
+                authorName: user.name || user.email,
+                authorRole: user.role,
+              });
+              toast.success('Handover note saved');
+              setCreateOpen(false);
+            }}
+          />
+        </Dialog>
+      </div>
+
+      {branchNotes.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic px-1 py-2">
+          No handover notes yet. Leave a note for the next shift.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {branchNotes.map(n => {
+            const mine = n.authorId === user.id;
+            return (
+              <div key={n.id} className="rounded-lg border border-border/50 bg-muted/30 p-2.5 space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Badge variant="outline" className={cn('text-[9px] h-4 px-1.5', PRIORITY_META[n.priority].className)}>
+                      {PRIORITY_META[n.priority].label}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground truncate">{n.shiftLabel}</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{timeAgo(n.createdAt)}</span>
+                </div>
+                <p className="text-xs leading-relaxed whitespace-pre-wrap">{n.summary}</p>
+                {n.pendingTasks && (
+                  <p className="text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Pending:</span> {n.pendingTasks}</p>
+                )}
+                {n.incidents && (
+                  <p className="text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Incidents:</span> {n.incidents}</p>
+                )}
+                {n.cashNotes && (
+                  <p className="text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Cash:</span> {n.cashNotes}</p>
+                )}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-muted-foreground">By {mine ? 'you' : n.authorName}</span>
+                  <div className="flex items-center gap-1">
+                    {n.acknowledgedById ? (
+                      <span className="text-[10px] text-success flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> Ack by {n.acknowledgedByName}
+                      </span>
+                    ) : !mine ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[10px] gap-1"
+                        onClick={() => { acknowledge(n.id, user.id, user.name || user.email); toast.success('Acknowledged'); }}
+                      >
+                        <CheckCircle2 className="h-3 w-3" /> Acknowledge
+                      </Button>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground italic">Awaiting next shift</span>
+                    )}
+                    {mine && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={() => { deleteNote(n.id); toast.info('Note deleted'); }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CreateHandoverDialog({
+  defaultShiftLabel,
+  onSubmit,
+}: {
+  defaultShiftLabel: string;
+  onSubmit: (v: {
+    shiftLabel: string;
+    summary: string;
+    pendingTasks: string;
+    incidents: string;
+    cashNotes: string;
+    priority: HandoverPriority;
+  }) => void;
+}) {
+  const [shiftLabel, setShiftLabel] = useState(defaultShiftLabel);
+  const [summary, setSummary] = useState('');
+  const [pendingTasks, setPendingTasks] = useState('');
+  const [incidents, setIncidents] = useState('');
+  const [cashNotes, setCashNotes] = useState('');
+  const [priority, setPriority] = useState<HandoverPriority>('info');
+
+  const valid = shiftLabel.trim().length >= 3 && summary.trim().length >= 10;
+
+  return (
+    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>New Shift Handover</DialogTitle>
+        <DialogDescription>Leave a clear note for the next manager taking over.</DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Shift Label</label>
+            <Input value={shiftLabel} onChange={(e) => setShiftLabel(e.target.value)} maxLength={80} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Priority</label>
+            <Select value={priority} onValueChange={(v) => setPriority(v as HandoverPriority)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="attention">Needs Attention</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Summary</label>
+          <Textarea placeholder="Overall how the shift went..." value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} maxLength={1000} />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Pending Tasks</label>
+          <Textarea placeholder="Follow-ups for next shift..." value={pendingTasks} onChange={(e) => setPendingTasks(e.target.value)} rows={2} maxLength={1000} />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Incidents</label>
+          <Textarea placeholder="Hardware faults, customer issues..." value={incidents} onChange={(e) => setIncidents(e.target.value)} rows={2} maxLength={1000} />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Cash & Float Notes</label>
+          <Textarea placeholder="Float balance, deposits, discrepancies..." value={cashNotes} onChange={(e) => setCashNotes(e.target.value)} rows={2} maxLength={500} />
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button
+          disabled={!valid}
+          onClick={() => onSubmit({
+            shiftLabel: shiftLabel.trim(),
+            summary: summary.trim(),
+            pendingTasks: pendingTasks.trim(),
+            incidents: incidents.trim(),
+            cashNotes: cashNotes.trim(),
+            priority,
+          })}
+        >
+          Save Handover
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
