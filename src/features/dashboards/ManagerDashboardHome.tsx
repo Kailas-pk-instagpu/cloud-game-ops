@@ -87,7 +87,7 @@ export default function ManagerDashboardHome() {
               <span>{shiftLabel}</span>
             </button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-80 p-0">
+          <PopoverContent align="end" className="w-96 p-0 max-h-[80vh] overflow-y-auto">
             {currentShift ? (
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -165,6 +165,8 @@ export default function ManagerDashboardHome() {
                     </div>
                   </div>
                 )}
+
+                <HandoverPanel branchId="branch-1" branchName={branch?.name || 'your branch'} shiftLabel={shiftLabel} />
               </div>
             ) : (
               <div className="p-4 text-center space-y-2">
