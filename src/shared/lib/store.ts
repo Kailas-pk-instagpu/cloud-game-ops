@@ -403,7 +403,6 @@ export const useSettlementStore = create<SettlementState>()(
 );
 
 // Account Deletion Request store
-import { Role } from '../types/auth';
 
 export interface DeletionRequest {
   id: string;
