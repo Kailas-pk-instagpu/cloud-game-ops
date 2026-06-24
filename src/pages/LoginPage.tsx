@@ -16,21 +16,18 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    setTimeout(() => {
-      const result = login(email, password);
-      setLoading(false);
-      if (!result.success) {
-        setError(result.error || 'Login failed');
-        return;
-      }
-      if (result.requires2FA) navigate('/verify-2fa');
-      else navigate('/dashboard');
-    }, 800);
+    const result = await login(email, password);
+    setLoading(false);
+    if (!result.success) {
+      setError(result.error || 'Login failed');
+      return;
+    }
+    if (result.requires2FA) navigate('/verify-2fa');
+    else navigate('/dashboard');
   };
 
   return (
