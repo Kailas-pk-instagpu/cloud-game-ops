@@ -11,6 +11,7 @@ interface AuthStore {
   isAuthenticated: boolean;
   theme: 'light' | 'dark';
   loading: boolean;
+  bootstrapped: boolean;
   init: () => Promise<void>;
   hydrateFromSession: (userId: string, email: string, accessToken: string) => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; requires2FA: boolean; error?: string }>;
