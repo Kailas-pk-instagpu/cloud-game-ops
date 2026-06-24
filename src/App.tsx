@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,7 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DashboardLayout } from "@/shared/ui/organisms/DashboardLayout";
 import { RoleGuard } from "@/shared/lib/RoleGuard";
+import { useAuthStore } from "@/shared/lib/store";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import Verify2FAPage from "./pages/Verify2FAPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
