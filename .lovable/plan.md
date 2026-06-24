@@ -1,78 +1,96 @@
-# POC Plan — Cafe Owner + Manager Only
+# POC Plan — Cafe Owner + Manager with Lovable Cloud Backend
 
-Goal: ship a focused pilot demo where a **Manager** runs the floor (seats, sessions, handover) and a **Cafe Owner** sees the business outcome (KPIs, branches, settlements). Everything else stays in the codebase but is hidden behind role guards so the full product can be re-enabled later.
+Goal: take the existing Owner + Manager POC and replace mock Zustand stores with a real backend (Lovable Cloud / Supabase) so multiple users, devices, and sessions stay in sync in real time.
 
-## 1. Roles in the POC
+## 1. Backend platform
 
-Keep only:
-- **Cafe Owner** — strategic view (KPIs, branches, settlements, bookings)
-- **Manager** — operational view (seat grid, sessions, shift + handover, bookings)
+Use **Lovable Cloud** (managed Supabase):
+- Postgres database with Row Level Security
+- Built-in auth (email + password, optional Google)
+- Realtime subscriptions for seat grid + active sessions
+- Edge functions for session settlement math
+- Storage (optional, for branch/avatar images)
 
-Hide from login + sidebar (not deleted):
-- Super Admin, Admin
+## 2. Auth & roles (must-have)
 
-## 2. Login changes
+- Email + password sign-in via Lovable Cloud Auth (replaces mock login).
+- `profiles` table linked to `auth.users` (full name, phone, avatar, branch assignment).
+- `user_roles` table with enum `app_role` = `cafe_owner | manager` (separate table — never on profile).
+- `has_role()` security-definer function used by every RLS policy.
+- 2FA stays UI-only for the demo (skip TOTP backend).
+- Seed 1 owner + 2 managers on first run.
 
-- Login page shows only **Cafe Owner** and **Manager** demo accounts (quick-login chips).
-- Forgot password + 2FA verification flow stays (credibility).
-- Role-based redirect:
-  - Cafe Owner → `/dashboard` (CafeOwnerDashboard)
-  - Manager → `/dashboard` (ManagerDashboardHome)
+## 3. Core data model (tables)
 
-## 3. Routes & sidebar (POC visibility)
+| Table | Purpose | Owned by |
+|---|---|---|
+| `profiles` | user identity | self |
+| `user_roles` | role assignment | service_role writes, user reads own |
+| `branches` | cafe locations | owner |
+| `branch_managers` | manager↔branch link | owner |
+| `seats` | seat + GPU model + status | branch scope |
+| `sessions` | active + historical play sessions | branch scope |
+| `settlements` | end-of-session billing record | branch scope |
+| `bookings` | walk-in pre-bookings | branch scope |
+| `shifts` | shift schedule per branch | branch scope |
+| `handover_notes` | shift handover (manager-only) | branch scope |
+| `notifications` | per-user feed | user scope |
 
-| Route | Cafe Owner | Manager | Notes |
-|---|---|---|---|
-| `/dashboard` | ✓ | ✓ | role-routed |
-| `/branches` | ✓ | — | view-only, pre-seeded |
-| `/seats` | — | ✓ | seat grid + assign |
-| `/bookings` | ✓ | ✓ | simple calendar |
-| `/billing/session` | ✓ | ✓ | active session view |
-| `/billing/settlements` | ✓ | ✓ | history (owner = read, manager = end-session source) |
-| `/notifications` | ✓ | ✓ | bell + slide-out |
-| `/settings` | ✓ | ✓ | profile, 2FA, completion meter |
+Every table: `GRANT` block → `ENABLE RLS` → policies using `has_role()` + branch scoping.
 
-Hidden in POC (route kept, removed from sidebar + role list):
-- `/users`, `/gpu-nodes`, `/monitoring`, `/issues`, `/deletion-requests`, `/analytics`
+## 4. Feature → backend mapping
 
-## 4. Cafe Owner experience
+**Owner**
+- Dashboard KPIs → SQL views / aggregate queries on `sessions` + `settlements`.
+- Branches list → `branches` + `branch_managers` joins, owner-scoped RLS.
+- Settlements history → `settlements` read-only.
+- Bookings calendar → `bookings` read across owned branches.
 
-- **Dashboard**: KPI cards (Active sessions, Today's revenue, Seat utilization, GPU availability), branches list (their own), active sessions overview across branches, recent settlements card.
-- **Branches**: list pre-seeded 1–2 branches with seat count, GPU mix, manager assigned. No creation wizard.
-- **Bookings**: read-only calendar of upcoming walk-ins.
-- **Settings**: profile + 2FA + completion meter (2FA disabled keeps profile < 100%).
+**Manager**
+- Seat grid → `seats` filtered by assigned branch, **realtime subscription** for status changes.
+- Assign player → insert `sessions` row + update `seats.status = 'occupied'`.
+- End session → **edge function** `end-session`: computes duration, usage cost, refund, writes `settlements`, frees seat. Keeps math server-side so clients can't tamper.
+- Shift pill + handover notes → `shifts` + `handover_notes`, manager-only RLS.
+- Bookings → insert/update on `bookings` for assigned branch.
 
-## 5. Manager experience
+**Shared**
+- Notifications → `notifications` table + realtime channel per user.
+- Settings → updates `profiles`; password change via Supabase Auth.
 
-- **Dashboard home**: shift-timing pill with embedded **shift handover notes** (manager-only), today's revenue for the branch, seat status summary, quick "Assign seat" CTA.
-- **Seat Management** (`/seats`): grid for assigned branch — available / occupied / maintenance, each tile shows GPU model. Click → **Assign player** dialog → starts billing session.
-- **Active session**: per-seat timer, cost accruing, **End session → settlement dialog** (locked amount, usage cost, refund).
-- **Manager billing banner**: live session indicator across the app.
-- **Bookings**: simple calendar to mark a pre-booked walk-in.
-- **Settings**: same as owner.
+## 5. Edge functions
 
-## 6. Demo data to pre-seed (mock stores)
+- `end-session` — atomic settlement (server-trusted pricing).
+- `assign-seat` (optional) — validates seat is free + manager owns branch before insert.
+- `seed-demo-data` — one-shot to populate 2 branches, ~24 seats, 1 shift, 3 bookings (dev only).
 
-- 1 Cafe Owner, 2 Managers
-- 2 branches (~12 seats each, mixed RTX 4070 / 4080)
-- 1 active shift, 1 handover note
-- 2–3 active sessions, 5–10 historical settlements
-- 3–5 upcoming bookings
+## 6. Realtime channels
 
-## 7. Demo script (≈5 min)
+- `seats:branch=<id>` — seat status updates.
+- `sessions:branch=<id>` — timers / new sessions for owner overview.
+- `notifications:user=<id>` — bell badge.
 
-1. Log in as **Manager** → see shift pill + handover note.
-2. Open seat grid → assign walk-in to seat #5 (RTX 4080).
-3. Session starts → timer + cost ticking, banner appears.
-4. End session → settlement dialog → confirm.
-5. Log out, log in as **Cafe Owner** → KPI cards update, see new settlement + revenue bump.
+## 7. Out of scope for POC backend
 
-## 8. Technical notes
+- 2FA TOTP storage, password HIBP check
+- File uploads / avatars
+- Analytics page, monitoring, issues, deletion requests, GPU nodes admin
+- Stripe / real payments — settlement stays a record only
+- Email sending — notifications stay in-app
 
-- Edit `src/shared/lib/rbac.ts` `ROUTES` to drop `super_admin` / `admin` from every entry and remove POC-cut routes from the sidebar list.
-- Edit `src/App.tsx` `RoleGuard roles` arrays to only allow `cafe_owner` / `manager` on POC routes; leave hidden routes mounted but guarded so they're inaccessible.
-- Edit `src/pages/DashboardPage.tsx` to only switch on `cafe_owner` and `manager` (fallback redirect for others).
-- Edit `src/pages/LoginPage.tsx` to show only Owner + Manager demo accounts.
-- Pre-seed Zustand stores: `store.ts` (users, branches, seats, sessions, settlements), `handoverStore.ts` (1 note), bookings store.
-- Keep dark SaaS theme, Lucide icons, no emojis.
-- No backend — all data stays in mock stores.
+## 8. Implementation order
+
+1. Enable Lovable Cloud.
+2. Create `profiles`, `user_roles`, `app_role` enum, `has_role()`, signup trigger.
+3. Swap `LoginPage` + `useAuthStore` to Supabase Auth (keep role-based redirect).
+4. Migrate `branches`, `branch_managers`, `seats` + RLS; wire Owner dashboard + Branches page.
+5. Migrate `sessions` + `settlements`, add `end-session` edge function, wire Manager seat grid + billing.
+6. Migrate `bookings`, `shifts`, `handover_notes`, `notifications`.
+7. Seed demo data, run end-to-end demo script.
+
+## 9. Technical notes
+
+- All new public tables follow the GRANT → RLS → POLICY order.
+- Roles only via `user_roles` + `has_role()`; never read role from `profiles`.
+- Replace Zustand stores with **TanStack Query** hooks wrapping the Supabase client; keep component APIs identical so UI code barely changes.
+- Real-time via `supabase.channel(...).on('postgres_changes', ...)` inside the query hooks (invalidate on event).
+- Keep mock stores deletable in one pass once each page is migrated.
