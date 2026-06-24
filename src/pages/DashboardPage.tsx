@@ -1,18 +1,16 @@
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
-import SuperAdminDashboard from '@/features/dashboards/SuperAdminDashboard';
-import AdminDashboard from '@/features/dashboards/AdminDashboard';
 import CafeOwnerDashboard from '@/features/dashboards/CafeOwnerDashboard';
 import ManagerDashboardHome from '@/features/dashboards/ManagerDashboardHome';
 
+// POC: only Cafe Owner + Manager have a dashboard. Other roles are bounced to login.
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" replace />;
 
   switch (user.role) {
-    case 'super_admin': return <SuperAdminDashboard />;
-    case 'admin': return <AdminDashboard />;
     case 'cafe_owner': return <CafeOwnerDashboard />;
     case 'manager': return <ManagerDashboardHome />;
-    default: return null;
+    default: return <Navigate to="/login" replace />;
   }
 }

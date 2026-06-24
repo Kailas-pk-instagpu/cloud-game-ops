@@ -1,78 +1,78 @@
-# POC Scope — Pilot Cafe Demo
+# POC Plan — Cafe Owner + Manager Only
 
-Audience: a pilot cafe customer. The story is: **a player walks in → manager assigns a GPU seat → session runs → settlement → owner sees the result.** Everything else gets trimmed.
+Goal: ship a focused pilot demo where a **Manager** runs the floor (seats, sessions, handover) and a **Cafe Owner** sees the business outcome (KPIs, branches, settlements). Everything else stays in the codebase but is hidden behind role guards so the full product can be re-enabled later.
 
-## Roles to keep
-- **Cafe Owner** — sees their branches, revenue, live sessions, settlements
-- **Manager** — runs the floor: seat grid, start/end sessions, shift, handover
-- **Super Admin / Admin** — *cut from POC* (mention only as "exists in full product")
+## 1. Roles in the POC
 
-## Core features to KEEP
+Keep only:
+- **Cafe Owner** — strategic view (KPIs, branches, settlements, bookings)
+- **Manager** — operational view (seat grid, sessions, shift + handover, bookings)
 
-### 1. Auth (minimal)
-- Login page
-- 2FA flow (keep — it's a credibility feature for a cafe pilot)
-- Role-based redirect to the right dashboard
-- Logout
+Hide from login + sidebar (not deleted):
+- Super Admin, Admin
 
-### 2. Cafe Owner dashboard
-- KPI cards: Active sessions, Today's revenue, Seat utilization, GPU availability
-- Branches list (their own only) with status
-- Active sessions overview across their branches
-- Settlements history (read-only)
+## 2. Login changes
 
-### 3. Manager dashboard + seat operations (the heart of the demo)
-- Manager home with shift-timing pill (with embedded **shift handover notes**)
-- **Seat grid** for the assigned branch — available / occupied / maintenance
-- **Assign a player to a seat / GPU** → starts a billing session
-- Active session view per seat (timer, cost accruing)
-- **End session → settlement dialog** (locked amount, usage cost, refund)
-- Manager billing banner (live session indicator)
+- Login page shows only **Cafe Owner** and **Manager** demo accounts (quick-login chips).
+- Forgot password + 2FA verification flow stays (credibility).
+- Role-based redirect:
+  - Cafe Owner → `/dashboard` (CafeOwnerDashboard)
+  - Manager → `/dashboard` (ManagerDashboardHome)
 
-### 4. Branches & seats (owner-side setup, light)
-- View branches
-- View seats per branch with GPU model
-- Skip the full multi-step branch creation wizard — pre-seed 1–2 branches in mock data
+## 3. Routes & sidebar (POC visibility)
 
-### 5. Bookings (light)
-- Simple booking calendar so "pre-booked walk-in" works in the demo
-- Skip advanced conflict resolution UI
+| Route | Cafe Owner | Manager | Notes |
+|---|---|---|---|
+| `/dashboard` | ✓ | ✓ | role-routed |
+| `/branches` | ✓ | — | view-only, pre-seeded |
+| `/seats` | — | ✓ | seat grid + assign |
+| `/bookings` | ✓ | ✓ | simple calendar |
+| `/billing/session` | ✓ | ✓ | active session view |
+| `/billing/settlements` | ✓ | ✓ | history (owner = read, manager = end-session source) |
+| `/notifications` | ✓ | ✓ | bell + slide-out |
+| `/settings` | ✓ | ✓ | profile, 2FA, completion meter |
 
-### 6. Settings (trimmed)
-- Profile (name, email, phone, avatar)
-- 2FA enable/disable
-- Profile completion meter
-- Skip: integrations panels (E2Link, VMware Horizon), deletion requests, advanced security
+Hidden in POC (route kept, removed from sidebar + role list):
+- `/users`, `/gpu-nodes`, `/monitoring`, `/issues`, `/deletion-requests`, `/analytics`
 
-### 7. Notifications (light)
-- Bell + slide-out panel with a handful of session/seat events
-- Skip dedicated notifications page polish
+## 4. Cafe Owner experience
 
-## Features to CUT for POC
-- Super Admin dashboard, GPU Nodes management page, Monitoring (logs, failed txns, live session inspector)
-- Admin dashboard
-- Deletion requests workflow
-- Issues / ticketing page
-- Analytics page (P&L, retention, growth charts) — owner KPIs on the dashboard are enough
-- Integrations (E2Link, VMware Horizon)
-- Full branch creation wizard, advanced shift management dialog
-- User management (CRUD users, roles, hierarchy)
-- Billing settlements **page** — keep settlement *dialog* + owner history card only
+- **Dashboard**: KPI cards (Active sessions, Today's revenue, Seat utilization, GPU availability), branches list (their own), active sessions overview across branches, recent settlements card.
+- **Branches**: list pre-seeded 1–2 branches with seat count, GPU mix, manager assigned. No creation wizard.
+- **Bookings**: read-only calendar of upcoming walk-ins.
+- **Settings**: profile + 2FA + completion meter (2FA disabled keeps profile < 100%).
 
-## Demo data to pre-seed
-- 1 cafe owner, 2 managers
-- 2 branches, ~12 seats each with mixed GPU models (RTX 4070 / 4080)
+## 5. Manager experience
+
+- **Dashboard home**: shift-timing pill with embedded **shift handover notes** (manager-only), today's revenue for the branch, seat status summary, quick "Assign seat" CTA.
+- **Seat Management** (`/seats`): grid for assigned branch — available / occupied / maintenance, each tile shows GPU model. Click → **Assign player** dialog → starts billing session.
+- **Active session**: per-seat timer, cost accruing, **End session → settlement dialog** (locked amount, usage cost, refund).
+- **Manager billing banner**: live session indicator across the app.
+- **Bookings**: simple calendar to mark a pre-booked walk-in.
+- **Settings**: same as owner.
+
+## 6. Demo data to pre-seed (mock stores)
+
+- 1 Cafe Owner, 2 Managers
+- 2 branches (~12 seats each, mixed RTX 4070 / 4080)
 - 1 active shift, 1 handover note
 - 2–3 active sessions, 5–10 historical settlements
+- 3–5 upcoming bookings
 
-## Demo script (5 minutes)
-1. Log in as **Manager** → see shift pill + handover note
-2. Open seat grid → assign walk-in player to seat #5 (RTX 4080)
-3. Session starts → timer + cost ticking, banner appears
-4. End session → settlement dialog → confirm
-5. Log out, log in as **Cafe Owner** → KPI cards animate, see the new settlement and revenue bump
+## 7. Demo script (≈5 min)
 
-## Technical notes
-- All data stays in existing Zustand mock stores — no backend needed for POC
-- Hide cut routes via `RoleGuard` + remove sidebar entries; don't delete code so the full product can be re-enabled later
-- Keep the existing dark SaaS theme, Lucide icons, no emojis
+1. Log in as **Manager** → see shift pill + handover note.
+2. Open seat grid → assign walk-in to seat #5 (RTX 4080).
+3. Session starts → timer + cost ticking, banner appears.
+4. End session → settlement dialog → confirm.
+5. Log out, log in as **Cafe Owner** → KPI cards update, see new settlement + revenue bump.
+
+## 8. Technical notes
+
+- Edit `src/shared/lib/rbac.ts` `ROUTES` to drop `super_admin` / `admin` from every entry and remove POC-cut routes from the sidebar list.
+- Edit `src/App.tsx` `RoleGuard roles` arrays to only allow `cafe_owner` / `manager` on POC routes; leave hidden routes mounted but guarded so they're inaccessible.
+- Edit `src/pages/DashboardPage.tsx` to only switch on `cafe_owner` and `manager` (fallback redirect for others).
+- Edit `src/pages/LoginPage.tsx` to show only Owner + Manager demo accounts.
+- Pre-seed Zustand stores: `store.ts` (users, branches, seats, sessions, settlements), `handoverStore.ts` (1 note), bookings store.
+- Keep dark SaaS theme, Lucide icons, no emojis.
+- No backend — all data stays in mock stores.
