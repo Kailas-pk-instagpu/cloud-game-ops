@@ -149,7 +149,7 @@ export const useAuthStore = create<AuthStore>()(
       updateProfile: async (updates) => {
         const user = get().user;
         if (!user) return;
-        const dbUpdates: Record<string, unknown> = {};
+        const dbUpdates: { full_name?: string; phone?: string; avatar_url?: string } = {};
         if (updates.name !== undefined) dbUpdates.full_name = updates.name;
         if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
         if (updates.logoUrl !== undefined) dbUpdates.avatar_url = updates.logoUrl;
