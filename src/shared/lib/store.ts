@@ -1,10 +1,54 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, TwoFAMethod, User } from '../types/auth';
-import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
+import { Role, TwoFAMethod, User } from '../types/auth';
+import { supabase } from '@/integrations/supabase/client';
 import { notifyLogin } from './loginNotification';
 
-export const useAuthStore = create<AuthState>()(
+interface AuthStore {
+  user: User | null;
+  token: string | null;
+  is2FAVerified: boolean;
+  isAuthenticated: boolean;
+  theme: 'light' | 'dark';
+  loading: boolean;
+  bootstrapped: boolean;
+  init: () => Promise<void>;
+  hydrateFromSession: (userId: string, email: string, accessToken: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ success: boolean; requires2FA: boolean; error?: string }>;
+  signup: (email: string, password: string, fullName: string, role: Role) => Promise<{ success: boolean; error?: string }>;
+  verify2FA: (code: string) => boolean;
+  logout: () => Promise<void>;
+  toggleTheme: () => void;
+  enable2FA: (method: TwoFAMethod, phone?: string) => Promise<void>;
+  disable2FA: () => Promise<void>;
+  updateProfile: (updates: Partial<Pick<User, 'name' | 'email' | 'phone' | 'address' | 'logoUrl'>>) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+}
+
+async function fetchUserShape(userId: string, fallbackEmail: string): Promise<User | null> {
+  const [{ data: profile }, { data: roles }] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+    supabase.from('user_roles').select('role').eq('user_id', userId),
+  ]);
+  const role = (roles?.[0]?.role as Role | undefined) ?? 'manager';
+  return {
+    id: userId,
+    email: profile?.email ?? fallbackEmail,
+    name: profile?.full_name ?? fallbackEmail.split('@')[0],
+    role,
+    createdBy: null,
+    assignedScope: [],
+    is2FAEnabled: profile?.is_2fa_enabled ?? false,
+    twoFAMethod: null,
+    phone: profile?.phone ?? undefined,
+    avatar: profile?.avatar_url ?? undefined,
+    createdAt: profile?.created_at ?? new Date().toISOString(),
+  };
+}
+
+let authInitialized = false;
+
+export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       user: null,
@@ -12,39 +56,76 @@ export const useAuthStore = create<AuthState>()(
       is2FAVerified: false,
       isAuthenticated: false,
       theme: 'dark',
+      loading: false,
+      bootstrapped: false,
 
-      login: (email: string, password: string) => {
-        const cred = MOCK_CREDENTIALS[email];
-        if (!cred || cred.password !== password) {
-          return { success: false, requires2FA: false, error: 'Invalid email or password' };
+      init: async () => {
+        if (authInitialized) return;
+        authInitialized = true;
+        supabase.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            setTimeout(() => {
+              get().hydrateFromSession(session.user.id, session.user.email ?? '', session.access_token);
+            }, 0);
+          } else {
+            set({ user: null, token: null, isAuthenticated: false, is2FAVerified: false });
+          }
+        });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await get().hydrateFromSession(session.user.id, session.user.email ?? '', session.access_token);
         }
-        const user = MOCK_USERS.find(u => u.id === cred.userId);
-        if (!user) return { success: false, requires2FA: false, error: 'User not found' };
+        set({ bootstrapped: true });
+      },
 
-        set({ user, token: `mock-jwt-${user.id}-${Date.now()}` });
-        
-        if (user.is2FAEnabled) {
-          set({ is2FAVerified: false, isAuthenticated: false });
-          return { success: true, requires2FA: true };
+      hydrateFromSession: async (userId, email, accessToken) => {
+        const user = await fetchUserShape(userId, email);
+        set({ user, token: accessToken, isAuthenticated: !!user, is2FAVerified: true });
+      },
+
+      login: async (email, password) => {
+        set({ loading: true });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        set({ loading: false });
+        if (error || !data.user) {
+          return { success: false, requires2FA: false, error: error?.message ?? 'Login failed' };
         }
-        
-        set({ is2FAVerified: true, isAuthenticated: true });
-        notifyLogin(user);
+        const user = await fetchUserShape(data.user.id, data.user.email ?? email);
+        set({ user, token: data.session?.access_token ?? null, isAuthenticated: true, is2FAVerified: true });
+        if (user) notifyLogin(user);
         return { success: true, requires2FA: false };
       },
 
+      signup: async (email, password, fullName, role) => {
+        set({ loading: true });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: { full_name: fullName, role },
+          },
+        });
+        set({ loading: false });
+        if (error) return { success: false, error: error.message };
+        if (data.session && data.user) {
+          const user = await fetchUserShape(data.user.id, data.user.email ?? email);
+          set({ user, token: data.session.access_token, isAuthenticated: true, is2FAVerified: true });
+          if (user) notifyLogin(user);
+        }
+        return { success: true };
+      },
+
       verify2FA: (code: string) => {
-        // Accept any 6-digit code for demo
         if (code.length === 6 && /^\d+$/.test(code)) {
           set({ is2FAVerified: true, isAuthenticated: true });
-          const u = get().user;
-          if (u) notifyLogin(u);
           return true;
         }
         return false;
       },
 
-      logout: () => {
+      logout: async () => {
+        await supabase.auth.signOut();
         set({ user: null, token: null, is2FAVerified: false, isAuthenticated: false });
       },
 
@@ -54,55 +135,49 @@ export const useAuthStore = create<AuthState>()(
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
       },
 
-      enable2FA: (method: TwoFAMethod, phone?: string) => {
+      enable2FA: async (method, _phone) => {
         const user = get().user;
-        if (user) {
-          set({ user: { ...user, is2FAEnabled: true, twoFAMethod: method, ...(phone ? { phone } : {}) } });
-        }
+        if (!user) return;
+        await supabase.from('profiles').update({ is_2fa_enabled: true }).eq('id', user.id);
+        set({ user: { ...user, is2FAEnabled: true, twoFAMethod: method } });
       },
 
-      disable2FA: () => {
+      disable2FA: async () => {
         const user = get().user;
-        if (user) {
-          set({ user: { ...user, is2FAEnabled: false, twoFAMethod: null } });
-        }
+        if (!user) return;
+        await supabase.from('profiles').update({ is_2fa_enabled: false }).eq('id', user.id);
+        set({ user: { ...user, is2FAEnabled: false, twoFAMethod: null } });
       },
 
-      updateProfile: (updates) => {
+      updateProfile: async (updates) => {
         const user = get().user;
-        if (user) {
-          set({ user: { ...user, ...updates } });
+        if (!user) return;
+        const dbUpdates: { full_name?: string; phone?: string; avatar_url?: string } = {};
+        if (updates.name !== undefined) dbUpdates.full_name = updates.name;
+        if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+        if (updates.logoUrl !== undefined) dbUpdates.avatar_url = updates.logoUrl;
+        if (Object.keys(dbUpdates).length) {
+          await supabase.from('profiles').update(dbUpdates).eq('id', user.id);
         }
+        set({ user: { ...user, ...updates } });
       },
 
-      changePassword: (oldPassword: string, newPassword: string) => {
-        const user = get().user;
-        if (!user) return { success: false, error: 'Not logged in' };
-        const cred = MOCK_CREDENTIALS[user.email];
-        if (!cred || cred.password !== oldPassword) {
-          return { success: false, error: 'Current password is incorrect' };
-        }
-        // Update mock credential
-        MOCK_CREDENTIALS[user.email].password = newPassword;
+      changePassword: async (_oldPassword, newPassword) => {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) return { success: false, error: error.message };
         return { success: true };
       },
     }),
     {
       name: 'gpu-cloud-auth',
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        is2FAVerified: state.is2FAVerified,
-        isAuthenticated: state.isAuthenticated,
-        theme: state.theme,
-      } as AuthState),
+      partialize: (state) => ({ theme: state.theme } as Pick<AuthStore, 'theme'>),
     }
   )
 );
 
 // Apply theme on load
 const savedTheme = JSON.parse(localStorage.getItem('gpu-cloud-auth') || '{}')?.state?.theme;
-if (savedTheme === 'dark') {
+if (savedTheme === 'dark' || !savedTheme) {
   document.documentElement.classList.add('dark');
 } else {
   document.documentElement.classList.remove('dark');
@@ -331,7 +406,6 @@ export const useSettlementStore = create<SettlementState>()(
 );
 
 // Account Deletion Request store
-import { Role } from '../types/auth';
 
 export interface DeletionRequest {
   id: string;
