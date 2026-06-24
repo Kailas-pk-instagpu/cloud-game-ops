@@ -28,11 +28,19 @@ function SidebarOverlay() {
 }
 
 export function DashboardLayout() {
-  const { isAuthenticated, user, is2FAVerified } = useAuthStore();
+  const { isAuthenticated, user, is2FAVerified, bootstrapped } = useAuthStore();
 
+  if (!bootstrapped) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">
+        Loading…
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
   if (user.is2FAEnabled && !is2FAVerified) return <Navigate to="/verify-2fa" replace />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+
 
   return (
     <SidebarProvider>
