@@ -57,6 +57,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       theme: 'dark',
       loading: false,
+      bootstrapped: false,
 
       init: async () => {
         if (authInitialized) return;
@@ -74,6 +75,7 @@ export const useAuthStore = create<AuthStore>()(
         if (session?.user) {
           await get().hydrateFromSession(session.user.id, session.user.email ?? '', session.access_token);
         }
+        set({ bootstrapped: true });
       },
 
       hydrateFromSession: async (userId, email, accessToken) => {
