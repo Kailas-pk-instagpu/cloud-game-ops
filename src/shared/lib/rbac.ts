@@ -20,18 +20,20 @@ export interface RouteConfig {
   roles: Role[];
 }
 
-// POC: only Cafe Owner + Manager routes are exposed in the sidebar.
-// Hidden routes are still mounted in App.tsx but removed from this list so they
-// don't render in the sidebar nor are reachable for POC roles.
 export const ROUTES: RouteConfig[] = [
-  { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard', roles: ['cafe_owner', 'manager'] },
-  { path: '/branches', label: 'Branches', icon: 'Building2', roles: ['cafe_owner'] },
+  { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
+  { path: '/users', label: 'User Management', icon: 'Users', roles: ['super_admin', 'admin', 'cafe_owner'] },
+  { path: '/gpu-nodes', label: 'GPU Nodes', icon: 'Cpu', roles: ['super_admin'] },
+  { path: '/branches', label: 'Branches', icon: 'Building2', roles: ['super_admin', 'admin', 'cafe_owner'] },
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', roles: ['manager'] },
   { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', roles: ['cafe_owner', 'manager'] },
-  { path: '/billing/session', label: 'Billing Session', icon: 'Wallet', roles: ['cafe_owner', 'manager'] },
-  { path: '/billing/settlements', label: 'Settlements', icon: 'Receipt', roles: ['cafe_owner', 'manager'] },
-  { path: '/notifications', label: 'Notifications', icon: 'Bell', roles: ['cafe_owner', 'manager'] },
-  { path: '/settings', label: 'Settings', icon: 'Settings', roles: ['cafe_owner', 'manager'] },
+  { path: '/billing/session', label: 'Billing Session', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
+  { path: '/monitoring', label: 'Monitoring', icon: 'Radar', roles: ['super_admin'] },
+  { path: '/issues', label: 'Issue Reports', icon: 'AlertTriangle', roles: ['super_admin', 'admin', 'cafe_owner'] },
+  { path: '/deletion-requests', label: 'Deletion Requests', icon: 'UserMinus', roles: ['super_admin'] },
+  { path: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['super_admin', 'admin', 'cafe_owner'] },
+  { path: '/notifications', label: 'Notifications', icon: 'Bell', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
+  { path: '/settings', label: 'Settings', icon: 'Settings', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
 ];
 
 export function getRoutesForRole(role: Role): RouteConfig[] {

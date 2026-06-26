@@ -267,11 +267,11 @@ export default function SettingsPage() {
     }, 500);
   };
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = () => {
     if (!currentPassword) { toast.error('Enter your current password'); return; }
     if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
-    const result = await changePassword(currentPassword, newPassword);
+    const result = changePassword(currentPassword, newPassword);
     if (result.success) {
       toast.success('Password changed successfully');
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');

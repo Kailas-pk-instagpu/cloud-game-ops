@@ -16,18 +16,21 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const result = await login(email, password);
-    setLoading(false);
-    if (!result.success) {
-      setError(result.error || 'Login failed');
-      return;
-    }
-    if (result.requires2FA) navigate('/verify-2fa');
-    else navigate('/dashboard');
+
+    setTimeout(() => {
+      const result = login(email, password);
+      setLoading(false);
+      if (!result.success) {
+        setError(result.error || 'Login failed');
+        return;
+      }
+      if (result.requires2FA) navigate('/verify-2fa');
+      else navigate('/dashboard');
+    }, 800);
   };
 
   return (
@@ -136,15 +139,14 @@ export default function LoginPage() {
             </div>
 
             <div
-              className="mt-5 p-3 rounded-lg bg-background/40 border border-white/10 text-xs text-muted-foreground space-y-1 animate-login-in"
+              className="mt-5 p-3 rounded-lg bg-background/40 border border-white/10 text-xs text-muted-foreground space-y-0.5 animate-login-in"
               style={{ animationDelay: '780ms' }}
             >
-              <p className="font-medium text-foreground text-xs mb-1">New here?</p>
-              <p>
-                <Link to="/signup" className="text-primary hover:text-primary/80">Create a Cafe Owner or Manager account</Link> to start the POC.
-              </p>
+              <p className="font-medium text-foreground text-xs mb-1.5">Demo accounts</p>
+              <p className="font-mono text-[11px]">superadmin@gpucloud.io</p>
+              <p className="font-mono text-[11px]">admin@gpucloud.io · owner@gpucloud.io · manager@gpucloud.io</p>
+              <p className="mt-1">Password: <span className="font-mono">admin123</span></p>
             </div>
-
           </form>
         </div>
       </div>
