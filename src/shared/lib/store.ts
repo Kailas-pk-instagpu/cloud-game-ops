@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
 import { notifyLogin } from './loginNotification';
+import { POC_MODE, POC_ALLOWED_ROLES } from './pocConfig';
 
 export const useAuthStore = create<AuthState>()(
   persist(
