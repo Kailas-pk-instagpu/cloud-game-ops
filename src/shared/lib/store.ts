@@ -21,6 +21,10 @@ export const useAuthStore = create<AuthState>()(
         }
         const user = MOCK_USERS.find(u => u.id === cred.userId);
         if (!user) return { success: false, requires2FA: false, error: 'User not found' };
+        if (POC_MODE && !POC_ALLOWED_ROLES.has(user.role)) {
+          return { success: false, requires2FA: false, error: 'This account is not available in the demo. Use the Cafe Owner or Manager account.' };
+        }
+
 
         set({ user, token: `mock-jwt-${user.id}-${Date.now()}` });
         
