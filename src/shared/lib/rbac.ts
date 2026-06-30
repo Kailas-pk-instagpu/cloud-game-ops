@@ -1,4 +1,5 @@
 import { Role, ROLE_RANK, CHILD_ROLE } from '../types/auth';
+import { POC_MODE, POC_ALLOWED_PATHS } from './pocConfig';
 
 export function canCreateRole(creatorRole: Role): Role | null {
   return CHILD_ROLE[creatorRole];
