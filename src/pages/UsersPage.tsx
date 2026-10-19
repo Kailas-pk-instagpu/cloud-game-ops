@@ -40,6 +40,7 @@ interface ManagedUser extends User {
 
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
+  const navigate = useNavigate();
   const { deletedUserIds, hasPendingForUser, createRequest } = useDeletionRequestStore();
   const [users, setUsers] = useState<ManagedUser[]>(
     MOCK_USERS.map(u => ({ ...u, status: 'active' as UserStatus }))
