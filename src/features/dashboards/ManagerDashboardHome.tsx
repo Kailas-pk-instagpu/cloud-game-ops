@@ -173,7 +173,7 @@ export default function ManagerDashboardHome() {
                 <Clock className="h-6 w-6 text-muted-foreground mx-auto" />
                 <p className="text-sm font-medium">No shift configured</p>
                 <p className="text-xs text-muted-foreground">
-                  Ask your Cafe Owner or Admin to set up shifts for this branch in Branches → Shifts.
+                  Ask your Cafe Owner or Sales Manager to set up shifts for this branch in Branches → Shifts.
                 </p>
               </div>
             )}
