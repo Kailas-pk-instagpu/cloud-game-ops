@@ -35,7 +35,7 @@ export interface AuthState {
 
 export const ROLE_LABELS: Record<Role, string> = {
   super_admin: 'Super Admin',
-  admin: 'Admin',
+  admin: 'Sales Manager',
   cafe_owner: 'Cafe Owner',
   manager: 'Manager',
 };

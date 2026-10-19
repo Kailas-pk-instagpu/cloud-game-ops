@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
@@ -39,6 +40,7 @@ interface ManagedUser extends User {
 
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
+  const navigate = useNavigate();
   const { deletedUserIds, hasPendingForUser, createRequest } = useDeletionRequestStore();
   const [users, setUsers] = useState<ManagedUser[]>(
     MOCK_USERS.map(u => ({ ...u, status: 'active' as UserStatus }))
@@ -276,7 +278,7 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{currentUser?.role === 'admin' ? 'Cafe Management' : 'User Management'}</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isSuperAdmin ? 'Full control over all platform users' : 'Manage users within your scope'}
           </p>
@@ -316,7 +318,7 @@ export default function UsersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="admin">Sales Manager</SelectItem>
             <SelectItem value="cafe_owner">Cafe Owner</SelectItem>
             <SelectItem value="manager">Manager</SelectItem>
           </SelectContent>
@@ -343,7 +345,7 @@ export default function UsersPage() {
           <Card
             key={u.id}
             className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
-            onClick={() => openDetail(u)}
+            onClick={() => (currentUser?.role === 'admin' && u.role === 'cafe_owner') ? navigate(`/branches?owner=${u.id}`) : openDetail(u)}
           >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">

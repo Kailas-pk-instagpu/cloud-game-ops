@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
 import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
 import { ROLE_LABELS } from '@/shared/types/auth';
@@ -71,15 +73,19 @@ export default function BranchesPage() {
   const [sortBy, setSortBy] = useState<string>('name-asc');
 
   const userRole = currentUser?.role;
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const ownerParam = searchParams.get('owner');
+  const selectedOwner = ownerParam ? MOCK_USERS.find(u => u.id === ownerParam && u.role === 'cafe_owner') : undefined;
 
   // Filter branches based on role scope
   const visibleBranches = useMemo(() => {
     if (!currentUser) return [];
     if (userRole === 'super_admin') return branches;
-    if (userRole === 'admin') return branches.filter(b => b.adminId === currentUser.id || currentUser.assignedScope.includes(b.cafeId));
+    if (userRole === 'admin') return selectedOwner ? branches.filter(b => b.cafeOwnerId === selectedOwner.id) : [];
     if (userRole === 'cafe_owner') return branches.filter(b => b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId));
     return branches.filter(b => b.managerId === currentUser.id);
-  }, [branches, currentUser, userRole]);
+  }, [branches, currentUser, userRole, selectedOwner]);
 
   const displayedBranches = useMemo(() => {
     let list = [...visibleBranches];
@@ -157,7 +163,7 @@ export default function BranchesPage() {
   const handleAdd = () => {
     const f = { ...emptyForm };
     // Auto-assign current user based on role
-    if (userRole === 'admin') f.adminId = currentUser!.id;
+    if (userRole === 'admin') { f.adminId = currentUser!.id; if (selectedOwner) f.cafeOwnerId = selectedOwner.id; }
     if (userRole === 'cafe_owner') {
       f.cafeOwnerId = currentUser!.id;
     }
@@ -428,7 +434,7 @@ export default function BranchesPage() {
     const manager = getUserName(branch.managerId);
 
     const assignments = [
-      { label: 'Admin', user: admin, icon: Shield, color: 'text-destructive' },
+      { label: 'Sales Manager', user: admin, icon: Shield, color: 'text-destructive' },
       { label: 'Cafe Owner', user: owner, icon: User, color: 'text-primary' },
       { label: 'Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
     ];
@@ -450,12 +456,21 @@ export default function BranchesPage() {
     );
   };
 
+  if (userRole === 'admin' && !selectedOwner) return <Navigate to="/users" replace />;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Branches</h1>
+        <div className="flex items-start gap-2">
+          {userRole === 'admin' && (
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/users')} aria-label="Back to Cafe Management">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{userRole === 'admin' && selectedOwner ? `${selectedOwner.name}'s Branches` : 'Branches'}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage gaming cafe locations, seats, and team assignments</p>
+          </div>
         </div>
         {canCreate && (
           <Button className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto" onClick={handleAdd}>

@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const ROLE_DISTRIBUTION = [
-  { name: 'Admins', value: MOCK_USERS.filter(u => u.role === 'admin').length, color: 'hsl(234, 89%, 64%)' },
+  { name: 'Sales Managers', value: MOCK_USERS.filter(u => u.role === 'admin').length, color: 'hsl(234, 89%, 64%)' },
   { name: 'Cafe Owners', value: MOCK_USERS.filter(u => u.role === 'cafe_owner').length, color: 'hsl(152, 69%, 41%)' },
   { name: 'Managers', value: MOCK_USERS.filter(u => u.role === 'manager').length, color: 'hsl(38, 92%, 50%)' },
 ];
