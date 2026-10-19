@@ -17,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Power, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search, SlidersHorizontal } from 'lucide-react';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
@@ -66,11 +66,6 @@ export default function BranchesPage() {
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterOwner, setFilterOwner] = useState<string>('all');
-  const [filterManager, setFilterManager] = useState<string>('all');
-  const [filterAssignment, setFilterAssignment] = useState<string>('all'); // all | assigned | unassigned
-  const [filterCapacity, setFilterCapacity] = useState<string>('all'); // all | low | med | full
-  const [sortBy, setSortBy] = useState<string>('name-asc');
 
   const userRole = currentUser?.role;
   const [searchParams] = useSearchParams();
@@ -90,68 +85,17 @@ export default function BranchesPage() {
   const displayedBranches = useMemo(() => {
     let list = [...visibleBranches];
     const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      list = list.filter(b => {
-        const owner = getUserName(b.cafeOwnerId);
-        const mgr = getUserName(b.managerId);
-        const adm = getUserName(b.adminId);
-        return (
-          b.name.toLowerCase().includes(q) ||
-          b.address.toLowerCase().includes(q) ||
-          b.id.toLowerCase().includes(q) ||
-          owner?.name.toLowerCase().includes(q) ||
-          mgr?.name.toLowerCase().includes(q) ||
-          adm?.name.toLowerCase().includes(q)
-        );
-      });
-    }
+    if (q) list = list.filter(b => b.name.toLowerCase().includes(q));
     if (filterStatus !== 'all') list = list.filter(b => b.status === filterStatus);
-    if (filterOwner !== 'all') list = list.filter(b => b.cafeOwnerId === filterOwner);
-    if (filterManager !== 'all') {
-      if (filterManager === 'unassigned') list = list.filter(b => !b.managerId);
-      else list = list.filter(b => b.managerId === filterManager);
-    }
-    if (filterAssignment === 'assigned') list = list.filter(b => b.adminId && b.cafeOwnerId && b.managerId);
-    if (filterAssignment === 'unassigned') list = list.filter(b => !b.adminId || !b.cafeOwnerId || !b.managerId);
-    if (filterCapacity !== 'all') {
-      list = list.filter(b => {
-        const pct = b.totalSeats > 0 ? b.activeSeats / b.totalSeats : 0;
-        if (filterCapacity === 'low') return pct < 0.4;
-        if (filterCapacity === 'med') return pct >= 0.4 && pct < 0.8;
-        if (filterCapacity === 'full') return pct >= 0.8;
-        return true;
-      });
-    }
-    list.sort((a, b) => {
-      switch (sortBy) {
-        case 'name-desc': return b.name.localeCompare(a.name);
-        case 'seats-desc': return b.totalSeats - a.totalSeats;
-        case 'seats-asc': return a.totalSeats - b.totalSeats;
-        case 'utilization-desc': return (b.activeSeats / Math.max(1, b.totalSeats)) - (a.activeSeats / Math.max(1, a.totalSeats));
-        case 'utilization-asc': return (a.activeSeats / Math.max(1, a.totalSeats)) - (b.activeSeats / Math.max(1, b.totalSeats));
-        case 'name-asc':
-        default: return a.name.localeCompare(b.name);
-      }
-    });
+    list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [visibleBranches, searchQuery, filterStatus, filterOwner, filterManager, filterAssignment, filterCapacity, sortBy]);
+  }, [visibleBranches, searchQuery, filterStatus]);
 
-  const activeFilterCount = [
-    filterStatus !== 'all',
-    filterOwner !== 'all',
-    filterManager !== 'all',
-    filterAssignment !== 'all',
-    filterCapacity !== 'all',
-  ].filter(Boolean).length;
+  const activeFilterCount = filterStatus !== 'all' ? 1 : 0;
 
   const clearFilters = () => {
     setSearchQuery('');
     setFilterStatus('all');
-    setFilterOwner('all');
-    setFilterManager('all');
-    setFilterAssignment('all');
-    setFilterCapacity('all');
-    setSortBy('name-asc');
   };
 
   const admins = getUsersByRole('admin');
@@ -479,36 +423,14 @@ export default function BranchesPage() {
         )}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Total Branches', value: visibleBranches.length, icon: Building2 },
-          { label: 'Active', value: visibleBranches.filter(b => b.status === 'active').length, icon: Power },
-          { label: 'Total Seats', value: visibleBranches.reduce((s, b) => s + b.totalSeats, 0), icon: Armchair },
-          { label: 'Active Seats', value: visibleBranches.reduce((s, b) => s + b.activeSeats, 0), icon: Monitor },
-        ].map(stat => (
-          <Card key={stat.label}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <stat.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Search & Filters */}
       <Card>
-        <CardContent className="p-3 sm:p-4 space-y-3">
-          <div className="flex flex-col lg:flex-row gap-2 lg:items-center">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, address, ID, owner or manager..."
+                placeholder="Search by branch name..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -524,29 +446,8 @@ export default function BranchesPage() {
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[170px] h-10"><SlidersHorizontal className="h-3.5 w-3.5 mr-1" /><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name-asc">Name (A–Z)</SelectItem>
-                  <SelectItem value="name-desc">Name (Z–A)</SelectItem>
-                  <SelectItem value="seats-desc">Most seats</SelectItem>
-                  <SelectItem value="seats-asc">Fewest seats</SelectItem>
-                  <SelectItem value="utilization-desc">Highest utilization</SelectItem>
-                  <SelectItem value="utilization-asc">Lowest utilization</SelectItem>
-                </SelectContent>
-              </Select>
-              {activeFilterCount > 0 || searchQuery ? (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
-                  <X className="h-3.5 w-3.5" /> Clear
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[180px] h-10"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
@@ -554,53 +455,11 @@ export default function BranchesPage() {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-
-            <Select value={filterOwner} onValueChange={setFilterOwner}>
-              <SelectTrigger><SelectValue placeholder="Cafe Owner" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All owners</SelectItem>
-                {cafeOwners.map(o => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterManager} onValueChange={setFilterManager}>
-              <SelectTrigger><SelectValue placeholder="Manager" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All managers</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {managers.map(m => (
-                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterAssignment} onValueChange={setFilterAssignment}>
-              <SelectTrigger><SelectValue placeholder="Team status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any team</SelectItem>
-                <SelectItem value="assigned">Fully assigned</SelectItem>
-                <SelectItem value="unassigned">Missing roles</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterCapacity} onValueChange={setFilterCapacity}>
-              <SelectTrigger><SelectValue placeholder="Utilization" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any utilization</SelectItem>
-                <SelectItem value="low">Low (&lt; 40%)</SelectItem>
-                <SelectItem value="med">Medium (40–80%)</SelectItem>
-                <SelectItem value="full">High (≥ 80%)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <p className="text-xs text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{displayedBranches.length}</span> of {visibleBranches.length} branches
-              {activeFilterCount > 0 && <span className="ml-1">· {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
-            </p>
+            {activeFilterCount > 0 || searchQuery ? (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5 self-start sm:self-auto">
+                <X className="h-3.5 w-3.5" /> Clear
+              </Button>
+            ) : null}
           </div>
         </CardContent>
       </Card>
