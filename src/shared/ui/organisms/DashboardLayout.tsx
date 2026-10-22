@@ -3,7 +3,6 @@ import { useAuthStore } from '@/shared/lib/store';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppNavbar } from './AppNavbar';
-import { ManagerBillingBanner } from '@/features/billing/ManagerBillingBanner';
 import { PageTransition } from '@/shared/ui/motion/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -41,7 +40,6 @@ export function DashboardLayout() {
         <SidebarOverlay />
         <div className="flex-1 flex flex-col min-w-0">
           <AppNavbar />
-          <ManagerBillingBanner />
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <PageTransition>
               <Outlet />
