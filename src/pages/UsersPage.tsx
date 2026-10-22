@@ -245,7 +245,7 @@ export default function UsersPage() {
         {creatableRoles.length > 0 && (
           <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2">
             <Plus className="h-4 w-4" />
-            Create User
+            {currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create User'}
           </Button>
         )}
       </div>
@@ -398,7 +398,7 @@ export default function UsersPage() {
       <Dialog open={showCreate} onOpenChange={v => { if (!v) resetForm(); setShowCreate(v); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New User</DialogTitle>
+            <DialogTitle>{currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create New User'}</DialogTitle>
             <DialogDescription>
               {isSuperAdmin
                 ? 'As Super Admin, you can create any role below you.'
@@ -453,7 +453,7 @@ export default function UsersPage() {
               className="gradient-primary text-primary-foreground"
               disabled={!formName.trim() || !formEmail.trim() || !formRole}
             >
-              Create User
+              {currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create User'}
             </Button>
           </DialogFooter>
         </DialogContent>
