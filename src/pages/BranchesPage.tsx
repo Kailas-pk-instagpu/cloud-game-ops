@@ -6,6 +6,7 @@ import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
 import { Branch, Seat } from '@/shared/lib/mock-data';
+import { getScopedBranches, getBranchesForUser } from '@/shared/lib/branchScope';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -73,23 +74,9 @@ export default function BranchesPage() {
   const userParam = searchParams.get('owner') || searchParams.get('user');
   const selectedUser = userParam ? MOCK_USERS.find(u => u.id === userParam) : undefined;
 
-  // Branches the current user is allowed to see
-  const scopedBranches = useMemo(() => {
-    if (!currentUser) return [];
-    if (userRole === 'super_admin') return branches;
-    if (userRole === 'admin') return branches.filter(b => b.adminId === currentUser.id || currentUser.assignedScope.includes(b.cafeId));
-    if (userRole === 'cafe_owner') return branches.filter(b => b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId));
-    return branches.filter(b => b.managerId === currentUser.id);
-  }, [branches, currentUser, userRole]);
-
-  // Narrowed to the user whose list was opened
-  const visibleBranches = useMemo(() => {
-    if (!selectedUser) return scopedBranches;
-    if (selectedUser.role === 'cafe_owner') return scopedBranches.filter(b => b.cafeOwnerId === selectedUser.id);
-    if (selectedUser.role === 'manager') return scopedBranches.filter(b => b.managerId === selectedUser.id);
-    if (selectedUser.role === 'admin') return scopedBranches.filter(b => b.adminId === selectedUser.id);
-    return [];
-  }, [scopedBranches, selectedUser]);
+  // Branches the signed-in user may see, narrowed to the person whose list was opened
+  const scopedBranches = useMemo(() => getScopedBranches(branches, currentUser), [branches, currentUser]);
+  const visibleBranches = useMemo(() => getBranchesForUser(scopedBranches, selectedUser), [scopedBranches, selectedUser]);
 
   const displayedBranches = useMemo(() => {
     let list = [...visibleBranches];
