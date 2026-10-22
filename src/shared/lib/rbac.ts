@@ -26,7 +26,8 @@ export const ROUTES: RouteConfig[] = [
   { path: '/gpu-nodes', label: 'GPU Nodes', icon: 'Cpu', roles: ['super_admin'] },
   { path: '/branches', label: 'Branches', icon: 'Building2', roles: ['super_admin', 'cafe_owner'] },
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', roles: ['manager'] },
-  { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', roles: ['cafe_owner', 'manager'] },
+  // Pre-booking is temporarily hidden from every role — keep the entry so the page can be re-enabled later.
+  { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', roles: [] },
   { path: '/billing/session', label: 'Billing Session', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/monitoring', label: 'Monitoring', icon: 'Radar', roles: ['super_admin'] },
   { path: '/issues', label: 'Issue Reports', icon: 'AlertTriangle', roles: ['super_admin', 'cafe_owner'] },

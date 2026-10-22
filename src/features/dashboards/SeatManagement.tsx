@@ -14,6 +14,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner';
 import { EndSessionConfirmDialog } from '@/features/billing/EndSessionConfirmDialog';
 
+// Pre-booking is temporarily turned off for every role. Set to true to restore
+// the booked-seat markers and the "Booked" counter without touching any other code.
+const SHOW_PREBOOKING = false;
 
 function addMinutesToTime(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
@@ -70,6 +73,7 @@ export default function SeatManagement() {
   }, [selectedSeat, branch, seatWallet, confirmEndOpen]);
 
   const bookedSeatMap = useMemo(() => {
+    if (!SHOW_PREBOOKING) return new Map<number, Booking>();
     const today = new Date().toISOString().split('T')[0];
     const map = new Map<number, Booking>();
     bookings
@@ -201,7 +205,9 @@ export default function SeatManagement() {
       {/* Quick Stats */}
       <div className="flex items-center gap-6 text-sm flex-wrap">
         <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-success" /> Available: <strong>{available - booked}</strong></span>
-        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-primary" /> Booked: <strong>{booked}</strong></span>
+        {SHOW_PREBOOKING && (
+          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-primary" /> Booked: <strong>{booked}</strong></span>
+        )}
         <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-destructive" /> Occupied: <strong>{occupied}</strong></span>
         <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning" /> Maintenance: <strong>{maintenance}</strong></span>
         <span className="text-muted-foreground">Total: <strong>{seats.length}</strong></span>
