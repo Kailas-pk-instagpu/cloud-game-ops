@@ -28,7 +28,7 @@ export const ROUTES: RouteConfig[] = [
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', roles: ['manager'] },
   // Pre-booking is temporarily hidden from every role — keep the entry so the page can be re-enabled later.
   { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', roles: [] },
-  { path: '/billing/session', label: 'Billing Session', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
+  { path: '/billing', label: 'Billing', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/monitoring', label: 'Monitoring', icon: 'Radar', roles: ['super_admin'] },
   { path: '/issues', label: 'Issue Reports', icon: 'AlertTriangle', roles: ['super_admin', 'cafe_owner'] },
   { path: '/deletion-requests', label: 'Deletion Requests', icon: 'UserMinus', roles: ['super_admin'] },
