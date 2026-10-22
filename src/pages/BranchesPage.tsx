@@ -116,9 +116,21 @@ export default function BranchesPage() {
   const handleAdd = () => {
     const f = { ...emptyForm };
     // Auto-assign current user based on role
-    if (userRole === 'admin') { f.adminId = currentUser!.id; if (selectedOwner) f.cafeOwnerId = selectedOwner.id; }
-    if (userRole === 'cafe_owner') {
-      f.cafeOwnerId = currentUser!.id;
+    if (userRole === 'admin') f.adminId = currentUser!.id;
+    if (userRole === 'cafe_owner') f.cafeOwnerId = currentUser!.id;
+    // Pre-assign the person whose branch list is currently open
+    if (selectedUser?.role === 'cafe_owner') {
+      f.cafeOwnerId = selectedUser.id;
+      if (userRole !== 'admin') f.adminId = selectedUser.createdBy || '';
+    } else if (selectedUser?.role === 'manager') {
+      f.managerId = selectedUser.id;
+      const owner = selectedUser.createdBy ? MOCK_USERS.find(u => u.id === selectedUser.createdBy) : undefined;
+      if (owner?.role === 'cafe_owner') {
+        f.cafeOwnerId = owner.id;
+        f.adminId = f.adminId || owner.createdBy || '';
+      }
+    } else if (selectedUser?.role === 'admin') {
+      f.adminId = selectedUser.id;
     }
     setForm(f);
     setShowAddDialog(true);
@@ -409,20 +421,20 @@ export default function BranchesPage() {
     );
   };
 
-  if (userRole === 'admin' && !selectedOwner) return <Navigate to="/users" replace />;
+  if (userRole === 'admin' && !selectedUser) return <Navigate to="/users" replace />;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start gap-2">
-          {userRole === 'admin' && (
-            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/users')} aria-label="Back to Cafe Management">
+          {userParam && (
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/users')} aria-label="Back to user list">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
           <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{userRole === 'admin' && selectedOwner ? `${selectedOwner.name}'s Branches` : 'Branches'}</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage gaming cafe locations, seats, and team assignments</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedUser ? `${selectedUser.name}'s Branches` : 'Branches'}</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">{selectedUser ? `${ROLE_LABELS[selectedUser.role]} — showing only branches assigned to them` : 'Manage gaming cafe locations, seats, and team assignments'}</p>
           </div>
         </div>
         {canCreate && (
@@ -525,7 +537,7 @@ export default function BranchesPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-1">No branches found</h3>
+            <h3 className="font-semibold text-lg mb-1">{selectedUser ? `No branches assigned to ${selectedUser.name}` : 'No branches found'}</h3>
             <p className="text-sm text-muted-foreground mb-4">
               {visibleBranches.length === 0
                 ? (canCreate ? 'Get started by adding your first branch' : 'No branches are assigned to you yet')
