@@ -364,7 +364,7 @@ export default function SettingsPage() {
         <div className="flex flex-col md:flex-row min-h-[520px]">
           {/* Vertical Tabs Sidebar */}
           <div className="md:w-56 shrink-0 border-b md:border-b-0 md:border-r border-border bg-muted/30 p-3 md:p-4">
-            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+            <nav className="flex flex-wrap md:flex-col gap-1 md:overflow-visible">
               {tabs.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}

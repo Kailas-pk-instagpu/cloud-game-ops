@@ -401,7 +401,7 @@ export default function BranchBillingPage() {
         )}
       </div>
 
-      <nav className="flex gap-1 border-b overflow-x-auto">
+      <nav className="flex flex-wrap gap-1 border-b">
         {TABS.map((t) => (
           <NavLink
             key={t.to}
