@@ -67,6 +67,10 @@ export default function UsersPage() {
 
   const isCafeOwner = currentUser.role === 'cafe_owner';
 
+  // On Cafe Management, only cafe owners open the branches page.
+  const rowOpensBranches = (u: ManagedUser) =>
+    currentUser.role === 'admin' ? u.role === 'cafe_owner' : true;
+
   // Super Admin sees all; others see manageable users. Hide users already deleted via approved requests.
   const visibleUsers = users
     .filter(u => {
@@ -303,8 +307,8 @@ export default function UsersPage() {
         {visibleUsers.map(u => (
           <Card
             key={u.id}
-            className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
-            onClick={() => navigate(`/branches?owner=${u.id}`)}
+            className={`transition-shadow ${rowOpensBranches(u) ? 'hover:shadow-sm cursor-pointer' : ''} ${u.status === 'disabled' ? 'opacity-60' : ''}`}
+            onClick={() => { if (rowOpensBranches(u)) navigate(`/branches?owner=${u.id}`); }}
           >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
