@@ -2,14 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
-import { CheckCircle2, Download, Eye, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { CheckCircle2, Download, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { useAuthStore, useBranchStore } from '@/shared/lib/store';
 import { getScopedBranches } from '@/shared/lib/branchScope';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -417,12 +416,6 @@ export default function BranchBillingPage() {
         ))}
       </nav>
 
-      {!canPay && (
-        <Alert>
-          <Eye className="h-4 w-4" />
-          <AlertDescription>View-only access. Only the cafe owner can make payments.</AlertDescription>
-        </Alert>
-      )}
 
       {!branch ? (
         <Card><CardContent className="py-12 text-center text-muted-foreground">No branches available.</CardContent></Card>
