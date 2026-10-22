@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Bell, Check, CheckCheck, AlertCircle, AlertTriangle, CheckCircle, Info, Filter, ArrowUpDown } from 'lucide-react';
+import { Bell, CheckCheck, AlertCircle, AlertTriangle, CheckCircle, Info, Filter, ArrowUpDown } from 'lucide-react';
 import { useNotificationStore } from '@/shared/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +43,7 @@ function timeRank(t: string): number {
 }
 
 export default function NotificationsPage() {
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { notifications, markAllAsRead } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -185,14 +185,6 @@ export default function NotificationsPage() {
                             <span className="text-xs text-muted-foreground whitespace-nowrap">{n.timestamp}</span>
                           </div>
                         </div>
-                        {!n.read && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary hover:text-primary" onClick={() => markAsRead(n.id)}>
-                              <Check className="h-3.5 w-3.5" />
-                              Mark as read
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
@@ -232,13 +224,6 @@ export default function NotificationsPage() {
               <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                 {preview.message}
               </div>
-              {!preview.read && (
-                <div className="flex justify-end">
-                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { markAsRead(preview.id); setPreview(null); }}>
-                    <Check className="h-3.5 w-3.5" /> Mark as read
-                  </Button>
-                </div>
-              )}
             </>
           )}
         </DialogContent>
