@@ -49,6 +49,7 @@ export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
   const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
+  const isSalesManager = currentUser?.role === 'admin';
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showManageDialog, setShowManageDialog] = useState(false);
@@ -581,22 +582,32 @@ export default function BranchesPage() {
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div>
                   <p className="font-medium text-sm">Branch Active</p>
-                  <p className="text-xs text-muted-foreground">Enable or disable this branch</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isSalesManager ? 'Enable this branch' : 'Enable or disable this branch'}
+                  </p>
                 </div>
-                <Switch checked={selectedBranch.status !== 'inactive'} onCheckedChange={handleToggleStatus} />
+                <Switch
+                  checked={selectedBranch.status !== 'inactive'}
+                  disabled={isSalesManager && selectedBranch.status !== 'inactive'}
+                  onCheckedChange={() => { if (!isSalesManager || selectedBranch.status === 'inactive') handleToggleStatus(); }}
+                />
               </div>
 
-              <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
-                <Monitor className="h-4 w-4" />
-                {selectedBranch.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
-              </Button>
+              {!isSalesManager && (
+                <>
+                  <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
+                    <Monitor className="h-4 w-4" />
+                    {selectedBranch.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
+                  </Button>
 
-              <Separator />
+                  <Separator />
 
-              <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => setShowDeleteConfirm(true)}>
-                <Trash2 className="h-4 w-4" /> Delete Branch
-              </Button>
-              <p className="text-xs text-muted-foreground">Deleting a branch is permanent and cannot be undone</p>
+                  <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => setShowDeleteConfirm(true)}>
+                    <Trash2 className="h-4 w-4" /> Delete Branch
+                  </Button>
+                  <p className="text-xs text-muted-foreground">Deleting a branch is permanent and cannot be undone</p>
+                </>
+              )}
             </div>
           )}
         </DialogContent>
