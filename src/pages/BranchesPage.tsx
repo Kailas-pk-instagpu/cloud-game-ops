@@ -70,17 +70,26 @@ export default function BranchesPage() {
   const userRole = currentUser?.role;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const ownerParam = searchParams.get('owner');
-  const selectedOwner = ownerParam ? MOCK_USERS.find(u => u.id === ownerParam && u.role === 'cafe_owner') : undefined;
+  const userParam = searchParams.get('owner') || searchParams.get('user');
+  const selectedUser = userParam ? MOCK_USERS.find(u => u.id === userParam) : undefined;
 
-  // Filter branches based on role scope
-  const visibleBranches = useMemo(() => {
+  // Branches the current user is allowed to see
+  const scopedBranches = useMemo(() => {
     if (!currentUser) return [];
     if (userRole === 'super_admin') return branches;
-    if (userRole === 'admin') return selectedOwner ? branches.filter(b => b.cafeOwnerId === selectedOwner.id) : [];
+    if (userRole === 'admin') return branches.filter(b => b.adminId === currentUser.id || currentUser.assignedScope.includes(b.cafeId));
     if (userRole === 'cafe_owner') return branches.filter(b => b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId));
     return branches.filter(b => b.managerId === currentUser.id);
-  }, [branches, currentUser, userRole, selectedOwner]);
+  }, [branches, currentUser, userRole]);
+
+  // Narrowed to the user whose list was opened
+  const visibleBranches = useMemo(() => {
+    if (!selectedUser) return scopedBranches;
+    if (selectedUser.role === 'cafe_owner') return scopedBranches.filter(b => b.cafeOwnerId === selectedUser.id);
+    if (selectedUser.role === 'manager') return scopedBranches.filter(b => b.managerId === selectedUser.id);
+    if (selectedUser.role === 'admin') return scopedBranches.filter(b => b.adminId === selectedUser.id);
+    return [];
+  }, [scopedBranches, selectedUser]);
 
   const displayedBranches = useMemo(() => {
     let list = [...visibleBranches];

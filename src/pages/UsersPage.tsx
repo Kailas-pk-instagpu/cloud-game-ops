@@ -345,7 +345,7 @@ export default function UsersPage() {
           <Card
             key={u.id}
             className={`transition-shadow hover:shadow-sm cursor-pointer ${u.status === 'disabled' ? 'opacity-60' : ''}`}
-            onClick={() => (currentUser?.role === 'admin' && u.role === 'cafe_owner') ? navigate(`/branches?owner=${u.id}`) : openDetail(u)}
+            onClick={() => navigate(`/branches?owner=${u.id}`)}
           >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
