@@ -45,14 +45,14 @@ const App = () => (
             <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
             <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />
             <Route path="/bookings" element={<RoleGuard roles={['cafe_owner', 'manager']}><BookingsPage /></RoleGuard>} />
-            <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
+            <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/billing/session" element={<BillingSessionPage />} />
             <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
             <Route path="/monitoring" element={<RoleGuard roles={['super_admin']}><MonitoringPage /></RoleGuard>} />
             <Route path="/deletion-requests" element={<RoleGuard roles={['super_admin']}><DeletionRequestsPage /></RoleGuard>} />
-            <Route path="/issues" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><IssuesPage /></RoleGuard>} />
+            <Route path="/issues" element={<RoleGuard roles={['super_admin', 'cafe_owner']}><IssuesPage /></RoleGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
