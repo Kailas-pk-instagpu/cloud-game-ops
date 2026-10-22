@@ -8,7 +8,6 @@ import { Plus } from 'lucide-react';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { BillingStatusBanner } from '@/features/billing/BillingStatusBanner';
 
 const PEAK_HOURS = [
   { hour: '10AM', customers: 12 }, { hour: '12PM', customers: 28 }, { hour: '2PM', customers: 35 },
@@ -42,7 +41,6 @@ export default function CafeOwnerDashboard() {
         </div>
       </div>
 
-      <BillingStatusBanner />
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
