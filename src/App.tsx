@@ -22,6 +22,7 @@ import SettlementsPage from "./pages/SettlementsPage";
 import MonitoringPage from "./pages/MonitoringPage";
 import DeletionRequestsPage from "./pages/DeletionRequestsPage";
 import IssuesPage from "./pages/IssuesPage";
+import BranchBillingPage from "./pages/BranchBillingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,9 @@ const App = () => (
             <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/billing" element={<BranchBillingPage />} />
+            <Route path="/billing/usage" element={<BranchBillingPage />} />
+            <Route path="/billing/history" element={<BranchBillingPage />} />
             <Route path="/billing/session" element={<BillingSessionPage />} />
             <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
             <Route path="/monitoring" element={<RoleGuard roles={['super_admin']}><MonitoringPage /></RoleGuard>} />

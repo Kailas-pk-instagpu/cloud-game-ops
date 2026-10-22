@@ -66,7 +66,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {routes.map((route) => {
                 const Icon = ICON_MAP[route.icon] || LayoutDashboard;
-                const active = location.pathname === route.path;
+                const active = location.pathname === route.path || (route.path === '/billing' && location.pathname.startsWith('/billing/') && !location.pathname.startsWith('/billing/session'));
                 return (
                   <SidebarMenuItem key={route.path}>
                     <SidebarMenuButton
