@@ -66,6 +66,7 @@ export default function UsersPage() {
   const childRole = canCreateRole(currentUser.role);
 
   const isCafeOwner = currentUser.role === 'cafe_owner';
+  const isSalesManager = currentUser.role === 'admin';
 
   // On Cafe Management, only cafe owners open the branches page.
   const rowOpensBranches = (u: ManagedUser) =>
@@ -366,23 +367,27 @@ export default function UsersPage() {
                           <><UserCheck className="h-4 w-4" /> Enable User</>
                         )}
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {u.is2FAEnabled ? (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
-                          <ShieldOff className="h-4 w-4" /> Reset 2FA
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggle2FA(u.id); }} className="gap-2">
-                          <ShieldCheck className="h-4 w-4" /> Enable 2FA
-                        </DropdownMenuItem>
+                      {!isSalesManager && (
+                        <>
+                          <DropdownMenuSeparator />
+                          {u.is2FAEnabled ? (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
+                              <ShieldOff className="h-4 w-4" /> Reset 2FA
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggle2FA(u.id); }} className="gap-2">
+                              <ShieldCheck className="h-4 w-4" /> Enable 2FA
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
+                            <KeyRound className="h-4 w-4" /> Reset Password
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
+                            <Trash2 className="h-4 w-4" /> {isCafeOwner ? 'Request Deletion' : 'Delete User'}
+                          </DropdownMenuItem>
+                        </>
                       )}
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
-                        <KeyRound className="h-4 w-4" /> Reset Password
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                        <Trash2 className="h-4 w-4" /> {isCafeOwner ? 'Request Deletion' : 'Delete User'}
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
