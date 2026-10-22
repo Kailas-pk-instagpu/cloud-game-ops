@@ -623,7 +623,9 @@ export default function BranchesPage() {
               {selectedBranch?.name} — Seat Configuration
             </DialogTitle>
             <DialogDescription>
-              Click any seat to edit its name, GPU model and status.
+              {isSalesManager
+                ? 'Read-only view of this branch seats. Only the branch owner or super admin can change them.'
+                : 'Click any seat to edit its name, GPU model and status.'}
             </DialogDescription>
           </DialogHeader>
           {selectedBranch && (() => {
@@ -631,7 +633,7 @@ export default function BranchesPage() {
             const available = branchSeats.filter(s => s.status === 'available').length;
             const occupied = branchSeats.filter(s => s.status === 'occupied').length;
             const maintenance = branchSeats.filter(s => s.status === 'maintenance').length;
-            const canEdit = userRole === 'cafe_owner' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'manager';
+            const canEdit = !isSalesManager && (userRole === 'cafe_owner' || userRole === 'super_admin' || userRole === 'manager');
 
             return (
               <div className="space-y-4">
@@ -737,13 +739,14 @@ export default function BranchesPage() {
                         <Tooltip key={seat.id}>
                           <TooltipTrigger asChild>
                             <button
-                              onClick={openEdit}
+                              onClick={canEdit ? openEdit : undefined}
                               className={cn(
-                                'group relative flex flex-col items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer aspect-square',
+                                'group relative flex flex-col items-center justify-center rounded-lg border p-2.5 transition-all aspect-square',
+                                canEdit ? 'cursor-pointer' : 'cursor-default',
                                 statusColor
                               )}
                             >
-                              <Pencil className="absolute top-1 right-1 h-2.5 w-2.5 opacity-0 group-hover:opacity-70 transition-opacity" />
+                              {canEdit && <Pencil className="absolute top-1 right-1 h-2.5 w-2.5 opacity-0 group-hover:opacity-70 transition-opacity" />}
                               <Armchair className="h-4 w-4 mb-0.5" />
                               <span className="text-xs font-bold leading-none">{seat.label || `#${seat.number}`}</span>
                               <span className="text-[9px] opacity-70 mt-0.5 truncate max-w-full">{seat.gpuModel}</span>
@@ -755,7 +758,9 @@ export default function BranchesPage() {
                             <p className="flex items-center gap-1"><Cpu className="h-3 w-3" /> {seat.gpuModel}</p>
                             {seat.playerName && <p className="flex items-center gap-1"><User className="h-3 w-3" /> {seat.playerName}</p>}
                             {seat.startTime && <p className="flex items-center gap-1"><Clock className="h-3 w-3" /> Since {seat.startTime}</p>}
-                            <p className="text-muted-foreground italic mt-1">Click to edit</p>
+                            {canEdit
+                              ? <p className="text-muted-foreground italic mt-1">Click to edit</p>
+                              : <p className="text-muted-foreground italic mt-1">View only</p>}
                           </TooltipContent>
                         </Tooltip>
                       );
