@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
-import { ROLE_LABELS, TwoFAMethod } from '@/shared/types/auth';
+import { TwoFAMethod } from '@/shared/types/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,11 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Settings2, Trash2, PlugZap, UserMinus, Download } from 'lucide-react';
+import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, Lock, Camera, MapPin, Eye, EyeOff, Bell, Trash2, PlugZap, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import jsPDF from 'jspdf';
 
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -192,18 +190,17 @@ function TwoFASetup() {
 // --- Vertical Tab Item ---
 const baseTabs = [
   { id: 'profile', label: 'Profile Settings', icon: User },
-  { id: 'password', label: 'Password', icon: Lock },
+  { id: 'password', label: 'Change Password', icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'integrations', label: 'Integrations', icon: PlugZap, roles: ['super_admin'] as string[] },
-  { id: 'general', label: 'General', icon: Settings2 },
   { id: 'account', label: 'Account', icon: UserMinus, roles: ['cafe_owner'] as string[] },
 ] as const;
 
 type TabId = typeof baseTabs[number]['id'];
 
 export default function SettingsPage() {
-  const { user, theme, toggleTheme, updateProfile, changePassword } = useAuthStore();
+  const { user, updateProfile, changePassword } = useAuthStore();
   const { createRequest, hasPendingForUser } = useDeletionRequestStore();
   const [showDeleteSelf, setShowDeleteSelf] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
@@ -259,6 +256,7 @@ export default function SettingsPage() {
   const handleSaveProfile = () => {
     if (!name.trim()) { toast.error('Name is required'); return; }
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) { toast.error('Valid email is required'); return; }
+    if (!phone.trim()) { toast.error('Mobile number is required'); return; }
     setIsSaving(true);
     setTimeout(() => {
       updateProfile({ name: name.trim(), email: email.trim(), phone: phone.trim(), address: address.trim(), logoUrl: logoPreview || undefined });
@@ -280,77 +278,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDownloadData = () => {
-    if (!user) return;
-    const doc = new jsPDF();
-    const left = 15;
-    let y = 20;
-
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Personal Data Export', left, y);
-    y += 8;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(120);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, left, y);
-    doc.setTextColor(0);
-    y += 10;
-
-    doc.setDrawColor(200);
-    doc.line(left, y, 195, y);
-    y += 10;
-
-    const section = (title: string) => {
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, left, y);
-      y += 7;
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-    };
-
-    const row = (label: string, value: string) => {
-      if (y > 275) { doc.addPage(); y = 20; }
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${label}:`, left, y);
-      doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(value || '—', 130);
-      doc.text(lines, left + 45, y);
-      y += 7 * lines.length;
-    };
-
-    section('Account Information');
-    row('User ID', user.id);
-    row('Full Name', user.name);
-    row('Email', user.email);
-    row('Role', ROLE_LABELS[user.role]);
-    row('Phone', user.phone || '—');
-    row('Address', user.address || '—');
-    row('Account Created', user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—');
-    y += 4;
-
-    section('Security');
-    row('2FA Enabled', user.is2FAEnabled ? 'Yes' : 'No');
-    row('2FA Method', user.twoFAMethod || '—');
-    y += 4;
-
-    section('Preferences');
-    row('Theme', theme === 'dark' ? 'Dark' : 'Light');
-
-    y += 8;
-    if (y > 270) { doc.addPage(); y = 20; }
-    doc.setFontSize(9);
-    doc.setTextColor(120);
-    const footer = doc.splitTextToSize(
-      'This document contains personal data associated with your account. Keep it confidential.',
-      180
-    );
-    doc.text(footer, left, y);
-
-    doc.save(`personal-data-${user.email}-${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success('Personal data downloaded');
-  };
 
 
   return (
@@ -386,45 +313,8 @@ export default function SettingsPage() {
           {/* Tab Content */}
           <div className="flex-1 p-5 md:p-8 overflow-y-auto">
             {/* ===== PROFILE TAB ===== */}
-            {activeTab === 'profile' && (() => {
-              const fields = [
-                { key: 'Full name', filled: !!name.trim() },
-                { key: 'Email address', filled: !!email.trim() && /\S+@\S+\.\S+/.test(email) },
-                { key: 'Mobile number', filled: !!phone.trim() },
-                { key: 'Residential address', filled: !!address.trim() },
-                { key: 'Profile photo', filled: !!logoPreview },
-                { key: 'Two-factor authentication', filled: user.is2FAEnabled },
-              ];
-              const completed = fields.filter(f => f.filled).length;
-              const percent = Math.round((completed / fields.length) * 100);
-              const missing = fields.filter(f => !f.filled).map(f => f.key);
-              const tone =
-                percent === 100 ? 'text-emerald-500'
-                : percent >= 60 ? 'text-primary'
-                : 'text-amber-500';
-              return (
+            {activeTab === 'profile' && (
               <div className="space-y-8">
-                {/* Profile completion meter */}
-                <div className="rounded-xl border border-border bg-muted/30 p-4 sm:p-5">
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <div>
-                      <p className="text-sm font-semibold">Profile completion</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {percent === 100
-                          ? 'All set — your profile is complete.'
-                          : `Add ${missing.join(', ')} to reach 100%.`}
-                      </p>
-                    </div>
-                    <span className={cn('text-2xl font-bold tabular-nums transition-colors', tone)}>
-                      {percent}%
-                    </span>
-                  </div>
-                  <Progress value={percent} className="h-2" />
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    {completed} of {fields.length} fields completed
-                  </p>
-                </div>
-
                 {/* Avatar centered */}
                 <div className="flex flex-col items-center gap-4">
                   <div
@@ -468,12 +358,8 @@ export default function SettingsPage() {
                     <Input id="profile-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="profile-phone">Mobile Number</Label>
-                    <Input id="profile-phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="profile-role">Role</Label>
-                    <Input id="profile-role" value={ROLE_LABELS[user.role]} disabled className="bg-muted" />
+                    <Label htmlFor="profile-phone">Mobile Number *</Label>
+                    <Input id="profile-phone" type="tel" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
                   </div>
                 </div>
 
@@ -485,13 +371,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-center pt-2">
-                  <Button className="gradient-primary text-primary-foreground px-10" onClick={handleSaveProfile} disabled={isSaving || !name.trim() || !email.trim()}>
+                  <Button className="gradient-primary text-primary-foreground px-10" onClick={handleSaveProfile} disabled={isSaving || !name.trim() || !/\S+@\S+\.\S+/.test(email) || !phone.trim()}>
                     {isSaving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>
-              );
-            })()}
+            )}
 
             {/* ===== PASSWORD TAB ===== */}
             {activeTab === 'password' && (
@@ -538,22 +423,19 @@ export default function SettingsPage() {
               <div className="space-y-6 max-w-lg">
                 <div>
                   <h2 className="text-lg font-semibold">Notification Preferences</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Choose what notifications you receive</p>
                 </div>
                 <Separator />
                 <div className="space-y-4">
                   {[
                     { label: 'Email Notifications', desc: 'Receive important updates via email' },
                     { label: 'Push Notifications', desc: 'Get real-time alerts in your browser' },
-                    { label: 'System Alerts', desc: 'Critical system and security alerts' },
-                    { label: 'Activity Summary', desc: 'Weekly summary of your account activity' },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/50">
                       <div>
                         <p className="text-sm font-medium">{item.label}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
                       </div>
-                      <Switch defaultChecked={i < 3} />
+                      <Switch aria-label={item.label} checked disabled />
                     </div>
                   ))}
                 </div>
@@ -595,34 +477,6 @@ export default function SettingsPage() {
                   ))}
                 </div>
                 {integrationTab === 'e2link' ? <E2LinkIntegrationPanel /> : <VMwareHorizonIntegrationPanel />}
-              </div>
-            )}
-
-            {/* ===== GENERAL TAB ===== */}
-            {activeTab === 'general' && (
-              <div className="space-y-6 max-w-lg">
-                <div>
-                  <h2 className="text-lg font-semibold">Preferences</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Customize your experience</p>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/40 border border-border/50">
-                  <div>
-                    <p className="text-sm font-medium">Dark Mode</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Toggle between light and dark theme</p>
-                  </div>
-                  <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
-                </div>
-
-                <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted/40 border border-border/50">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">Download Personal Data</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Export your account information and preferences as a PDF</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleDownloadData} className="shrink-0">
-                    <Download className="h-4 w-4 mr-2" /> Download PDF
-                  </Button>
-                </div>
               </div>
             )}
 
