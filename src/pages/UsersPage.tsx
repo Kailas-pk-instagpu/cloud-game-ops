@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore, useDeletionRequestStore } from '@/shared/lib/store';
+import { useAuthStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
 import { canCreateRole, canManageUser } from '@/shared/lib/rbac';
@@ -39,12 +39,9 @@ interface ManagedUser extends User {
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
   const navigate = useNavigate();
-  const { deletedUserIds, hasPendingForUser, createRequest } = useDeletionRequestStore();
   const [users, setUsers] = useState<ManagedUser[]>(
     MOCK_USERS.map(u => ({ ...u, status: 'active' as UserStatus }))
   );
-  const [showRequestDelete, setShowRequestDelete] = useState(false);
-  const [requestReason, setRequestReason] = useState('');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
@@ -72,11 +69,11 @@ export default function UsersPage() {
   const rowOpensBranches = (u: ManagedUser) =>
     currentUser.role === 'admin' ? u.role === 'cafe_owner' : true;
 
-  // Super Admin sees all; others see manageable users. Hide users already deleted via approved requests.
+  // Super Admin sees all; others see manageable users.
   const visibleUsers = users
     .filter(u => {
       if (u.id === currentUser.id) return false; // don't show self
-      if (deletedUserIds.includes(u.id)) return false;
+
       if (isSuperAdmin) return true;
       return canManageUser(currentUser.role, u.role);
     })
@@ -115,36 +112,9 @@ export default function UsersPage() {
 
   const openDelete = (u: ManagedUser) => {
     setSelectedUser(u);
-    if (currentUser.role === 'cafe_owner') {
-      setRequestReason('');
-      setShowRequestDelete(true);
-    } else {
-      setShowDelete(true);
-    }
+    setShowDelete(true);
   };
 
-  const submitDeletionRequest = () => {
-    if (!selectedUser) return;
-    if (hasPendingForUser(selectedUser.id)) {
-      toast.error('A deletion request is already pending for this user');
-      return;
-    }
-    createRequest({
-      targetUserId: selectedUser.id,
-      targetName: selectedUser.name,
-      targetEmail: selectedUser.email,
-      targetRole: selectedUser.role,
-      isSelf: false,
-      requestedById: currentUser.id,
-      requestedByName: currentUser.name,
-      requestedByRole: currentUser.role,
-      reason: requestReason.trim(),
-    });
-    toast.success(`Deletion request sent to Super Admin for "${selectedUser.name}"`);
-    setShowRequestDelete(false);
-    setSelectedUser(null);
-    setRequestReason('');
-  };
 
   const handleCreate = () => {
     if (!formName.trim() || !formEmail.trim() || !formRole) return;
@@ -383,9 +353,11 @@ export default function UsersPage() {
                             <KeyRound className="h-4 w-4" /> Reset Password
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                            <Trash2 className="h-4 w-4" /> {isCafeOwner ? 'Request Deletion' : 'Delete User'}
-                          </DropdownMenuItem>
+                          {!isCafeOwner && (
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
+                              <Trash2 className="h-4 w-4" /> Delete User
+                            </DropdownMenuItem>
+                          )}
                         </>
                       )}
                     </DropdownMenuContent>
