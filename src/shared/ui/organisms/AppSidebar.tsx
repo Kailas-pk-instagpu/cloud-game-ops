@@ -4,8 +4,9 @@ import { getRoutesForRole } from '@/shared/lib/rbac';
 
 import {
   LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2,
-  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ChevronRight,
+  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck, ChevronRight,
 } from 'lucide-react';
+import { usePendingApprovalCount } from '@/features/approvals/approvalService';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader,
