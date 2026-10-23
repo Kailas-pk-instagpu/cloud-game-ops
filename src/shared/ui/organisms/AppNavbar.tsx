@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell, Moon, Sun, Check, CheckCheck, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut, Settings } from 'lucide-react';
+import { Bell, Moon, Sun, Check, AlertTriangle, Info, AlertCircle, CheckCircle, LogOut, Settings } from 'lucide-react';
 import { DynamicIslandToasts } from './DynamicIslandToasts';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
@@ -38,7 +37,7 @@ const typeBg = {
 export function AppNavbar() {
   const { user, theme, toggleTheme, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { notifications, markAsRead, markAllAsRead, lastIncoming } = useNotificationStore();
+  const { notifications, markAsRead, lastIncoming } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
   const bellRef = useRef<HTMLButtonElement>(null);
   const [bellPulse, setBellPulse] = useState(0);
@@ -132,23 +131,6 @@ export function AppNavbar() {
                   )}
                 </SheetTitle>
               </div>
-              {notifications.length > 0 && (
-                <div className="flex items-center gap-2 pt-1">
-                <TooltipProvider>
-                  {unreadCount > 0 && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={markAllAsRead}>
-                          <CheckCheck className="h-3.5 w-3.5" />
-                          Mark all read
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Mark all notifications as read</TooltipContent>
-                    </Tooltip>
-                  )}
-                </TooltipProvider>
-                </div>
-              )}
             </SheetHeader>
             <Separator />
             <ScrollArea className="flex-1">

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Bell, CheckCheck, AlertCircle, AlertTriangle, CheckCircle, Info, Filter, ArrowUpDown } from 'lucide-react';
+import { Bell, AlertCircle, AlertTriangle, CheckCircle, Info, Filter, ArrowUpDown } from 'lucide-react';
 import { useNotificationStore } from '@/shared/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +43,7 @@ function timeRank(t: string): number {
 }
 
 export default function NotificationsPage() {
-  const { notifications, markAllAsRead } = useNotificationStore();
+  const { notifications } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -87,12 +87,6 @@ export default function NotificationsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">View and manage all your notifications</p>
         </div>
-        {unreadCount > 0 && (
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={markAllAsRead}>
-            <CheckCheck className="h-4 w-4" />
-            Mark all as read
-          </Button>
-        )}
       </div>
 
       <Card>
