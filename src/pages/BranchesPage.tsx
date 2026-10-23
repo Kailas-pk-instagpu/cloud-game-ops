@@ -558,11 +558,51 @@ export default function BranchesPage() {
                 <AssignedTeamCard branch={branch} />
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
-                  <LayoutGrid className="h-3.5 w-3.5" /> Seats
+              {/* Rejection feedback + resubmit (new cafe flow) */}
+              {branch.status === 'rejected' && branch.approvalFeedback && (
+                <div className="mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <p className="flex items-center gap-1.5 font-medium text-destructive text-xs mb-1">
+                    <AlertCircle className="h-3.5 w-3.5" /> Rejected by Super Admin
+                  </p>
+                  <p className="text-xs text-muted-foreground">{branch.approvalFeedback}</p>
+                  {userRole === 'admin' && (
+                    <Button size="sm" variant="outline" className="mt-2 gap-1.5" onClick={() => handleResubmit(branch)}>
+                      <Send className="h-3.5 w-3.5" /> Resubmit for approval
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Rejected edit feedback */}
+              {branch.editFeedback && userRole === 'admin' && (
+                <div className="mb-3 p-3 rounded-lg border border-warning/30 bg-warning/5">
+                  <p className="flex items-center gap-1.5 font-medium text-warning text-xs mb-1">
+                    <AlertCircle className="h-3.5 w-3.5" /> Edit request rejected
+                  </p>
+                  <p className="text-xs text-muted-foreground">{branch.editFeedback}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 italic">Revise the cafe details and save again to resubmit.</p>
+                </div>
+              )}
+
+              {/* Pending edit comparison */}
+              {branch.pendingEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mb-3 gap-1.5"
+                  onClick={() => { setSelectedBranch(branch); setShowCompareDialog(true); }}
+                >
+                  <GitCompareArrows className="h-3.5 w-3.5" /> View pending changes
                 </Button>
-                {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {!isBlocked && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
+                    <LayoutGrid className="h-3.5 w-3.5" /> Seats
+                  </Button>
+                )}
+                {!isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
                     <Clock className="h-3.5 w-3.5" /> Shifts
                   </Button>
@@ -570,7 +610,7 @@ export default function BranchesPage() {
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
-                {(userRole === 'super_admin' || userRole === 'admin') && (
+                {(userRole === 'super_admin' || (userRole === 'admin' && !isBlocked)) && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(branch)}>
                     <Settings className="h-3.5 w-3.5" /> Settings
                   </Button>
@@ -578,7 +618,8 @@ export default function BranchesPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {displayedBranches.length === 0 && (
@@ -639,6 +680,11 @@ export default function BranchesPage() {
           </DialogHeader>
           {selectedBranch && (
             <div className="space-y-4">
+              {selectedBranch.status === 'pending' || selectedBranch.status === 'rejected' ? (
+                <p className="text-xs text-muted-foreground p-3 rounded-lg border bg-muted/30">
+                  This cafe is {selectedBranch.status === 'pending' ? 'awaiting Super Admin approval' : 'rejected'} — status controls are locked.
+                </p>
+              ) : (
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div>
                   <p className="font-medium text-sm">Branch Active</p>
@@ -652,8 +698,9 @@ export default function BranchesPage() {
                   onCheckedChange={() => { if (!isSalesManager || selectedBranch.status === 'inactive') handleToggleStatus(); }}
                 />
               </div>
+              )}
 
-              {!isSalesManager && (
+              {!isSalesManager && selectedBranch.status !== 'pending' && selectedBranch.status !== 'rejected' && (
                 <>
                   <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
                     <Monitor className="h-4 w-4" />
