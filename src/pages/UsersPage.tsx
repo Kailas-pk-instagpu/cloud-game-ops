@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/shared/lib/store';
+import { useAuthStore, useBranchStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
 import { canCreateRole, canManageUser } from '@/shared/lib/rbac';
@@ -64,6 +64,12 @@ export default function UsersPage() {
 
   const isCafeOwner = currentUser.role === 'cafe_owner';
   const isSalesManager = currentUser.role === 'admin';
+
+  // Cafe owners can add Floor Managers only once one of their cafes is Active.
+  const ownerHasActiveCafe = useBranchStore(s => s.branches).some(
+    b => b.cafeOwnerId === currentUser.id && b.status === 'active'
+  );
+  const createBlocked = isCafeOwner && !ownerHasActiveCafe;
 
   // On Cafe Management, only cafe owners open the branches page.
   const rowOpensBranches = (u: ManagedUser) =>
@@ -191,7 +197,7 @@ export default function UsersPage() {
 
 
   // Hierarchy breadcrumb
-  const hierarchy = ['Super Admin', 'Admin', 'Cafe Owner', 'Manager'];
+  const hierarchy = [ROLE_LABELS.super_admin, ROLE_LABELS.admin, ROLE_LABELS.cafe_owner, ROLE_LABELS.manager];
   const currentIndex = hierarchy.indexOf(ROLE_LABELS[currentUser.role]);
 
   const statusColor = (status: UserStatus) =>
@@ -218,7 +224,18 @@ export default function UsersPage() {
           </p>
         </div>
         {creatableRoles.length > 0 && (
-          <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2">
+          <Button
+            onClick={() => {
+              if (createBlocked) {
+                toast.error('You can add Floor Managers only after one of your cafes is Active and approved.');
+                return;
+              }
+              openCreate();
+            }}
+            className="gradient-primary text-primary-foreground gap-2"
+            disabled={createBlocked}
+            title={createBlocked ? 'Available once one of your cafes is Active' : undefined}
+          >
             <Plus className="h-4 w-4" />
             {currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create User'}
           </Button>
@@ -254,7 +271,7 @@ export default function UsersPage() {
             <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="admin">Sales Manager</SelectItem>
             <SelectItem value="cafe_owner">Cafe Owner</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
+            <SelectItem value="manager">Floor Manager</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -403,7 +420,7 @@ export default function UsersPage() {
                 {formRole && (
                   <p className="text-xs text-muted-foreground">
                     {formRole === 'admin' && 'This user will manage cafe owners and their portfolios.'}
-                    {formRole === 'cafe_owner' && 'This user will manage their own branches and create managers.'}
+                    {formRole === 'cafe_owner' && 'This user will manage their own branches and create floor managers.'}
                     {formRole === 'manager' && 'This user will only have access to an assigned branch.'}
                   </p>
                 )}
