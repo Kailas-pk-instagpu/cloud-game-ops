@@ -10,7 +10,6 @@ const state = vi.hoisted(() => ({
 
 vi.mock('@/shared/lib/store', () => ({
   useAuthStore: () => ({ user: state.user, updateProfile: state.updateProfile, changePassword: vi.fn() }),
-  useDeletionRequestStore: () => ({ createRequest: vi.fn(), hasPendingForUser: () => false }),
 }));
 vi.mock('@/features/settings/E2LinkIntegrationPanel', () => ({ default: () => null }));
 vi.mock('@/features/settings/VMwareHorizonIntegrationPanel', () => ({ default: () => null }));

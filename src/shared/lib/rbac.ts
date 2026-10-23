@@ -31,7 +31,6 @@ export const ROUTES: RouteConfig[] = [
   { path: '/billing', label: 'Billing', icon: 'Wallet', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/monitoring', label: 'Monitoring', icon: 'Radar', roles: ['super_admin'] },
   { path: '/issues', label: 'Issue Reports', icon: 'AlertTriangle', roles: ['super_admin', 'cafe_owner'] },
-  { path: '/deletion-requests', label: 'Deletion Requests', icon: 'UserMinus', roles: ['super_admin'] },
   { path: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['super_admin', 'cafe_owner'] },
   { path: '/notifications', label: 'Notifications', icon: 'Bell', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/settings', label: 'Settings', icon: 'Settings', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
