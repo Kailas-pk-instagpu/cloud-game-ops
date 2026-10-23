@@ -23,6 +23,16 @@ export interface BranchBilling {
   currency: 'MYR';
 }
 
+/** Editable branch fields that a Sales Manager can propose changes to. */
+export interface BranchEditProposal {
+  name: string;
+  address: string;
+  totalSeats: number;
+  adminId?: string;
+  cafeOwnerId?: string;
+  managerId?: string;
+}
+
 export interface Branch {
   id: string;
   name: string;
@@ -30,11 +40,19 @@ export interface Branch {
   address: string;
   totalSeats: number;
   activeSeats: number;
-  status: 'active' | 'maintenance' | 'inactive';
+  status: 'active' | 'maintenance' | 'inactive' | 'pending' | 'rejected';
   adminId?: string;
   cafeOwnerId?: string;
   managerId?: string;
   billing: BranchBilling;
+  /** Feedback from the latest rejected new-cafe request. */
+  approvalFeedback?: string;
+  /** Feedback from the latest rejected edit request. */
+  editFeedback?: string;
+  /** Proposed edits awaiting Super Admin approval; live values stay untouched. */
+  pendingEdit?: BranchEditProposal;
+  createdById?: string;
+  createdAt?: string;
 }
 
 export interface Seat {

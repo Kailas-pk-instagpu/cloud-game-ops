@@ -9,9 +9,13 @@ export function getScopedBranches(branches: Branch[], currentUser: User | null):
     return branches.filter(b => b.adminId === currentUser.id || currentUser.assignedScope.includes(b.cafeId));
   }
   if (currentUser.role === 'cafe_owner') {
-    return branches.filter(b => b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId));
+    // Pending/rejected cafes stay invisible to the owner until approved.
+    return branches.filter(
+      b => (b.cafeOwnerId === currentUser.id || currentUser.assignedScope.some(s => s === b.cafeId))
+        && b.status !== 'pending' && b.status !== 'rejected'
+    );
   }
-  return branches.filter(b => b.managerId === currentUser.id);
+  return branches.filter(b => b.managerId === currentUser.id && b.status !== 'pending' && b.status !== 'rejected');
 }
 
 /**
