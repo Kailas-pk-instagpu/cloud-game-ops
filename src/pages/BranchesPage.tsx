@@ -409,7 +409,7 @@ export default function BranchesPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">Manager will handle this specific branch</p>
+                <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific branch</p>
               </div>
             )}
 
@@ -430,7 +430,7 @@ export default function BranchesPage() {
     const assignments = [
       { label: 'Sales Manager', user: admin, icon: Shield, color: 'text-destructive' },
       { label: 'Cafe Owner', user: owner, icon: User, color: 'text-primary' },
-      { label: 'Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
+      { label: 'Floor Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
     ];
 
     return (
@@ -447,6 +447,21 @@ export default function BranchesPage() {
           </div>
         ))}
       </div>
+    );
+  };
+
+  const BranchStatusBadge = ({ branch }: { branch: Branch }) => {
+    if (branch.status === 'pending') return <StatusBadge status="pending" label="Disabled (Pending)" />;
+    if (branch.status === 'rejected') return <StatusBadge status="rejected" label="Disabled (Rejected)" />;
+    return (
+      <span className="flex items-center gap-1.5 flex-wrap justify-end">
+        <StatusBadge status={branch.status} />
+        {branch.status === 'active' && branch.pendingEdit && (
+          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-[10px] px-1.5 py-0 normal-case">
+            Edit pending
+          </Badge>
+        )}
+      </span>
     );
   };
 
@@ -503,6 +518,8 @@ export default function BranchesPage() {
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Disabled (Pending)</SelectItem>
+                <SelectItem value="rejected">Disabled (Rejected)</SelectItem>
               </SelectContent>
             </Select>
             {activeFilterCount > 0 || searchQuery ? (
@@ -516,15 +533,17 @@ export default function BranchesPage() {
 
       {/* Branch Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displayedBranches.map(branch => (
-          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' ? 'opacity-60' : ''}`}>
+        {displayedBranches.map(branch => {
+          const isBlocked = branch.status === 'pending' || branch.status === 'rejected';
+          return (
+          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' || isBlocked ? 'opacity-60' : ''}`}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">{branch.name}</h3>
                 </div>
-                <StatusBadge status={branch.status} />
+                <BranchStatusBadge branch={branch} />
               </div>
               <div className="space-y-2 text-sm text-muted-foreground mb-2">
                 <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {branch.address}</p>
