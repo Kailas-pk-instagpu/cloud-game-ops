@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
@@ -46,6 +46,156 @@ function getUsersByRole(role: Role) {
 function getUserName(id?: string) {
   if (!id) return null;
   return MOCK_USERS.find(u => u.id === id);
+}
+
+// Defined at module scope so typing in the form doesn't remount the inputs and steal focus.
+interface BranchFormFieldsProps {
+  isEdit: boolean;
+  form: BranchForm;
+  setForm: Dispatch<SetStateAction<BranchForm>>;
+  selectedBranch: Branch | null;
+  assignableAdmins: typeof MOCK_USERS;
+  assignableCafeOwners: typeof MOCK_USERS;
+  assignableManagers: typeof MOCK_USERS;
+}
+
+function BranchFormFields({
+  isEdit,
+  form,
+  setForm,
+  selectedBranch,
+  assignableAdmins,
+  assignableCafeOwners,
+  assignableManagers,
+}: BranchFormFieldsProps) {
+  return (
+    <div className="space-y-5">
+      {/* Step 1: Basic Info */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Step 1 — Branch Details
+        </p>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="name">Branch Name *</Label>
+            <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+            <p className="text-xs text-muted-foreground mt-1">Give your branch a recognizable name</p>
+          </div>
+          <div>
+            <Label htmlFor="address">Address *</Label>
+            <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
+            <p className="text-xs text-muted-foreground mt-1">Full street address of the branch</p>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Step 2: Seats */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Step 2 — Configure Seats
+        </p>
+        <div>
+          <Label htmlFor="seats">Number of Seats</Label>
+          <div className="flex items-center gap-3 mt-1">
+            <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: Math.max(1, f.totalSeats - 1) }))}>−</Button>
+            <Input id="seats" type="number" min={1} className="w-24 text-center" value={form.totalSeats} onChange={e => setForm(f => ({ ...f, totalSeats: Math.max(1, parseInt(e.target.value) || 1) }))} />
+            <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: f.totalSeats + 1 }))}>+</Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isEdit && selectedBranch
+              ? `Currently ${selectedBranch.activeSeats} seats are active out of ${selectedBranch.totalSeats}`
+              : 'How many gaming stations does this branch have?'}
+          </p>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Step 3: Assign Users */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Step 3 — Assign Team
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">Assign users to manage and operate this branch</p>
+        <div className="space-y-4">
+          {/* Sales Manager Assignment - only Super Admin can assign */}
+          {assignableAdmins.length > 0 && (
+            <div>
+              <Label className="flex items-center gap-1.5 mb-1">
+                <Shield className="h-3.5 w-3.5 text-destructive" /> Sales Manager
+              </Label>
+              <Select value={form.adminId} onValueChange={v => setForm(f => ({ ...f, adminId: v === 'none' ? '' : v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a sales manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No sales manager assigned</SelectItem>
+                  {assignableAdmins.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} — {u.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Sales Manager will oversee this branch's operations</p>
+            </div>
+          )}
+
+          {/* Cafe Owner Assignment - Super Admin and Sales Manager can assign */}
+          {assignableCafeOwners.length > 0 && (
+            <div>
+              <Label className="flex items-center gap-1.5 mb-1">
+                <User className="h-3.5 w-3.5 text-primary" /> Cafe Owner
+              </Label>
+              <Select value={form.cafeOwnerId} onValueChange={v => setForm(f => ({ ...f, cafeOwnerId: v === 'none' ? '' : v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a cafe owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No cafe owner assigned</SelectItem>
+                  {assignableCafeOwners.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} — {u.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Cafe owner will manage day-to-day operations</p>
+            </div>
+          )}
+
+          {/* Floor Manager Assignment - Super Admin, Sales Manager, Cafe Owner can assign */}
+          {assignableManagers.length > 0 && (
+            <div>
+              <Label className="flex items-center gap-1.5 mb-1">
+                <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Floor Manager
+              </Label>
+              <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v === 'none' ? '' : v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No manager assigned</SelectItem>
+                  {assignableManagers.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} — {u.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific branch</p>
+            </div>
+          )}
+
+          {assignableAdmins.length === 0 && assignableCafeOwners.length === 0 && assignableManagers.length === 0 && (
+            <p className="text-sm text-muted-foreground italic">No users available for assignment at your permission level</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function BranchesPage() {
@@ -287,141 +437,6 @@ export default function BranchesPage() {
     );
   };
 
-  const BranchFormFields = ({ isEdit }: { isEdit: boolean }) => {
-    const assignableAdmins = getAssignableAdmins();
-    const assignableCafeOwners = getAssignableCafeOwners();
-    const assignableManagers = getAssignableManagers();
-
-    return (
-      <div className="space-y-5">
-        {/* Step 1: Basic Info */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Step 1 — Branch Details
-          </p>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="name">Branch Name *</Label>
-              <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              <p className="text-xs text-muted-foreground mt-1">Give your branch a recognizable name</p>
-            </div>
-            <div>
-              <Label htmlFor="address">Address *</Label>
-              <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
-              <p className="text-xs text-muted-foreground mt-1">Full street address of the branch</p>
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Step 2: Seats */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Step 2 — Configure Seats
-          </p>
-          <div>
-            <Label htmlFor="seats">Number of Seats</Label>
-            <div className="flex items-center gap-3 mt-1">
-              <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: Math.max(1, f.totalSeats - 1) }))}>−</Button>
-              <Input id="seats" type="number" min={1} className="w-24 text-center" value={form.totalSeats} onChange={e => setForm(f => ({ ...f, totalSeats: Math.max(1, parseInt(e.target.value) || 1) }))} />
-              <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: f.totalSeats + 1 }))}>+</Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isEdit && selectedBranch
-                ? `Currently ${selectedBranch.activeSeats} seats are active out of ${selectedBranch.totalSeats}`
-                : 'How many gaming stations does this branch have?'}
-            </p>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Step 3: Assign Users */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Step 3 — Assign Team
-          </p>
-          <p className="text-xs text-muted-foreground mb-4">Assign users to manage and operate this branch</p>
-          <div className="space-y-4">
-            {/* Admin Assignment - only Super Admin can assign */}
-            {assignableAdmins.length > 0 && (
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1">
-                  <Shield className="h-3.5 w-3.5 text-destructive" /> Admin
-                </Label>
-                <Select value={form.adminId} onValueChange={v => setForm(f => ({ ...f, adminId: v === 'none' ? '' : v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an admin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No admin assigned</SelectItem>
-                    {assignableAdmins.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name} — {u.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">Admin will oversee this branch's operations</p>
-              </div>
-            )}
-
-            {/* Cafe Owner Assignment - Super Admin and Admin can assign */}
-            {assignableCafeOwners.length > 0 && (
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1">
-                  <User className="h-3.5 w-3.5 text-primary" /> Cafe Owner
-                </Label>
-                <Select value={form.cafeOwnerId} onValueChange={v => setForm(f => ({ ...f, cafeOwnerId: v === 'none' ? '' : v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a cafe owner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No cafe owner assigned</SelectItem>
-                    {assignableCafeOwners.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name} — {u.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">Cafe owner will manage day-to-day operations</p>
-              </div>
-            )}
-
-            {/* Manager Assignment - Super Admin, Admin, Cafe Owner can assign */}
-            {assignableManagers.length > 0 && (
-              <div>
-                <Label className="flex items-center gap-1.5 mb-1">
-                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Floor Manager
-                </Label>
-                <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v === 'none' ? '' : v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a manager" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No manager assigned</SelectItem>
-                    {assignableManagers.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name} — {u.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific branch</p>
-              </div>
-            )}
-
-            {assignableAdmins.length === 0 && assignableCafeOwners.length === 0 && assignableManagers.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">No users available for assignment at your permission level</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const AssignedTeamCard = ({ branch }: { branch: Branch }) => {
     const admin = getUserName(branch.adminId);
     const owner = getUserName(branch.cafeOwnerId);
@@ -648,7 +663,15 @@ export default function BranchesPage() {
             <DialogTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Add New Branch</DialogTitle>
             <DialogDescription>Set up a new gaming cafe location with seats and team assignments</DialogDescription>
           </DialogHeader>
-          <BranchFormFields isEdit={false} />
+          <BranchFormFields
+            isEdit={false}
+            form={form}
+            setForm={setForm}
+            selectedBranch={selectedBranch}
+            assignableAdmins={getAssignableAdmins()}
+            assignableCafeOwners={getAssignableCafeOwners()}
+            assignableManagers={getAssignableManagers()}
+          />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
             <Button className="gradient-primary text-primary-foreground" onClick={submitAdd} disabled={!form.name.trim() || !form.address.trim()}>Create Branch</Button>
@@ -663,7 +686,15 @@ export default function BranchesPage() {
             <DialogTitle className="flex items-center gap-2"><Edit className="h-5 w-5" /> Edit Branch</DialogTitle>
             <DialogDescription>Update branch details, seats, and team assignments</DialogDescription>
           </DialogHeader>
-          <BranchFormFields isEdit={true} />
+          <BranchFormFields
+            isEdit={true}
+            form={form}
+            setForm={setForm}
+            selectedBranch={selectedBranch}
+            assignableAdmins={getAssignableAdmins()}
+            assignableCafeOwners={getAssignableCafeOwners()}
+            assignableManagers={getAssignableManagers()}
+          />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowManageDialog(false)}>Cancel</Button>
             <Button className="gradient-primary text-primary-foreground" onClick={submitUpdate} disabled={!form.name.trim() || !form.address.trim()}>Save Changes</Button>
