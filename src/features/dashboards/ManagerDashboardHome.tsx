@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useShiftStore, useAuthStore, WEEKDAYS, type Weekday } from '@/shared/lib/store';
 import { useHandoverStore, PRIORITY_META, type HandoverPriority } from '@/shared/lib/handoverStore';
 import { toast } from 'sonner';
+import { SHIFTS_ENABLED } from '@/shared/lib/featureFlags';
 
 function formatTime12(t: string) {
   const [h, m] = t.split(':').map(Number);
@@ -77,6 +78,7 @@ export default function ManagerDashboardHome() {
           <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
           <p className="text-muted-foreground text-sm mt-1">Overview of {branch?.name || 'your branch'}</p>
         </div>
+        {SHIFTS_ENABLED && (
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -179,6 +181,7 @@ export default function ManagerDashboardHome() {
             )}
           </PopoverContent>
         </Popover>
+        )}
       </div>
 
       {/* Stats Row */}
@@ -192,7 +195,7 @@ export default function ManagerDashboardHome() {
       </div>
 
       {/* Hourly Sessions + Recent Activity + Shift Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className={cn('grid grid-cols-1 gap-4', SHIFTS_ENABLED ? 'lg:grid-cols-3' : 'lg:grid-cols-2')}>
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Hourly Sessions</CardTitle>
@@ -241,6 +244,7 @@ export default function ManagerDashboardHome() {
           </CardContent>
         </Card>
 
+        {SHIFTS_ENABLED && (
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
@@ -262,6 +266,7 @@ export default function ManagerDashboardHome() {
             ))}
           </CardContent>
         </Card>
+        )}
       </div>
 
       {/* Weekly Performance */}

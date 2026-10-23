@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
 import ShiftManagementDialog from '@/features/branches/ShiftManagementDialog';
+import { SHIFTS_ENABLED } from '@/shared/lib/featureFlags';
 
 interface BranchForm {
   name: string;
@@ -617,7 +618,7 @@ export default function BranchesPage() {
                     <LayoutGrid className="h-3.5 w-3.5" /> Seats
                   </Button>
                 )}
-                {!isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
+                {SHIFTS_ENABLED && !isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
                     <Clock className="h-3.5 w-3.5" /> Shifts
                   </Button>
@@ -1058,11 +1059,13 @@ export default function BranchesPage() {
         </DialogContent>
       </Dialog>
 
-      <ShiftManagementDialog
-        open={showShiftDialog}
-        onOpenChange={setShowShiftDialog}
-        branch={selectedBranch}
-      />
+      {SHIFTS_ENABLED && (
+        <ShiftManagementDialog
+          open={showShiftDialog}
+          onOpenChange={setShowShiftDialog}
+          branch={selectedBranch}
+        />
+      )}
     </div>
   );
 }
