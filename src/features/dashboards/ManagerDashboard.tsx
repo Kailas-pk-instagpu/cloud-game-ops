@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Banknote, Monitor, Users, Clock, RotateCcw, UserCheck, UserMinus, TrendingUp, AlertCircle, Zap, Timer } from 'lucide-react';
 import { StatCard } from '@/shared/ui/molecules/StatCard';
+import { SHIFTS_ENABLED } from '@/shared/lib/featureFlags';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -83,10 +84,12 @@ export default function ManagerDashboard() {
           <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Shift: 9:00 AM - 9:00 PM</span>
-        </div>
+        {SHIFTS_ENABLED && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
+            <Clock className="h-3.5 w-3.5" />
+            <span>Shift: 9:00 AM - 9:00 PM</span>
+          </div>
+        )}
       </div>
 
       {/* Stats Row */}
@@ -139,7 +142,7 @@ export default function ManagerDashboard() {
       </Card>
 
       {/* Hourly Sessions + Recent Activity + Shift Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className={cn('grid grid-cols-1 gap-4', SHIFTS_ENABLED ? 'lg:grid-cols-3' : 'lg:grid-cols-2')}>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Hourly Sessions</CardTitle>
@@ -188,6 +191,7 @@ export default function ManagerDashboard() {
           </CardContent>
         </Card>
 
+        {SHIFTS_ENABLED && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Shift Summary</CardTitle>
@@ -212,6 +216,7 @@ export default function ManagerDashboard() {
             ))}
           </CardContent>
         </Card>
+        )}
       </div>
 
       {/* Weekly Performance */}
