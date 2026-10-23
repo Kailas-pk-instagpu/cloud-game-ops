@@ -37,7 +37,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   super_admin: 'Super Admin',
   admin: 'Sales Manager',
   cafe_owner: 'Cafe Owner',
-  manager: 'Manager',
+  manager: 'Floor Manager',
 };
 
 export const ROLE_HIERARCHY: Record<Role, Role | null> = {

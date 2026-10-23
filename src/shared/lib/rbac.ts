@@ -23,6 +23,7 @@ export interface RouteConfig {
 export const ROUTES: RouteConfig[] = [
   { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard', roles: ['super_admin', 'admin', 'cafe_owner', 'manager'] },
   { path: '/users', label: 'User Management', icon: 'Users', roles: ['super_admin', 'admin', 'cafe_owner'] },
+  { path: '/approvals', label: 'Approvals', icon: 'ClipboardCheck', roles: ['super_admin'] },
   { path: '/gpu-nodes', label: 'GPU Nodes', icon: 'Cpu', roles: ['super_admin'] },
   { path: '/branches', label: 'Branches', icon: 'Building2', roles: ['super_admin', 'cafe_owner'] },
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', roles: ['manager'] },

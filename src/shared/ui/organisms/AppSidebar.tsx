@@ -4,8 +4,9 @@ import { getRoutesForRole } from '@/shared/lib/rbac';
 
 import {
   LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2,
-  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ChevronRight,
+  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck, ChevronRight,
 } from 'lucide-react';
+import { usePendingApprovalCount } from '@/features/approvals/approvalService';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader,
@@ -14,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList,
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck,
 };
 
 function greeting() {
@@ -28,6 +29,7 @@ export function AppSidebar() {
   const { user } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const pendingApprovals = usePendingApprovalCount();
   if (!user) return null;
 
   const routes = getRoutesForRole(user.role);
@@ -84,6 +86,14 @@ export function AppSidebar() {
                       <span className="font-medium text-[13px] tracking-tight group-data-[collapsible=icon]:hidden">
                         {route.label}
                       </span>
+                      {route.path === '/approvals' && pendingApprovals > 0 && (
+                        <>
+                          <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center group-data-[collapsible=icon]:hidden">
+                            {pendingApprovals}
+                          </span>
+                          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive hidden group-data-[collapsible=icon]:block" />
+                        </>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

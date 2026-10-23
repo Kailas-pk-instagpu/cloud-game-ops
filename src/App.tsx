@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import Verify2FAPage from "./pages/Verify2FAPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
+import ApprovalsPage from "./pages/ApprovalsPage";
 import GPUNodesPage from "./pages/GPUNodesPage";
 import BranchesPage from "./pages/BranchesPage";
 import SeatsPage from "./pages/SeatsPage";
@@ -41,6 +42,7 @@ const App = () => (
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/users" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><UsersPage /></RoleGuard>} />
+            <Route path="/approvals" element={<RoleGuard roles={['super_admin']}><ApprovalsPage /></RoleGuard>} />
             <Route path="/gpu-nodes" element={<RoleGuard roles={['super_admin']}><GPUNodesPage /></RoleGuard>} />
             <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
             <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />

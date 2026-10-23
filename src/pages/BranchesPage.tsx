@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
+import { useApprovalStore, toProposal } from '@/features/approvals/approvalService';
+import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
+import { BranchEditProposal } from '@/shared/lib/mock-data';
 import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
@@ -18,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search } from 'lucide-react';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search, AlertCircle, Send, GitCompareArrows } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
@@ -50,6 +53,7 @@ export default function BranchesPage() {
   const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
   const isSalesManager = currentUser?.role === 'admin';
+  const { submitNewCafe, submitEdit, resubmit } = useApprovalStore();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showManageDialog, setShowManageDialog] = useState(false);
@@ -57,6 +61,7 @@ export default function BranchesPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
@@ -148,23 +153,36 @@ export default function BranchesPage() {
       toast.error('Please fill in branch name and address');
       return;
     }
-    const newId = addBranch({
+    // Cafes created by a Sales Manager need Super Admin approval before going live.
+    const needsApproval = userRole === 'admin';
+    const base = {
       name: form.name,
       address: form.address,
       cafeId: form.cafeId || 'cafe-1',
       totalSeats: form.totalSeats,
       activeSeats: 0,
-      status: 'active',
+      status: (needsApproval ? 'pending' : 'active') as Branch['status'],
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
-      billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' },
-    });
+      billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' as const },
+      createdById: currentUser!.id,
+      createdAt: new Date().toISOString(),
+    };
+    const newId = addBranch(base);
+    const newBranch: Branch = { ...base, id: newId };
+
+    if (needsApproval) {
+      submitNewCafe(newBranch, { id: currentUser!.id, name: currentUser!.name });
+      toast.success(`Cafe "${form.name}" submitted for Super Admin approval`);
+      setShowAddDialog(false);
+      return;
+    }
+
     provisionSeats(newId, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
     // Open seat grid so the owner can immediately configure GPUs
-    const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
     setSelectedBranch(newBranch);
     setBaselineGpu(defaultGpu);
     setCanSaveSeatConfig(false);
@@ -173,18 +191,41 @@ export default function BranchesPage() {
 
   const submitUpdate = () => {
     if (!selectedBranch) return;
-    updateBranch(selectedBranch.id, {
+    const proposed: BranchEditProposal = {
       name: form.name,
       address: form.address,
       totalSeats: form.totalSeats,
-      activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
+    };
+
+    // Sales Manager edits to a live cafe become a pending change request;
+    // the cafe stays Active with the old values until approved.
+    if (isSalesManager && selectedBranch.status === 'active') {
+      submitEdit(selectedBranch, proposed, { id: currentUser!.id, name: currentUser!.name });
+      toast.success('Edit submitted for Super Admin approval — live values are unchanged');
+      setShowManageDialog(false);
+      return;
+    }
+
+    updateBranch(selectedBranch.id, {
+      ...proposed,
+      activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
     });
     syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
-    toast.success(`Branch "${form.name}" updated successfully`);
+    toast.success(
+      isSalesManager && selectedBranch.status === 'rejected'
+        ? `Cafe "${form.name}" updated — resubmit it for approval when ready`
+        : `Branch "${form.name}" updated successfully`
+    );
     setShowManageDialog(false);
+  };
+
+  const handleResubmit = (branch: Branch) => {
+    const req = resubmit(branch.id, { id: currentUser!.id, name: currentUser!.name });
+    if (req) toast.success(`Cafe "${branch.name}" resubmitted for approval`);
+    else toast.error('This cafe cannot be resubmitted');
   };
 
   const handleToggleStatus = () => {
@@ -353,7 +394,7 @@ export default function BranchesPage() {
             {assignableManagers.length > 0 && (
               <div>
                 <Label className="flex items-center gap-1.5 mb-1">
-                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Manager
+                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Floor Manager
                 </Label>
                 <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v === 'none' ? '' : v }))}>
                   <SelectTrigger>
@@ -368,7 +409,7 @@ export default function BranchesPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">Manager will handle this specific branch</p>
+                <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific branch</p>
               </div>
             )}
 
@@ -389,7 +430,7 @@ export default function BranchesPage() {
     const assignments = [
       { label: 'Sales Manager', user: admin, icon: Shield, color: 'text-destructive' },
       { label: 'Cafe Owner', user: owner, icon: User, color: 'text-primary' },
-      { label: 'Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
+      { label: 'Floor Manager', user: manager, icon: UserCheck, color: 'text-accent-foreground' },
     ];
 
     return (
@@ -406,6 +447,21 @@ export default function BranchesPage() {
           </div>
         ))}
       </div>
+    );
+  };
+
+  const BranchStatusBadge = ({ branch }: { branch: Branch }) => {
+    if (branch.status === 'pending') return <StatusBadge status="pending" label="Disabled (Pending)" />;
+    if (branch.status === 'rejected') return <StatusBadge status="rejected" label="Disabled (Rejected)" />;
+    return (
+      <span className="flex items-center gap-1.5 flex-wrap justify-end">
+        <StatusBadge status={branch.status} />
+        {branch.status === 'active' && branch.pendingEdit && (
+          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-[10px] px-1.5 py-0 normal-case">
+            Edit pending
+          </Badge>
+        )}
+      </span>
     );
   };
 
@@ -462,6 +518,8 @@ export default function BranchesPage() {
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Disabled (Pending)</SelectItem>
+                <SelectItem value="rejected">Disabled (Rejected)</SelectItem>
               </SelectContent>
             </Select>
             {activeFilterCount > 0 || searchQuery ? (
@@ -475,15 +533,17 @@ export default function BranchesPage() {
 
       {/* Branch Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displayedBranches.map(branch => (
-          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' ? 'opacity-60' : ''}`}>
+        {displayedBranches.map(branch => {
+          const isBlocked = branch.status === 'pending' || branch.status === 'rejected';
+          return (
+          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' || isBlocked ? 'opacity-60' : ''}`}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">{branch.name}</h3>
                 </div>
-                <StatusBadge status={branch.status} />
+                <BranchStatusBadge branch={branch} />
               </div>
               <div className="space-y-2 text-sm text-muted-foreground mb-2">
                 <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {branch.address}</p>
@@ -498,11 +558,51 @@ export default function BranchesPage() {
                 <AssignedTeamCard branch={branch} />
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
-                  <LayoutGrid className="h-3.5 w-3.5" /> Seats
+              {/* Rejection feedback + resubmit (new cafe flow) */}
+              {branch.status === 'rejected' && branch.approvalFeedback && (
+                <div className="mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <p className="flex items-center gap-1.5 font-medium text-destructive text-xs mb-1">
+                    <AlertCircle className="h-3.5 w-3.5" /> Rejected by Super Admin
+                  </p>
+                  <p className="text-xs text-muted-foreground">{branch.approvalFeedback}</p>
+                  {userRole === 'admin' && (
+                    <Button size="sm" variant="outline" className="mt-2 gap-1.5" onClick={() => handleResubmit(branch)}>
+                      <Send className="h-3.5 w-3.5" /> Resubmit for approval
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Rejected edit feedback */}
+              {branch.editFeedback && userRole === 'admin' && (
+                <div className="mb-3 p-3 rounded-lg border border-warning/30 bg-warning/5">
+                  <p className="flex items-center gap-1.5 font-medium text-warning text-xs mb-1">
+                    <AlertCircle className="h-3.5 w-3.5" /> Edit request rejected
+                  </p>
+                  <p className="text-xs text-muted-foreground">{branch.editFeedback}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 italic">Revise the cafe details and save again to resubmit.</p>
+                </div>
+              )}
+
+              {/* Pending edit comparison */}
+              {branch.pendingEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mb-3 gap-1.5"
+                  onClick={() => { setSelectedBranch(branch); setShowCompareDialog(true); }}
+                >
+                  <GitCompareArrows className="h-3.5 w-3.5" /> View pending changes
                 </Button>
-                {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {!isBlocked && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
+                    <LayoutGrid className="h-3.5 w-3.5" /> Seats
+                  </Button>
+                )}
+                {!isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
                     <Clock className="h-3.5 w-3.5" /> Shifts
                   </Button>
@@ -510,7 +610,7 @@ export default function BranchesPage() {
                 <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
                   <Edit className="h-3.5 w-3.5" /> Manage
                 </Button>
-                {(userRole === 'super_admin' || userRole === 'admin') && (
+                {(userRole === 'super_admin' || (userRole === 'admin' && !isBlocked)) && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(branch)}>
                     <Settings className="h-3.5 w-3.5" /> Settings
                   </Button>
@@ -518,7 +618,8 @@ export default function BranchesPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {displayedBranches.length === 0 && (
@@ -579,6 +680,11 @@ export default function BranchesPage() {
           </DialogHeader>
           {selectedBranch && (
             <div className="space-y-4">
+              {selectedBranch.status === 'pending' || selectedBranch.status === 'rejected' ? (
+                <p className="text-xs text-muted-foreground p-3 rounded-lg border bg-muted/30">
+                  This cafe is {selectedBranch.status === 'pending' ? 'awaiting Super Admin approval' : 'rejected'} — status controls are locked.
+                </p>
+              ) : (
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div>
                   <p className="font-medium text-sm">Branch Active</p>
@@ -592,8 +698,9 @@ export default function BranchesPage() {
                   onCheckedChange={() => { if (!isSalesManager || selectedBranch.status === 'inactive') handleToggleStatus(); }}
                 />
               </div>
+              )}
 
-              {!isSalesManager && (
+              {!isSalesManager && selectedBranch.status !== 'pending' && selectedBranch.status !== 'rejected' && (
                 <>
                   <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
                     <Monitor className="h-4 w-4" />
@@ -896,6 +1003,26 @@ export default function BranchesPage() {
             >
               Save Changes
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pending Changes Comparison Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitCompareArrows className="h-5 w-5 text-primary" /> Pending changes — {selectedBranch?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Current live values vs the proposed changes awaiting Super Admin approval
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBranch?.pendingEdit && (
+            <PendingChangesCompare current={toProposal(selectedBranch)} proposed={selectedBranch.pendingEdit} />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCompareDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
