@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
+import { useApprovalStore, toProposal } from '@/features/approvals/approvalService';
+import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
+import { BranchEditProposal } from '@/shared/lib/mock-data';
 import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
@@ -18,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search } from 'lucide-react';
+import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Armchair, Shield, User, Users, LayoutGrid, Cpu, Clock, X, Pencil, Wrench, CheckCircle2, Search, AlertCircle, Send, GitCompareArrows } from 'lucide-react';
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
@@ -50,6 +53,7 @@ export default function BranchesPage() {
   const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
   const isSalesManager = currentUser?.role === 'admin';
+  const { submitNewCafe, submitEdit, resubmit } = useApprovalStore();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showManageDialog, setShowManageDialog] = useState(false);
@@ -57,6 +61,7 @@ export default function BranchesPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
@@ -148,23 +153,36 @@ export default function BranchesPage() {
       toast.error('Please fill in branch name and address');
       return;
     }
-    const newId = addBranch({
+    // Cafes created by a Sales Manager need Super Admin approval before going live.
+    const needsApproval = userRole === 'admin';
+    const base = {
       name: form.name,
       address: form.address,
       cafeId: form.cafeId || 'cafe-1',
       totalSeats: form.totalSeats,
       activeSeats: 0,
-      status: 'active',
+      status: (needsApproval ? 'pending' : 'active') as Branch['status'],
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
-      billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' },
-    });
+      billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' as const },
+      createdById: currentUser!.id,
+      createdAt: new Date().toISOString(),
+    };
+    const newId = addBranch(base);
+    const newBranch: Branch = { ...base, id: newId };
+
+    if (needsApproval) {
+      submitNewCafe(newBranch, { id: currentUser!.id, name: currentUser!.name });
+      toast.success(`Cafe "${form.name}" submitted for Super Admin approval`);
+      setShowAddDialog(false);
+      return;
+    }
+
     provisionSeats(newId, form.totalSeats, defaultGpu);
     toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
     // Open seat grid so the owner can immediately configure GPUs
-    const newBranch: Branch = { id: newId, name: form.name, address: form.address, cafeId: form.cafeId || 'cafe-1', totalSeats: form.totalSeats, activeSeats: 0, status: 'active', adminId: form.adminId || undefined, cafeOwnerId: form.cafeOwnerId || undefined, managerId: form.managerId || undefined, billing: { costPerMinute: 2, lockedAmount: 100, currency: 'MYR' } };
     setSelectedBranch(newBranch);
     setBaselineGpu(defaultGpu);
     setCanSaveSeatConfig(false);
@@ -173,18 +191,41 @@ export default function BranchesPage() {
 
   const submitUpdate = () => {
     if (!selectedBranch) return;
-    updateBranch(selectedBranch.id, {
+    const proposed: BranchEditProposal = {
       name: form.name,
       address: form.address,
       totalSeats: form.totalSeats,
-      activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
+    };
+
+    // Sales Manager edits to a live cafe become a pending change request;
+    // the cafe stays Active with the old values until approved.
+    if (isSalesManager && selectedBranch.status === 'active') {
+      submitEdit(selectedBranch, proposed, { id: currentUser!.id, name: currentUser!.name });
+      toast.success('Edit submitted for Super Admin approval — live values are unchanged');
+      setShowManageDialog(false);
+      return;
+    }
+
+    updateBranch(selectedBranch.id, {
+      ...proposed,
+      activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
     });
     syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
-    toast.success(`Branch "${form.name}" updated successfully`);
+    toast.success(
+      isSalesManager && selectedBranch.status === 'rejected'
+        ? `Cafe "${form.name}" updated — resubmit it for approval when ready`
+        : `Branch "${form.name}" updated successfully`
+    );
     setShowManageDialog(false);
+  };
+
+  const handleResubmit = (branch: Branch) => {
+    const req = resubmit(branch.id, { id: currentUser!.id, name: currentUser!.name });
+    if (req) toast.success(`Cafe "${branch.name}" resubmitted for approval`);
+    else toast.error('This cafe cannot be resubmitted');
   };
 
   const handleToggleStatus = () => {
@@ -353,7 +394,7 @@ export default function BranchesPage() {
             {assignableManagers.length > 0 && (
               <div>
                 <Label className="flex items-center gap-1.5 mb-1">
-                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Manager
+                  <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Floor Manager
                 </Label>
                 <Select value={form.managerId} onValueChange={v => setForm(f => ({ ...f, managerId: v === 'none' ? '' : v }))}>
                   <SelectTrigger>
