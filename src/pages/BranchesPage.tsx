@@ -1007,6 +1007,26 @@ export default function BranchesPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Pending Changes Comparison Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitCompareArrows className="h-5 w-5 text-primary" /> Pending changes — {selectedBranch?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Current live values vs the proposed changes awaiting Super Admin approval
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBranch?.pendingEdit && (
+            <PendingChangesCompare current={toProposal(selectedBranch)} proposed={selectedBranch.pendingEdit} />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCompareDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ShiftManagementDialog
         open={showShiftDialog}
         onOpenChange={setShowShiftDialog}
