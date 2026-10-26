@@ -18,7 +18,6 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose
 } from '@/components/ui/sheet';
 import { ArrowRight } from 'lucide-react';
-import { IntegrationsStatusIndicator } from '@/shared/ui/atoms/IntegrationsStatusIndicator';
 
 const typeIcon = {
   error: <AlertCircle className="h-4 w-4 text-destructive" />,
@@ -62,7 +61,6 @@ export function AppNavbar() {
 
 
       <div className="flex items-center gap-2">
-        <IntegrationsStatusIndicator />
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
