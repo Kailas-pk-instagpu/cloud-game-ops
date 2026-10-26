@@ -144,7 +144,7 @@ export default function LoginPage() {
             >
               <p className="font-medium text-foreground text-xs mb-1.5">Demo accounts</p>
               <p className="font-mono text-[11px]">superadmin@gpucloud.io</p>
-              <p className="font-mono text-[11px]">admin@gpucloud.io · owner@gpucloud.io · manager@gpucloud.io</p>
+              <p className="font-mono text-[11px]">salesmanager@gpucloud.io · owner@gpucloud.io · manager@gpucloud.io</p>
               <p className="mt-1">Password: <span className="font-mono">admin123</span></p>
             </div>
           </form>
