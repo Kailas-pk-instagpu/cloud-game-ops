@@ -98,16 +98,7 @@ export function LoginWelcomePopup() {
             </div>
 
             <div className="h-0.5 w-full bg-muted">
-              <motion.div
-                className="h-full origin-left gradient-primary"
-                initial={{ scaleX: 1 }}
-                animate={{ scaleX: 0 }}
-                transition={
-                  reduceMotion
-                    ? { duration: AUTO_DISMISS_MS / 1000, ease: 'linear' }
-                    : { duration: AUTO_DISMISS_MS / 1000, ease: 'linear' }
-                }
-              />
+              <div className="h-full w-full gradient-primary animate-welcome-countdown" />
             </div>
           </div>
         </motion.div>

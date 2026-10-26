@@ -168,6 +168,16 @@
 .animate-login-up { animation: login-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .animate-login-in { animation: login-fade-in 0.9s ease-out both; }
 
+/* Welcome popup countdown bar — duration must match AUTO_DISMISS_MS in LoginWelcomePopup */
+@keyframes welcome-countdown {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+.animate-welcome-countdown {
+  animation: welcome-countdown 5s linear forwards;
+  transform-origin: left center;
+}
+
 .aurora-blob {
   position: absolute;
   width: 60vmax;
