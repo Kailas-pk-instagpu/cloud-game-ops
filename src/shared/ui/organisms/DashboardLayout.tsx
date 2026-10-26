@@ -3,6 +3,7 @@ import { useAuthStore } from '@/shared/lib/store';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AppNavbar } from './AppNavbar';
+import { LoginWelcomePopup } from './LoginWelcomePopup';
 import { PageTransition } from '@/shared/ui/motion/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
 
