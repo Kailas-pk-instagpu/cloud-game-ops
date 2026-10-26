@@ -357,7 +357,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="profile-address" className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" /> Residential Address
+                    <MapPin className="h-3.5 w-3.5" /> Address
                   </Label>
                   <Textarea id="profile-address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Street address, city, state, zip..." rows={2} className="resize-none" />
                 </div>
