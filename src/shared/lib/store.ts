@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
 import { notifyLogin } from './loginNotification';
+import { markLoginWelcome } from './loginWelcome';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
         
         set({ is2FAVerified: true, isAuthenticated: true });
         notifyLogin(user);
+        markLoginWelcome(user);
         return { success: true, requires2FA: false };
       },
 
@@ -39,6 +41,7 @@ export const useAuthStore = create<AuthState>()(
           set({ is2FAVerified: true, isAuthenticated: true });
           const u = get().user;
           if (u) notifyLogin(u);
+          if (u) markLoginWelcome(u);
           return true;
         }
         return false;
