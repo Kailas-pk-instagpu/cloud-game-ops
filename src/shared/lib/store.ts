@@ -31,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
         
         set({ is2FAVerified: true, isAuthenticated: true });
         notifyLogin(user);
+        markLoginWelcome(user);
         return { success: true, requires2FA: false };
       },
 
@@ -40,6 +41,7 @@ export const useAuthStore = create<AuthState>()(
           set({ is2FAVerified: true, isAuthenticated: true });
           const u = get().user;
           if (u) notifyLogin(u);
+          if (u) markLoginWelcome(u);
           return true;
         }
         return false;
