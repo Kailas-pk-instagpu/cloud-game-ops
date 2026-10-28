@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '@/shared/lib/store';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { beginLogin, useAuthStore } from '@/shared/lib/store';
+import { AUTH_MODE, LOGIN_ERRORS } from '@/shared/lib/bff';
+import { safeReturnTo } from '@/shared/lib/safeReturnTo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,17 +11,31 @@ import GPUBackground from '@/features/login/GPUBackground';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, sessionStatus, loadSession } = useAuthStore();
+  const [params] = useSearchParams();
+  const returnTo = safeReturnTo(params.get('returnTo'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => (AUTH_MODE === 'bff' ? LOGIN_ERRORS[params.get('error') ?? ''] ?? '' : ''));
   const [loading, setLoading] = useState(false);
+  const isBff = AUTH_MODE === 'bff';
+
+  // bff mode: someone who still has a session goes straight in.
+  useEffect(() => {
+    if (!isBff) return;
+    if (sessionStatus === 'unknown') void loadSession();
+    else if (sessionStatus === 'ready' && isAuthenticated) navigate(returnTo, { replace: true });
+  }, [isBff, sessionStatus, isAuthenticated, loadSession, navigate, returnTo]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    if (isBff) {
+      beginLogin(returnTo); // Keycloak's sign-in page (password and two-factor there), then back here with a session
+      return;
+    }
 
     setTimeout(() => {
       const result = login(email, password);
@@ -76,6 +92,11 @@ export default function LoginPage() {
               </div>
             )}
 
+            {isBff ? (
+              <p className="text-sm text-muted-foreground animate-login-up" style={{ animationDelay: '380ms' }}>
+                You will enter your e-mail and password on the InstaGPU secure sign-in page.
+              </p>
+            ) : (<>
             <div className="space-y-2 animate-login-up" style={{ animationDelay: '380ms' }}>
               <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground">
                 Email address
@@ -121,23 +142,26 @@ export default function LoginPage() {
               </div>
             </div>
 
+            </>)}
+
             <div className="animate-login-up" style={{ animationDelay: '540ms' }}>
               <Button
                 type="submit"
-                disabled={loading || !email.trim() || !password}
+                disabled={loading || (!isBff && (!email.trim() || !password))}
                 className="w-full h-12 gradient-primary text-primary-foreground text-sm font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Signing in…
+                    {isBff ? 'Redirecting…' : 'Signing in…'}
                   </>
                 ) : (
-                  'Log in'
+                  isBff ? 'Sign in' : 'Log in'
                 )}
               </Button>
             </div>
 
+            {!isBff && (
             <div
               className="mt-5 p-3 rounded-lg bg-background/40 border border-white/10 text-xs text-muted-foreground space-y-0.5 animate-login-in"
               style={{ animationDelay: '780ms' }}
@@ -147,6 +171,7 @@ export default function LoginPage() {
               <p className="font-mono text-[11px]">salesmanager@gpucloud.io · owner@gpucloud.io · manager@gpucloud.io</p>
               <p className="mt-1">Password: <span className="font-mono">admin123</span></p>
             </div>
+            )}
           </form>
         </div>
       </div>

@@ -25,7 +25,11 @@ export interface AuthState {
   theme: 'light' | 'dark';
   login: (email: string, password: string) => { success: boolean; requires2FA: boolean; error?: string };
   verify2FA: (code: string) => boolean;
-  logout: () => void;
+  logout: () => void | Promise<void>;
+  /** bff mode: 'unknown' until GET /me has answered once. mock mode: always 'ready'. */
+  sessionStatus: 'unknown' | 'loading' | 'ready';
+  /** bff mode: load the signed-in person from the backend (session cookie). */
+  loadSession: () => Promise<void>;
   toggleTheme: () => void;
   enable2FA: (method: TwoFAMethod, phone?: string) => void;
   disable2FA: () => void;

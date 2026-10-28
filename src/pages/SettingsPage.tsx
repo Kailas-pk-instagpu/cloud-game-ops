@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 
 import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 import VMwareHorizonIntegrationPanel from '@/features/settings/VMwareHorizonIntegrationPanel';
+import { AUTH_MODE } from '@/shared/lib/bff';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 const MOCK_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/GPUCloud:user@example.com?secret=${MOCK_TOTP_SECRET}&issuer=GPUCloud`;
@@ -258,6 +259,8 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = () => {
+    // Real backend: passwords are changed on Keycloak's own page (the store redirects there).
+    if (AUTH_MODE === 'bff') { changePassword('', ''); return; }
     if (!currentPassword) { toast.error('Enter your current password'); return; }
     if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
