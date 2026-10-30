@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
 import CafeOwnerActiveSessionsOverview from '@/features/billing/CafeOwnerActiveSessionsOverview';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +24,9 @@ export default function BillingSessionPage() {
   const addSettlement = useSettlementStore((s) => s.addSettlement);
   const navigate = useNavigate();
 
-  // Cafe owners and managers manage user billing; admins/super-admins are view-only on settlements
-  const canManage = user?.role === 'cafe_owner' || user?.role === 'manager';
+  // Ending and settling a session is a permission (cafe owners and Floor Managers by default); admins/super-admins see settlements
+  const can = useCan();
+  const canManage = can('sessions.end');
   const isSettlementViewer = user?.role === 'super_admin' || user?.role === 'admin';
 
   const visibleBranches = useMemo(() => {

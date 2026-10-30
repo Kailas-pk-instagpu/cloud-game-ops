@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
 import { CheckCircle2, Download, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { getScopedBranches } from '@/shared/lib/branchScope';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -381,8 +382,9 @@ export default function BranchBillingPage() {
   const branchId = params.get('branch') ?? branches[0]?.id ?? '';
   const branch = branches.find((b) => b.id === branchId) ?? branches[0];
 
-  const canPay = user?.role === 'cafe_owner';
-  const canDownload = user?.role === 'cafe_owner' || user?.role === 'super_admin';
+  const can = useCan();
+  const canPay = can('billing.pay');
+  const canDownload = can('billing.invoices.download');
   const qs = branch ? `?branch=${branch.id}` : '';
 
   return (

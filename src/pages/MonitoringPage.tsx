@@ -4,11 +4,12 @@ import LiveSessionsMonitor from '@/features/monitoring/LiveSessionsMonitor';
 import FailedTransactionsMonitor from '@/features/monitoring/FailedTransactionsMonitor';
 import ApplicationLogsMonitor from '@/features/monitoring/ApplicationLogsMonitor';
 import SeatActivityMonitor from '@/features/monitoring/SeatActivityMonitor';
-import { useAuthStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 
 export default function MonitoringPage() {
-  const role = useAuthStore((s) => s.user?.role);
-  const isSuperAdmin = role === 'super_admin';
+  // Seat activity is part of monitoring.view (the page itself needs it too).
+  const can = useCan();
+  const isSuperAdmin = can('monitoring.view');
 
   return (
     <div className="space-y-6">

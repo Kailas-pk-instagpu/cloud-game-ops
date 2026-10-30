@@ -2,6 +2,7 @@ import { useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { useApprovalStore, toProposal } from '@/features/approvals/approvalService';
 import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
 import { BranchEditProposal } from '@/shared/lib/mock-data';
@@ -203,7 +204,18 @@ export default function BranchesPage() {
   const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
   const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
-  const isSalesManager = currentUser?.role === 'admin';
+  // What this person may do here (configurable permissions). A role that may only *request* changes (the Sales Manager by
+  // default) goes through Super Admin approval for new cafes and for edits of a live cafe.
+  const can = useCan();
+  const canCreateDirect = can('branches.create');
+  const canRequest = can('branches.request');
+  const canEditDirect = can('branches.edit');
+  const canEnable = can('branches.enable');
+  const canDisable = can('branches.disable');
+  const canMaintain = can('branches.maintenance');
+  const canDeleteBranch = can('branches.delete');
+  const canViewSeats = can('seats.config.view');
+  const canEditSeats = can('seats.config.edit');
   const { submitNewCafe, submitEdit, resubmit } = useApprovalStore();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -255,7 +267,7 @@ export default function BranchesPage() {
   const cafeOwners = getUsersByRole('cafe_owner');
   const managers = getUsersByRole('manager');
 
-  const canCreate = userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner';
+  const canCreate = canCreateDirect || canRequest;
 
   const handleAdd = () => {
     const f = { ...emptyForm };
@@ -305,7 +317,7 @@ export default function BranchesPage() {
       return;
     }
     // Cafes created by a Sales Manager need Super Admin approval before going live.
-    const needsApproval = userRole === 'admin';
+    const needsApproval = !canCreateDirect && canRequest;
     const base = {
       name: form.name,
       address: form.address,
@@ -353,7 +365,7 @@ export default function BranchesPage() {
 
     // Sales Manager edits to a live cafe become a pending change request;
     // the cafe stays Active with the old values until approved.
-    if (isSalesManager && selectedBranch.status === 'active') {
+    if (!canEditDirect && selectedBranch.status === 'active') {
       submitEdit(selectedBranch, proposed, { id: currentUser!.id, name: currentUser!.name });
       toast.success('Edit submitted for Super Admin approval — live values are unchanged');
       setShowManageDialog(false);
@@ -366,7 +378,7 @@ export default function BranchesPage() {
     });
     syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
     toast.success(
-      isSalesManager && selectedBranch.status === 'rejected'
+      !canEditDirect && selectedBranch.status === 'rejected'
         ? `Cafe "${form.name}" updated — resubmit it for approval when ready`
         : `Branch "${form.name}" updated successfully`
     );
@@ -581,7 +593,7 @@ export default function BranchesPage() {
                     <AlertCircle className="h-3.5 w-3.5" /> Rejected by Super Admin
                   </p>
                   <p className="text-xs text-muted-foreground">{branch.approvalFeedback}</p>
-                  {userRole === 'admin' && (
+                  {canRequest && (
                     <Button size="sm" variant="outline" className="mt-2 gap-1.5" onClick={() => handleResubmit(branch)}>
                       <Send className="h-3.5 w-3.5" /> Resubmit for approval
                     </Button>
@@ -590,7 +602,7 @@ export default function BranchesPage() {
               )}
 
               {/* Rejected edit feedback */}
-              {branch.editFeedback && userRole === 'admin' && (
+              {branch.editFeedback && canRequest && (
                 <div className="mb-3 p-3 rounded-lg border border-warning/30 bg-warning/5">
                   <p className="flex items-center gap-1.5 font-medium text-warning text-xs mb-1">
                     <AlertCircle className="h-3.5 w-3.5" /> Edit request rejected
@@ -613,7 +625,7 @@ export default function BranchesPage() {
               )}
 
               <div className="flex flex-wrap gap-2">
-                {!isBlocked && (
+                {!isBlocked && canViewSeats && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
                     <LayoutGrid className="h-3.5 w-3.5" /> Seats
                   </Button>
@@ -623,10 +635,12 @@ export default function BranchesPage() {
                     <Clock className="h-3.5 w-3.5" /> Shifts
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
-                  <Edit className="h-3.5 w-3.5" /> Manage
-                </Button>
-                {(userRole === 'super_admin' || (userRole === 'admin' && !isBlocked)) && (
+                {(canEditDirect || canRequest) && (
+                  <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
+                    <Edit className="h-3.5 w-3.5" /> Manage
+                  </Button>
+                )}
+                {(canDisable || canMaintain || canDeleteBranch || (canEnable && !isBlocked)) && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(branch)}>
                     <Settings className="h-3.5 w-3.5" /> Settings
                   </Button>
@@ -721,30 +735,36 @@ export default function BranchesPage() {
                 <div>
                   <p className="font-medium text-sm">Branch Active</p>
                   <p className="text-xs text-muted-foreground">
-                    {isSalesManager ? 'Enable this branch' : 'Enable or disable this branch'}
+                    {!canDisable ? 'Enable this branch' : 'Enable or disable this branch'}
                   </p>
                 </div>
                 <Switch
                   checked={selectedBranch.status !== 'inactive'}
-                  disabled={isSalesManager && selectedBranch.status !== 'inactive'}
-                  onCheckedChange={() => { if (!isSalesManager || selectedBranch.status === 'inactive') handleToggleStatus(); }}
+                  disabled={!(selectedBranch.status === 'inactive' ? canEnable : canDisable)}
+                  onCheckedChange={() => { if (selectedBranch.status === 'inactive' ? canEnable : canDisable) handleToggleStatus(); }}
                 />
               </div>
               )}
 
-              {!isSalesManager && selectedBranch.status !== 'pending' && selectedBranch.status !== 'rejected' && (
+              {(canMaintain || canDeleteBranch) && selectedBranch.status !== 'pending' && selectedBranch.status !== 'rejected' && (
                 <>
-                  <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
-                    <Monitor className="h-4 w-4" />
-                    {selectedBranch.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
-                  </Button>
+                  {canMaintain && (
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={setMaintenance}>
+                      <Monitor className="h-4 w-4" />
+                      {selectedBranch.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
+                    </Button>
+                  )}
 
-                  <Separator />
+                  {canMaintain && canDeleteBranch && <Separator />}
 
-                  <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => setShowDeleteConfirm(true)}>
-                    <Trash2 className="h-4 w-4" /> Delete Branch
-                  </Button>
-                  <p className="text-xs text-muted-foreground">Deleting a branch is permanent and cannot be undone</p>
+                  {canDeleteBranch && (
+                    <>
+                      <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => setShowDeleteConfirm(true)}>
+                        <Trash2 className="h-4 w-4" /> Delete Branch
+                      </Button>
+                      <p className="text-xs text-muted-foreground">Deleting a branch is permanent and cannot be undone</p>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -762,7 +782,7 @@ export default function BranchesPage() {
               {selectedBranch?.name} — Seat Configuration
             </DialogTitle>
             <DialogDescription>
-              {isSalesManager
+              {!canEditSeats
                 ? 'Read-only view of this branch seats. Only the branch owner or super admin can change them.'
                 : 'Click any seat to edit its name, GPU model and status.'}
             </DialogDescription>
@@ -772,7 +792,7 @@ export default function BranchesPage() {
             const available = branchSeats.filter(s => s.status === 'available').length;
             const occupied = branchSeats.filter(s => s.status === 'occupied').length;
             const maintenance = branchSeats.filter(s => s.status === 'maintenance').length;
-            const canEdit = !isSalesManager && (userRole === 'cafe_owner' || userRole === 'super_admin' || userRole === 'manager');
+            const canEdit = canEditSeats;
 
             return (
               <div className="space-y-4">

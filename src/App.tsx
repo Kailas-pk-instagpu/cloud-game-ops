@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DashboardLayout } from "@/shared/ui/organisms/DashboardLayout";
-import { RoleGuard } from "@/shared/lib/RoleGuard";
+import { PermissionGuard } from "@/shared/lib/PermissionGuard";
 import LoginPage from "./pages/LoginPage";
 import Verify2FAPage from "./pages/Verify2FAPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -23,6 +23,7 @@ import SettlementsPage from "./pages/SettlementsPage";
 import MonitoringPage from "./pages/MonitoringPage";
 import IssuesPage from "./pages/IssuesPage";
 import BranchBillingPage from "./pages/BranchBillingPage";
+import PermissionsPage from "./pages/PermissionsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,22 +42,23 @@ const App = () => (
 
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/users" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><UsersPage /></RoleGuard>} />
-            <Route path="/approvals" element={<RoleGuard roles={['super_admin']}><ApprovalsPage /></RoleGuard>} />
-            <Route path="/gpu-nodes" element={<RoleGuard roles={['super_admin']}><GPUNodesPage /></RoleGuard>} />
-            <Route path="/branches" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner']}><BranchesPage /></RoleGuard>} />
-            <Route path="/seats" element={<RoleGuard roles={['manager']}><SeatsPage /></RoleGuard>} />
-            <Route path="/bookings" element={<RoleGuard roles={[]}><BookingsPage /></RoleGuard>} />
-            <Route path="/analytics" element={<RoleGuard roles={['super_admin', 'cafe_owner']}><AnalyticsPage /></RoleGuard>} />
+            <Route path="/users" element={<PermissionGuard permission="users.view"><UsersPage /></PermissionGuard>} />
+            <Route path="/approvals" element={<PermissionGuard permission="approvals.view"><ApprovalsPage /></PermissionGuard>} />
+            <Route path="/gpu-nodes" element={<PermissionGuard permission="gpu_nodes.view"><GPUNodesPage /></PermissionGuard>} />
+            <Route path="/branches" element={<PermissionGuard permission="branches.view"><BranchesPage /></PermissionGuard>} />
+            <Route path="/seats" element={<PermissionGuard permission="seats.operate.view"><SeatsPage /></PermissionGuard>} />
+            <Route path="/bookings" element={<PermissionGuard hidden><BookingsPage /></PermissionGuard>} />
+            <Route path="/analytics" element={<PermissionGuard permission="analytics.view"><AnalyticsPage /></PermissionGuard>} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/billing" element={<BranchBillingPage />} />
-            <Route path="/billing/usage" element={<BranchBillingPage />} />
-            <Route path="/billing/history" element={<BranchBillingPage />} />
-            <Route path="/billing/session" element={<BillingSessionPage />} />
-            <Route path="/billing/settlements" element={<RoleGuard roles={['super_admin', 'admin', 'cafe_owner', 'manager']}><SettlementsPage /></RoleGuard>} />
-            <Route path="/monitoring" element={<RoleGuard roles={['super_admin']}><MonitoringPage /></RoleGuard>} />
-            <Route path="/issues" element={<RoleGuard roles={['super_admin', 'cafe_owner']}><IssuesPage /></RoleGuard>} />
+            <Route path="/billing" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
+            <Route path="/billing/usage" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
+            <Route path="/billing/history" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
+            <Route path="/billing/session" element={<PermissionGuard permission="sessions.view"><BillingSessionPage /></PermissionGuard>} />
+            <Route path="/billing/settlements" element={<PermissionGuard permission="settlements.view"><SettlementsPage /></PermissionGuard>} />
+            <Route path="/monitoring" element={<PermissionGuard permission="monitoring.view"><MonitoringPage /></PermissionGuard>} />
+            <Route path="/permissions" element={<PermissionGuard permission="permissions.manage"><PermissionsPage /></PermissionGuard>} />
+            <Route path="/issues" element={<PermissionGuard permission="issues.view"><IssuesPage /></PermissionGuard>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

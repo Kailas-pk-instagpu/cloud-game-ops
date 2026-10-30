@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/lib/store';
-import { getRoutesForRole } from '@/shared/lib/rbac';
+import { getRoutesForUser } from '@/shared/lib/rbac';
+import { useCan } from '@/shared/lib/permissions';
 
 import {
   LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Gamepad2,
-  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck, ChevronRight,
+  Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck, ChevronRight, ShieldCheck,
 } from 'lucide-react';
 import { usePendingApprovalCount } from '@/features/approvals/approvalService';
 import {
@@ -15,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck,
+  LayoutDashboard, Users, Cpu, Building2, Monitor, BarChart3, Settings, Bell, CalendarCheck, Wallet, Receipt, Radar, UserMinus, AlertTriangle, ClipboardList, ClipboardCheck, ShieldCheck,
 };
 
 function greeting() {
@@ -30,9 +31,10 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const pendingApprovals = usePendingApprovalCount();
+  const can = useCan();
   if (!user) return null;
 
-  const routes = getRoutesForRole(user.role);
+  const routes = getRoutesForUser(user.role, can);
   const initials = (user.name || user.email || '?')
     .split(' ')
     .map((s) => s[0])

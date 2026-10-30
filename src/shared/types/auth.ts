@@ -1,3 +1,5 @@
+import type { Permission } from '../lib/permissions';
+
 export type Role = 'super_admin' | 'admin' | 'cafe_owner' | 'manager';
 export type TwoFAMethod = 'authenticator' | 'sms' | 'email' | null;
 
@@ -15,6 +17,8 @@ export interface User {
   address?: string;
   logoUrl?: string;
   createdAt: string;
+  /** What this person may do (GET /me, configurable by the super admin). Mock users have none: see permissions.ts. */
+  permissions?: Permission[];
 }
 
 export interface AuthState {

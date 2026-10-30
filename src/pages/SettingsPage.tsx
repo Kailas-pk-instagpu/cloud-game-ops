@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/shared/lib/store';
+import { useCan, type Permission } from '@/shared/lib/permissions';
 import { TwoFAMethod } from '@/shared/types/auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -190,7 +191,7 @@ const baseTabs = [
   { id: 'password', label: 'Change Password', icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'security', label: 'Security', icon: Shield },
-  { id: 'integrations', label: 'Integrations', icon: PlugZap, roles: ['super_admin'] as string[] },
+  { id: 'integrations', label: 'Integrations', icon: PlugZap, permission: 'integrations.manage' as Permission },
 ] as const;
 
 type TabId = typeof baseTabs[number]['id'];
@@ -200,7 +201,8 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [integrationTab, setIntegrationTab] = useState<'e2link' | 'horizon'>('e2link');
-  const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
+  const can = useCan();
+  const tabs = baseTabs.filter(t => !('permission' in t) || can(t.permission));
 
   // Deep-link support: e.g. /settings#integrations opens the matching tab.
   // Sub-tab deep-link: /settings#integrations/horizon selects the Horizon panel.
@@ -449,8 +451,8 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* ===== INTEGRATIONS TAB (Super Admin only) ===== */}
-            {activeTab === 'integrations' && user.role === 'super_admin' && (
+            {/* ===== INTEGRATIONS TAB (integrations.manage) ===== */}
+            {activeTab === 'integrations' && can('integrations.manage') && (
               <div className="space-y-6">
                 <div className="inline-flex p-1 rounded-lg bg-muted border border-border/60">
                   {([

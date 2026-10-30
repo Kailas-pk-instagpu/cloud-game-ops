@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import {
   useIssueReportStore,
   ISSUE_CATEGORIES,
@@ -60,6 +61,7 @@ export default function IssuesPage() {
   const [openIssueId, setOpenIssueId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
 
+  const can = useCan();
   if (!user) return null;
 
   const isOwner = user.role === 'cafe_owner';
@@ -115,7 +117,7 @@ export default function IssuesPage() {
           <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
             <AlertTriangle className="h-3 w-3 mr-1" /> {counts.open} Open
           </Badge>
-          {isOwner && (
+          {can('issues.create') && (
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-1.5">
@@ -255,7 +257,7 @@ export default function IssuesPage() {
                   </p>
                 </div>
 
-                {isStaff && (
+                {can('issues.status') && (
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Status:</span>
                     <Select
@@ -271,7 +273,7 @@ export default function IssuesPage() {
                         <SelectItem value="resolved">Resolved</SelectItem>
                       </SelectContent>
                     </Select>
-                    {user.role === 'super_admin' && (
+                    {can('issues.delete') && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -315,6 +317,7 @@ export default function IssuesPage() {
                   })}
                 </div>
 
+                {can('issues.reply') && (
                 <div className="border-t border-border pt-3 space-y-2">
                   <Textarea
                     value={replyText}
@@ -342,6 +345,7 @@ export default function IssuesPage() {
                     </Button>
                   </div>
                 </div>
+                )}
               </div>
             </>
           )}

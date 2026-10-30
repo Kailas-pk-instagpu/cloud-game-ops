@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Activity, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -30,8 +31,10 @@ export function IntegrationsStatusIndicator() {
   const meta = STATUS_META[overall];
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const isSuperAdmin = user?.role === 'super_admin';
-  const canView = isSuperAdmin || user?.role === 'admin';
+  // Seeing the status: integrations.status.view; clicking through to the settings: integrations.manage.
+  const can = useCan();
+  const isSuperAdmin = can('integrations.manage');
+  const canView = can('integrations.status.view');
   if (!canView) return null;
 
   const summaryLabel =

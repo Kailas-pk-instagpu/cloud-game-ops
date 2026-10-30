@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity } from 'lucide-react';
 import { useAuthStore } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -60,7 +61,8 @@ export function BillingStatusIndicator() {
   const meta = STATUS_META[status];
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const isSuperAdmin = user?.role === 'super_admin';
+  // Clicking through to the integration settings needs integrations.manage.
+  const isSuperAdmin = useCan()('integrations.manage');
 
   const tooltipText = isSuperAdmin
     ? `Billing system: ${meta.label} — click to open E2Link`

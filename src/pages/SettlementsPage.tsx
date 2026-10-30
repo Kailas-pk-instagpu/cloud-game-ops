@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore, useBranchStore, useSettlementStore, type Settlement } from '@/shared/lib/store';
+import { useCan } from '@/shared/lib/permissions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ function fmtDate(iso: string) {
 export default function SettlementsPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const can = useCan();
   const branches = useBranchStore((s) => s.branches);
   const settlements = useSettlementStore((s) => s.settlements);
 
@@ -110,8 +112,7 @@ export default function SettlementsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const allowedRoles = ['super_admin', 'admin', 'cafe_owner', 'manager'];
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !can('settlements.view')) {
     return (
       <Alert>
         <AlertTitle>Restricted</AlertTitle>

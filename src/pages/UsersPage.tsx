@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useBranchStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
-import { canCreateRole, canManageUser } from '@/shared/lib/rbac';
+import { canManageUser } from '@/shared/lib/rbac';
+import { useCan, type Permission } from '@/shared/lib/permissions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,13 +58,12 @@ export default function UsersPage() {
   const [formRole, setFormRole] = useState<Role | ''>('');
   const [formPhone, setFormPhone] = useState('');
 
+  const can = useCan();
   if (!currentUser) return null;
 
   const isSuperAdmin = currentUser.role === 'super_admin';
-  const childRole = canCreateRole(currentUser.role);
 
   const isCafeOwner = currentUser.role === 'cafe_owner';
-  const isSalesManager = currentUser.role === 'admin';
 
   // Cafe owners can add Floor Managers only once one of their cafes is Active.
   const ownerHasActiveCafe = useBranchStore(s => s.branches).some(
@@ -90,9 +90,16 @@ export default function UsersPage() {
     );
 
   // Roles that the current user can create
-  const creatableRoles: Role[] = isSuperAdmin
-    ? ['admin', 'cafe_owner', 'manager']
-    : childRole ? [childRole] : [];
+  // Roles the current user may create (users.create.<role>); several -> a role picker, one -> fixed.
+  const creatableRoles: Role[] = (['admin', 'cafe_owner', 'manager'] as const).filter(r => can(`users.create.${r}` as Permission));
+  const childRole = creatableRoles.length === 1 ? creatableRoles[0] : null;
+  const canPickRole = creatableRoles.length > 1;
+  const canEditUser = can('users.edit');
+  const canDisableUser = can('users.disable');
+  const canReset2FA = can('users.reset_2fa');
+  const canResetPassword = can('users.reset_password');
+  const canDeleteUser = can('users.delete');
+  const hasUserActions = canEditUser || canDisableUser || canReset2FA || canResetPassword || canDeleteUser;
 
   const resetForm = () => {
     setFormName('');
@@ -103,7 +110,7 @@ export default function UsersPage() {
 
   const openCreate = () => {
     resetForm();
-    if (!isSuperAdmin && childRole) setFormRole(childRole);
+    if (childRole) setFormRole(childRole);
     setShowCreate(true);
   };
 
@@ -336,7 +343,7 @@ export default function UsersPage() {
                 {u.is2FAEnabled && (
                   <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">2FA</Badge>
                 )}
-                {canActOn(u) && (
+                {canActOn(u) && hasUserActions && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={e => e.stopPropagation()}>
@@ -344,37 +351,41 @@ export default function UsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(u); }} className="gap-2">
-                        <Edit className="h-4 w-4" /> Edit User
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUserStatus(u.id); }} className="gap-2">
-                        {u.status === 'active' ? (
-                          <><UserX className="h-4 w-4" /> Disable User</>
-                        ) : (
-                          <><UserCheck className="h-4 w-4" /> Enable User</>
-                        )}
-                      </DropdownMenuItem>
-                      {!isSalesManager && (
-                        <>
-                          <DropdownMenuSeparator />
-                          {u.is2FAEnabled ? (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
-                              <ShieldOff className="h-4 w-4" /> Reset 2FA
-                            </DropdownMenuItem>
+                      {canEditUser && (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(u); }} className="gap-2">
+                          <Edit className="h-4 w-4" /> Edit User
+                        </DropdownMenuItem>
+                      )}
+                      {canDisableUser && (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleUserStatus(u.id); }} className="gap-2">
+                          {u.status === 'active' ? (
+                            <><UserX className="h-4 w-4" /> Disable User</>
                           ) : (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggle2FA(u.id); }} className="gap-2">
-                              <ShieldCheck className="h-4 w-4" /> Enable 2FA
-                            </DropdownMenuItem>
+                            <><UserCheck className="h-4 w-4" /> Enable User</>
                           )}
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
-                            <KeyRound className="h-4 w-4" /> Reset Password
+                        </DropdownMenuItem>
+                      )}
+                      {(canReset2FA || canResetPassword) && (canEditUser || canDisableUser) && <DropdownMenuSeparator />}
+                      {canReset2FA && (u.is2FAEnabled ? (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
+                          <ShieldOff className="h-4 w-4" /> Reset 2FA
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggle2FA(u.id); }} className="gap-2">
+                          <ShieldCheck className="h-4 w-4" /> Enable 2FA
+                        </DropdownMenuItem>
+                      ))}
+                      {canResetPassword && (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
+                          <KeyRound className="h-4 w-4" /> Reset Password
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteUser && (
+                        <>
+                          {(canEditUser || canDisableUser || canReset2FA || canResetPassword) && <DropdownMenuSeparator />}
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
+                            <Trash2 className="h-4 w-4" /> Delete User
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {!isCafeOwner && (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                              <Trash2 className="h-4 w-4" /> Delete User
-                            </DropdownMenuItem>
-                          )}
                         </>
                       )}
                     </DropdownMenuContent>
@@ -398,13 +409,13 @@ export default function UsersPage() {
           <DialogHeader>
             <DialogTitle>{currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create New User'}</DialogTitle>
             <DialogDescription>
-              {isSuperAdmin
+              {canPickRole
                 ? 'As Super Admin, you can create any role below you.'
                 : `You are creating a ${childRole ? ROLE_LABELS[childRole] : 'user'}.`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {isSuperAdmin ? (
+            {canPickRole ? (
               <div className="space-y-2">
                 <Label>Role</Label>
                 <Select value={formRole} onValueChange={v => setFormRole(v as Role)}>

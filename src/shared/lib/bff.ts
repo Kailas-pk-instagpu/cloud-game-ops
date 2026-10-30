@@ -8,6 +8,7 @@
  *   ANY  /bff/api/v1/...              -> Kong -> the backend services
  */
 import type { Role, User } from '../types/auth';
+import type { Permission } from './permissions';
 
 export type AuthMode = 'bff' | 'mock';
 
@@ -67,6 +68,8 @@ export interface MeResponse {
   name: string | null;
   role: Role | null;
   roles: Role[];
+  /** What this person may do now (configurable by the super admin). */
+  permissions: string[];
   tenant_scope: '*' | string[];
   memberships: { tenant_id: string; role: 'CAFE_OWNER' | 'BRANCH_MANAGER'; branch_id: string | null }[];
   phone: string | null;
@@ -97,6 +100,7 @@ export function toUser(me: MeResponse): User {
     phone: me.phone ?? undefined,
     address: me.address ?? undefined,
     createdAt: me.created_at,
+    permissions: (me.permissions ?? []) as Permission[],
   };
 }
 
