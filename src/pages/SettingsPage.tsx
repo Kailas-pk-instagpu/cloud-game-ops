@@ -16,7 +16,8 @@ import { cn } from '@/lib/utils';
 
 import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 import VMwareHorizonIntegrationPanel from '@/features/settings/VMwareHorizonIntegrationPanel';
-import { AUTH_MODE } from '@/shared/lib/bff';
+import { AUTH_MODE, BffError } from '@/shared/lib/bff';
+import { deleteAvatar, saveProfile, uploadAvatar } from '@/features/settings/profileService';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 const MOCK_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/GPUCloud:user@example.com?secret=${MOCK_TOTP_SECRET}&issuer=GPUCloud`;
@@ -224,10 +225,13 @@ export default function SettingsPage() {
 
   // Profile state
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [email] = useState(user?.email || ''); // read-only: the sign-in address
   const [phone, setPhone] = useState(user?.phone || '');
   const [address, setAddress] = useState(user?.address || '');
   const [logoPreview, setLogoPreview] = useState(user?.logoUrl || '');
+  // A new photo or a removal waits for "Save Changes", like the other fields.
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarRemoved, setAvatarRemoved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Password state
@@ -246,6 +250,15 @@ export default function SettingsPage() {
     const reader = new FileReader();
     reader.onload = () => setLogoPreview(reader.result as string);
     reader.readAsDataURL(file);
+    setAvatarFile(file);
+    setAvatarRemoved(false);
+    e.target.value = ''; // choosing the same file again still triggers a change
+  };
+
+  const handleRemoveAvatar = () => {
+    setLogoPreview('');
+    setAvatarFile(null);
+    setAvatarRemoved(true);
   };
 
   const handleSaveProfile = () => {
@@ -253,11 +266,32 @@ export default function SettingsPage() {
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) { toast.error('Valid email is required'); return; }
     if (!phone.trim()) { toast.error('Mobile number is required'); return; }
     setIsSaving(true);
-    setTimeout(() => {
-      updateProfile({ name: name.trim(), email: email.trim(), phone: phone.trim(), address: address.trim(), logoUrl: logoPreview || undefined });
-      toast.success('Profile updated successfully');
-      setIsSaving(false);
-    }, 500);
+    if (AUTH_MODE !== 'bff') {
+      setTimeout(() => {
+        updateProfile({ name: name.trim(), phone: phone.trim(), address: address.trim(), logoUrl: logoPreview || undefined });
+        toast.success('Profile updated successfully');
+        setIsSaving(false);
+      }, 500);
+      return;
+    }
+    void (async () => {
+      try {
+        let saved = await saveProfile({ name: name.trim(), phone: phone.trim(), address: address.trim() });
+        if (avatarFile) saved = await uploadAvatar(avatarFile);
+        else if (avatarRemoved && user.logoUrl) saved = await deleteAvatar();
+        setName(saved.name);
+        setPhone(saved.phone ?? '');
+        setAddress(saved.address ?? '');
+        setLogoPreview(saved.logoUrl ?? '');
+        setAvatarFile(null);
+        setAvatarRemoved(false);
+        toast.success('Profile updated successfully');
+      } catch (err) {
+        toast.error(err instanceof BffError || err instanceof Error ? err.message : 'Could not save your profile. Try again.');
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const handleChangePassword = () => {
@@ -334,7 +368,7 @@ export default function SettingsPage() {
                       Upload New
                     </Button>
                     {logoPreview && (
-                      <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setLogoPreview('')}>
+                      <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={handleRemoveAvatar}>
                         <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Avatar
                       </Button>
                     )}
@@ -352,7 +386,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="profile-email">Email Address *</Label>
-                    <Input id="profile-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+                    <Input id="profile-email" type="email" value={email} readOnly aria-readonly="true" className="bg-muted/50 cursor-not-allowed" aria-describedby="profile-email-hint" />
+                    <p id="profile-email-hint" className="text-xs text-muted-foreground">Your sign-in email. Ask your administrator to change it.</p>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="profile-phone">Mobile Number *</Label>
@@ -383,6 +418,23 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground mt-1">Update your account password for security</p>
                 </div>
                 <Separator />
+                {AUTH_MODE === 'bff' ? (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/40 border border-border/50">
+                      <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <p className="text-sm text-muted-foreground">
+                        For your security, passwords are changed on the secure sign-in page. Choose a new password there (at least
+                        12 characters, not one of your last 5) and you come straight back here. Cancel returns you without a change.
+                      </p>
+                    </div>
+                    <div className="flex justify-center pt-2">
+                      <Button className="gradient-primary text-primary-foreground px-10" onClick={handleChangePassword}>
+                        <Lock className="h-4 w-4 mr-2" /> Change Password
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                <>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="current-pw">Current Password</Label>
@@ -412,6 +464,8 @@ export default function SettingsPage() {
                     <Lock className="h-4 w-4 mr-2" /> Change Password
                   </Button>
                 </div>
+                </>
+                )}
               </div>
             )}
 

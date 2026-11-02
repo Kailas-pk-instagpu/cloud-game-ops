@@ -75,6 +75,8 @@ export interface MeResponse {
   phone: string | null;
   address: string | null;
   has_avatar: boolean;
+  /** Changes with every new avatar; part of the image URL so the browser never shows an old one. */
+  avatar_updated_at: string | null;
   created_by: string | null;
   created_at: string;
 }
@@ -100,6 +102,8 @@ export function toUser(me: MeResponse): User {
     phone: me.phone ?? undefined,
     address: me.address ?? undefined,
     createdAt: me.created_at,
+    // The avatar is served by the backend (same origin, session cookie); ?v= changes when a new one is uploaded.
+    logoUrl: me.has_avatar ? `${BFF}/api/v1/me/avatar?v=${encodeURIComponent(me.avatar_updated_at ?? '')}` : undefined,
     permissions: (me.permissions ?? []) as Permission[],
   };
 }
