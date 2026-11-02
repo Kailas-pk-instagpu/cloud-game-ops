@@ -290,6 +290,8 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = () => {
+    // Real backend: passwords are changed on Keycloak's own page (the store redirects there).
+    if (AUTH_MODE === 'bff') { changePassword('', ''); return; }
     if (!currentPassword) { toast.error('Enter your current password'); return; }
     if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }

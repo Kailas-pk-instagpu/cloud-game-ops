@@ -3,6 +3,16 @@ import { persist } from 'zustand/middleware';
 import { AuthState, TwoFAMethod, User } from '../types/auth';
 import { MOCK_USERS, MOCK_CREDENTIALS } from './mock-data';
 import { notifyLogin } from './loginNotification';
+import { AUTH_MODE, BffError, fetchMe, logoutUrl, redirectToLogin, toUser } from './bff';
+
+/** Set just before going to Keycloak, so the first /me afterwards can raise the "New sign-in" notification once. */
+const LOGIN_PENDING = 'igpu_login_pending';
+
+/** bff mode: go to Keycloak's login page; the BFF brings the browser back to returnTo with a session. */
+export function beginLogin(returnTo = '/dashboard') {
+  sessionStorage.setItem(LOGIN_PENDING, '1');
+  redirectToLogin(returnTo);
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -12,8 +22,31 @@ export const useAuthStore = create<AuthState>()(
       is2FAVerified: false,
       isAuthenticated: false,
       theme: 'dark',
+      sessionStatus: AUTH_MODE === 'bff' ? 'unknown' : 'ready',
+
+      loadSession: async () => {
+        if (AUTH_MODE !== 'bff' || get().sessionStatus === 'loading') return;
+        set({ sessionStatus: 'loading' });
+        try {
+          const user = toUser(await fetchMe());
+          // Keycloak did any two-factor step already; the token itself never reaches the browser.
+          set({ user, token: null, isAuthenticated: true, is2FAVerified: true, sessionStatus: 'ready' });
+          if (sessionStorage.getItem(LOGIN_PENDING)) {
+            sessionStorage.removeItem(LOGIN_PENDING);
+            notifyLogin(user);
+          }
+        } catch (e) {
+          if (!(e instanceof BffError) || e.status !== 401) console.error('Could not load the session', e);
+          set({ user: null, token: null, isAuthenticated: false, is2FAVerified: false, sessionStatus: 'ready' });
+        }
+      },
 
       login: (email: string, password: string) => {
+        if (AUTH_MODE === 'bff') {
+          // Passwords are typed on Keycloak's page, never here.
+          beginLogin();
+          return { success: true, requires2FA: false };
+        }
         const cred = MOCK_CREDENTIALS[email];
         if (!cred || cred.password !== password) {
           return { success: false, requires2FA: false, error: 'Invalid email or password' };
@@ -46,8 +79,12 @@ export const useAuthStore = create<AuthState>()(
         return false;
       },
 
-      logout: () => {
+      logout: async () => {
         set({ user: null, token: null, is2FAVerified: false, isAuthenticated: false });
+        if (AUTH_MODE === 'bff') {
+          // Ends the BFF session and the Keycloak session, then Keycloak sends the browser back to /login.
+          window.location.assign(await logoutUrl());
+        }
       },
 
       toggleTheme: () => {
@@ -80,6 +117,11 @@ export const useAuthStore = create<AuthState>()(
       changePassword: (oldPassword: string, newPassword: string) => {
         const user = get().user;
         if (!user) return { success: false, error: 'Not logged in' };
+        if (AUTH_MODE === 'bff') {
+          // Keycloak's own change-password step; the old and new passwords are typed there.
+          redirectToLogin('/settings', 'password');
+          return { success: true };
+        }
         const cred = MOCK_CREDENTIALS[user.email];
         if (!cred || cred.password !== oldPassword) {
           return { success: false, error: 'Current password is incorrect' };
@@ -91,13 +133,14 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'gpu-cloud-auth',
-      partialize: (state) => ({
+      // bff mode: only the theme is remembered; who is signed in always comes from the backend (the session cookie).
+      partialize: (state) => (AUTH_MODE === 'bff' ? { theme: state.theme } : {
         user: state.user,
         token: state.token,
         is2FAVerified: state.is2FAVerified,
         isAuthenticated: state.isAuthenticated,
         theme: state.theme,
-      } as AuthState),
+      }) as AuthState,
     }
   )
 );

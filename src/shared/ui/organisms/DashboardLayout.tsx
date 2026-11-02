@@ -1,4 +1,6 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/shared/lib/store';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
@@ -27,11 +29,25 @@ function SidebarOverlay() {
 }
 
 export function DashboardLayout() {
-  const { isAuthenticated, user, is2FAVerified } = useAuthStore();
+  const { isAuthenticated, user, is2FAVerified, sessionStatus, loadSession } = useAuthStore();
+  const location = useLocation();
 
-  if (!user) return <Navigate to="/login" replace />;
+  // bff mode: ask the backend who is signed in (session cookie) before deciding.
+  useEffect(() => {
+    if (sessionStatus === 'unknown') void loadSession();
+  }, [sessionStatus, loadSession]);
+
+  if (sessionStatus !== 'ready') {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+  const toLogin = <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  if (!user) return toLogin;
   if (user.is2FAEnabled && !is2FAVerified) return <Navigate to="/verify-2fa" replace />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return toLogin;
 
   return (
     <SidebarProvider>

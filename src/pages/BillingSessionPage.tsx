@@ -26,7 +26,7 @@ export default function BillingSessionPage() {
   // Ending and settling a session is a permission (cafe owners and Floor Managers by default); admins/super-admins see settlements
   const can = useCan();
   const canManage = can('sessions.end');
-  const isSettlementViewer = user?.role === 'super_admin' || user?.role === 'admin';
+  const isHistoryViewer = user?.role === 'super_admin' || user?.role === 'admin';
 
   const visibleBranches = useMemo(() => {
     if (!user) return [];

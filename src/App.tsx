@@ -54,7 +54,6 @@ const App = () => (
             <Route path="/billing/usage" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
             <Route path="/billing/history" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
             <Route path="/billing/session" element={<PermissionGuard permission="sessions.view"><BillingSessionPage /></PermissionGuard>} />
-            <Route path="/billing/settlements" element={<PermissionGuard permission="settlements.view"><SettlementsPage /></PermissionGuard>} />
             <Route path="/monitoring" element={<PermissionGuard permission="monitoring.view"><MonitoringPage /></PermissionGuard>} />
             <Route path="/permissions" element={<PermissionGuard permission="permissions.manage"><PermissionsPage /></PermissionGuard>} />
             <Route path="/issues" element={<PermissionGuard permission="issues.view"><IssuesPage /></PermissionGuard>} />
