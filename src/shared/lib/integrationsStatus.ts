@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Server, type LucideIcon } from 'lucide-react';
+import { Server, type LucideIcon } from 'lucide-react';
 
 /**
  * Generic integration health status used across the app.
@@ -10,7 +10,7 @@ export type IntegrationStatus = 'operational' | 'delay' | 'issue';
 
 export interface IntegrationDefinition {
   id: string;
-  /** Short display name (e.g. "E2Link Billing"). */
+  /** Short display name (e.g. "VMware Horizon"). */
   name: string;
   /** Optional one-liner used in tooltips / popovers. */
   description: string;
@@ -23,14 +23,6 @@ export interface IntegrationDefinition {
 }
 
 export const INTEGRATIONS: IntegrationDefinition[] = [
-  {
-    id: 'e2link',
-    name: 'E2Link Billing',
-    description: 'Session billing & settlement API',
-    icon: CreditCard,
-    settingsHash: 'integrations/e2link',
-    weight: 1,
-  },
   {
     id: 'horizon',
     name: 'VMware Horizon',

@@ -41,7 +41,6 @@ type LogSource =
   | 'billing'
   | 'sessions'
   | 'gpu-node'
-  | 'e2link'
   | 'wallet'
   | 'api'
   | 'database'
@@ -67,13 +66,11 @@ const LEVEL_META: Record<LogLevel, { label: string; icon: typeof Info; cls: stri
   success: { label: 'Success', icon: CheckCircle2, cls: 'bg-success/10 text-success border-success/30', dot: 'bg-success' },
 };
 
-const SOURCES: LogSource[] = ['auth', 'billing', 'sessions', 'gpu-node', 'e2link', 'wallet', 'api', 'database', 'webhook', 'scheduler'];
+const SOURCES: LogSource[] = ['auth', 'billing', 'sessions', 'gpu-node', 'wallet', 'api', 'database', 'webhook', 'scheduler'];
 
 const SAMPLE_TEMPLATES: Array<{ level: LogLevel; source: LogSource; message: string; context?: AppLog['context']; trace?: string }> = [
   { level: 'info', source: 'auth', message: 'User authenticated successfully', context: { userId: 'usr_8821', method: 'password' } },
   { level: 'success', source: 'billing', message: 'Wallet locked for session', context: { sessionId: 'SES-40012', amount: 5.0 } },
-  { level: 'warn', source: 'e2link', message: 'E2Link sync delayed (>3s)', context: { endpoint: '/v2/sync', latencyMs: 3210 } },
-  { level: 'error', source: 'webhook', message: 'Webhook signature mismatch', context: { provider: 'e2link', eventId: 'evt_9912' }, trace: 'SignatureError: HMAC-SHA256 mismatch\n  at verifySignature (webhooks.ts:42)\n  at handler (webhooks.ts:18)' },
   { level: 'debug', source: 'sessions', message: 'Session tick processed', context: { sessionId: 'SES-40015', durationMin: 27 } },
   { level: 'info', source: 'gpu-node', message: 'GPU node heartbeat received', context: { nodeId: 'gpu-kl-04', loadPct: 73 } },
   { level: 'warn', source: 'wallet', message: 'Low wallet balance detected', context: { userId: 'usr_5510', balance: 12.5 } },
