@@ -14,7 +14,7 @@ Cloud GPU is built around a strict hierarchical RBAC model and adaptive UX — e
 | Role          | Primary surface                                                                 |
 | ------------- | ------------------------------------------------------------------------------- |
 | Super Admin   | Network-wide telemetry, seat activity, GPU nodes, integrations, deletion review |
-| Admin         | Portfolio oversight, owner/manager management, settlements, analytics           |
+| Admin         | Portfolio oversight, owner/manager management, payment history, analytics      |
 | Cafe Owner    | Branch P&L, active sessions, billing health, simplified KPIs                    |
 | Manager       | Tablet-first POS: live seats, bookings, shift handover, issue reporting         |
 
@@ -25,7 +25,7 @@ Users can only manage their direct subordinates and only see data scoped to thei
 - **Role-specific dashboards** with live KPI cards (active users, revenue, sessions, GPU availability) that animate on value changes.
 - **Seat management** — interactive seat grid with GPU metadata, real-time status, and operational controls.
 - **Pre-booking** — conflict-aware seat scheduling synchronized with the live seat grid.
-- **Billing & usage** — usage-based billing, role-scoped financial responsibility, active session tracking, and settlements.
+- **Billing & usage** — usage-based billing, role-scoped financial responsibility, active session tracking, and payment history.
 - **Monitoring** — live sessions, failed transactions, application logs, and (for super admins) seat activity inspector.
 - **Analytics** — dedicated BI views for P&L, growth rate, branch efficiency, and user retention (Recharts).
 - **Shift handover notes** — managers leave structured notes (summary, pending tasks, incidents, cash, priority) for the next shift, embedded in the shift-timing pill.
