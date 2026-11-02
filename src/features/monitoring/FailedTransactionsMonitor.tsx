@@ -72,7 +72,7 @@ const seedFailed = (): FailedTx[] => {
     const branch = MOCK_BRANCHES[i % MOCK_BRANCHES.length];
     const type = types[i % types.length];
     const messages: Record<FailureReason, string> = {
-      gateway_timeout: 'E2Link gateway did not respond within 8s.',
+      gateway_timeout: 'Billing gateway did not respond within 8s.',
       insufficient_balance: 'Wallet balance below required lock amount.',
       signature_mismatch: 'HMAC signature mismatch on confirmation payload.',
       rate_limited: 'Received HTTP 429 from billing gateway.',

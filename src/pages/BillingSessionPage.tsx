@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import ActiveSessionDashboard from '@/features/billing/ActiveSessionDashboard';
 import CafeOwnerActiveSessionsOverview from '@/features/billing/CafeOwnerActiveSessionsOverview';
 import { useAuthStore, useBranchStore, useSettlementStore } from '@/shared/lib/store';
 import { useCan } from '@/shared/lib/permissions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, Receipt, ArrowLeft } from 'lucide-react';
+import { Eye, Building2, Banknote, Lock, User as UserIcon, Wallet, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 import { toast } from '@/hooks/use-toast';
 
-import SettlementsPage from './SettlementsPage';
 
 export default function BillingSessionPage() {
   const { user } = useAuthStore();
@@ -100,9 +99,9 @@ export default function BillingSessionPage() {
     void settlement;
   };
 
-  // Super admins and admins are restricted to viewing/downloading settlements only.
-  if (isSettlementViewer) {
-    return <SettlementsPage />;
+  // Preserve the view-only billing destination for oversight roles.
+  if (isHistoryViewer) {
+    return <Navigate to="/billing/history" replace />;
   }
 
   // Cafe owners see an overview of all active sessions across their branches.
@@ -131,9 +130,6 @@ export default function BillingSessionPage() {
               <ArrowLeft className="h-4 w-4" /> Back to sessions
             </Button>
           ) : <span />}
-          <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
-            <Receipt className="h-4 w-4" /> View Settlements
-          </Button>
         </div>
       )}
 

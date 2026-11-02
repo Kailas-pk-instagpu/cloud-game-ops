@@ -17,7 +17,6 @@ vi.mock('@/features/settings/profileService', () => ({
   uploadAvatar: vi.fn(),
   deleteAvatar: vi.fn(),
 }));
-vi.mock('@/features/settings/E2LinkIntegrationPanel', () => ({ default: () => null }));
 vi.mock('@/features/settings/VMwareHorizonIntegrationPanel', () => ({ default: () => null }));
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); });

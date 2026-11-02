@@ -19,7 +19,6 @@ import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BillingSessionPage from "./pages/BillingSessionPage";
-import SettlementsPage from "./pages/SettlementsPage";
 import MonitoringPage from "./pages/MonitoringPage";
 import IssuesPage from "./pages/IssuesPage";
 import BranchBillingPage from "./pages/BranchBillingPage";

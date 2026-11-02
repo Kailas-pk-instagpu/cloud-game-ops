@@ -14,7 +14,6 @@ import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, L
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 import VMwareHorizonIntegrationPanel from '@/features/settings/VMwareHorizonIntegrationPanel';
 import { AUTH_MODE, BffError } from '@/shared/lib/bff';
 import { deleteAvatar, saveProfile, uploadAvatar } from '@/features/settings/profileService';
@@ -201,7 +200,6 @@ export default function SettingsPage() {
   const { user, updateProfile, changePassword } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
-  const [integrationTab, setIntegrationTab] = useState<'e2link' | 'horizon'>('e2link');
   const can = useCan();
   const tabs = baseTabs.filter(t => !('permission' in t) || can(t.permission));
 
@@ -211,11 +209,8 @@ export default function SettingsPage() {
     const applyHash = () => {
       const raw = window.location.hash.replace('#', '');
       if (!raw) return;
-      const [tab, sub] = raw.split('/') as [TabId, string | undefined];
+      const [tab] = raw.split('/') as [TabId];
       if (tab && tabs.some(t => t.id === tab)) setActiveTab(tab);
-      if (tab === 'integrations' && (sub === 'e2link' || sub === 'horizon')) {
-        setIntegrationTab(sub);
-      }
     };
     applyHash();
     window.addEventListener('hashchange', applyHash);
@@ -295,8 +290,6 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = () => {
-    // Real backend: passwords are changed on Keycloak's own page (the store redirects there).
-    if (AUTH_MODE === 'bff') { changePassword('', ''); return; }
     if (!currentPassword) { toast.error('Enter your current password'); return; }
     if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
@@ -434,37 +427,37 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ) : (
-                <>
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="current-pw">Current Password</Label>
-                    <div className="relative">
-                      <Input id="current-pw" type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-                      <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowCurrentPw(!showCurrentPw)}>
-                        {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                  <>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="current-pw">Current Password</Label>
+                        <div className="relative">
+                          <Input id="current-pw" type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+                          <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowCurrentPw(!showCurrentPw)}>
+                            {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="new-pw">New Password</Label>
+                        <div className="relative">
+                          <Input id="new-pw" type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 6 characters" />
+                          <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowNewPw(!showNewPw)}>
+                            {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="confirm-pw">Confirm New Password</Label>
+                        <Input id="confirm-pw" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="new-pw">New Password</Label>
-                    <div className="relative">
-                      <Input id="new-pw" type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 6 characters" />
-                      <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowNewPw(!showNewPw)}>
-                        {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                    <div className="flex justify-center pt-2">
+                      <Button className="gradient-primary text-primary-foreground px-10" onClick={handleChangePassword} disabled={!currentPassword || !newPassword || !confirmPassword}>
+                        <Lock className="h-4 w-4 mr-2" /> Change Password
+                      </Button>
                     </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="confirm-pw">Confirm New Password</Label>
-                    <Input id="confirm-pw" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
-                  </div>
-                </div>
-                <div className="flex justify-center pt-2">
-                  <Button className="gradient-primary text-primary-foreground px-10" onClick={handleChangePassword} disabled={!currentPassword || !newPassword || !confirmPassword}>
-                    <Lock className="h-4 w-4 mr-2" /> Change Password
-                  </Button>
-                </div>
-                </>
+                  </>
                 )}
               </div>
             )}
@@ -508,26 +501,7 @@ export default function SettingsPage() {
             {/* ===== INTEGRATIONS TAB (integrations.manage) ===== */}
             {activeTab === 'integrations' && can('integrations.manage') && (
               <div className="space-y-6">
-                <div className="inline-flex p-1 rounded-lg bg-muted border border-border/60">
-                  {([
-                    { id: 'e2link' as const, label: 'E2Link' },
-                    { id: 'horizon' as const, label: 'VMware Horizon' },
-                  ]).map(({ id, label }) => (
-                    <button
-                      key={id}
-                      onClick={() => setIntegrationTab(id)}
-                      className={cn(
-                        'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
-                        integrationTab === id
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {integrationTab === 'e2link' ? <E2LinkIntegrationPanel /> : <VMwareHorizonIntegrationPanel />}
+                <VMwareHorizonIntegrationPanel />
               </div>
             )}
 
