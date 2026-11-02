@@ -2,12 +2,11 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Activity, Building2, Monitor, Clock, User as UserIcon, Wallet,
-  ChevronRight, Receipt, Search, AlertTriangle,
+  ChevronRight, Search, AlertTriangle,
 } from 'lucide-react';
 import { useAuthStore, useBranchStore, useSeatStore } from '@/shared/lib/store';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
@@ -122,9 +121,6 @@ export default function CafeOwnerActiveSessionsOverview() {
               : 'Live overview of all running sessions across your branches.'}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/billing/settlements')}>
-          <Receipt className="h-4 w-4" /> View Settlements
-        </Button>
       </div>
 
       {/* KPI strip */}
