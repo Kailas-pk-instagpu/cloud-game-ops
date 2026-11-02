@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 
 import VMwareHorizonIntegrationPanel from '@/features/settings/VMwareHorizonIntegrationPanel';
 import { AUTH_MODE, BffError } from '@/shared/lib/bff';
-import { deleteAvatar, saveProfile, uploadAvatar } from '@/features/settings/profileService';
+import { deleteAvatar, saveProfile, shrinkImage, uploadAvatar } from '@/features/settings/profileService';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 const MOCK_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/GPUCloud:user@example.com?secret=${MOCK_TOTP_SECRET}&issuer=GPUCloud`;
@@ -241,7 +241,8 @@ export default function SettingsPage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error('Logo must be under 2MB'); return; }
+    // Big phone photos are fine: saving shrinks them to fit the server's 256 KB limit. This cap only guards the browser's memory.
+    if (file.size > 20 * 1024 * 1024) { toast.error('Photo must be under 20 MB'); e.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => setLogoPreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -262,11 +263,30 @@ export default function SettingsPage() {
     if (!phone.trim()) { toast.error('Mobile number is required'); return; }
     setIsSaving(true);
     if (AUTH_MODE !== 'bff') {
-      setTimeout(() => {
-        updateProfile({ name: name.trim(), phone: phone.trim(), address: address.trim(), logoUrl: logoPreview || undefined });
-        toast.success('Profile updated successfully');
-        setIsSaving(false);
-      }, 500);
+      void (async () => {
+        try {
+          // Mock mode keeps the photo in browser storage, so store the shrunk copy, not the original.
+          let logoUrl = logoPreview || undefined;
+          if (avatarFile) {
+            const small = await shrinkImage(avatarFile);
+            logoUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsDataURL(small);
+            });
+            setLogoPreview(logoUrl);
+            setAvatarFile(null);
+          }
+          updateProfile({ name: name.trim(), phone: phone.trim(), address: address.trim(), logoUrl });
+          setAvatarRemoved(false);
+          toast.success('Profile updated successfully');
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'Could not save your profile. Try again.');
+        } finally {
+          setIsSaving(false);
+        }
+      })();
       return;
     }
     void (async () => {
