@@ -11,7 +11,6 @@ const state = vi.hoisted(() => ({
 vi.mock('@/shared/lib/store', () => ({
   useAuthStore: () => ({ user: state.user, updateProfile: state.updateProfile, changePassword: vi.fn() }),
 }));
-vi.mock('@/features/settings/E2LinkIntegrationPanel', () => ({ default: () => null }));
 vi.mock('@/features/settings/VMwareHorizonIntegrationPanel', () => ({ default: () => null }));
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); });

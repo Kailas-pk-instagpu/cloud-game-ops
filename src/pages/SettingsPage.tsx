@@ -13,7 +13,6 @@ import { Shield, Smartphone, Mail, KeyRound, Check, Copy, AlertTriangle, User, L
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import E2LinkIntegrationPanel from '@/features/settings/E2LinkIntegrationPanel';
 import VMwareHorizonIntegrationPanel from '@/features/settings/VMwareHorizonIntegrationPanel';
 
 const MOCK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -198,7 +197,6 @@ export default function SettingsPage() {
   const { user, updateProfile, changePassword } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
-  const [integrationTab, setIntegrationTab] = useState<'e2link' | 'horizon'>('e2link');
   const tabs = baseTabs.filter(t => !('roles' in t) || (t.roles as string[]).includes(user?.role ?? ''));
 
   // Deep-link support: e.g. /settings#integrations opens the matching tab.
@@ -207,11 +205,8 @@ export default function SettingsPage() {
     const applyHash = () => {
       const raw = window.location.hash.replace('#', '');
       if (!raw) return;
-      const [tab, sub] = raw.split('/') as [TabId, string | undefined];
+      const [tab] = raw.split('/') as [TabId];
       if (tab && tabs.some(t => t.id === tab)) setActiveTab(tab);
-      if (tab === 'integrations' && (sub === 'e2link' || sub === 'horizon')) {
-        setIntegrationTab(sub);
-      }
     };
     applyHash();
     window.addEventListener('hashchange', applyHash);
@@ -449,26 +444,7 @@ export default function SettingsPage() {
             {/* ===== INTEGRATIONS TAB (Super Admin only) ===== */}
             {activeTab === 'integrations' && user.role === 'super_admin' && (
               <div className="space-y-6">
-                <div className="inline-flex p-1 rounded-lg bg-muted border border-border/60">
-                  {([
-                    { id: 'e2link' as const, label: 'E2Link' },
-                    { id: 'horizon' as const, label: 'VMware Horizon' },
-                  ]).map(({ id, label }) => (
-                    <button
-                      key={id}
-                      onClick={() => setIntegrationTab(id)}
-                      className={cn(
-                        'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
-                        integrationTab === id
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {integrationTab === 'e2link' ? <E2LinkIntegrationPanel /> : <VMwareHorizonIntegrationPanel />}
+                <VMwareHorizonIntegrationPanel />
               </div>
             )}
 
