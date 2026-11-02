@@ -1,5 +1,9 @@
 # Roadmap — Cafe onboarding & approvals
 
+## E2Links removal
+- [ ] Remove E2Links settings, dedicated components, status registration, and related monitoring entries; preserve unrelated billing and VMware Horizon.
+- [ ] Verify settings and billing remain usable and run affected tests.
+
 - [x] Rename Manager → Floor Manager label everywhere (Admin → Sales Manager already done)
 - [x] Mock approval service layer (pending new-cafe + edit requests, approve/reject/resubmit)
 - [x] Branch model: pending/rejected status, pendingEdit, rejectionFeedback
