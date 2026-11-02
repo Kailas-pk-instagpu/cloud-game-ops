@@ -4,6 +4,10 @@
 - [x] Remove E2Links settings, dedicated components, status registration, and related monitoring entries; preserve unrelated billing and VMware Horizon.
 - [x] Verify settings and billing remain usable and run affected tests.
 
+## Settlements removal
+- [ ] Remove the Settlements page, route, and links; retain Billing Payment History and session functionality.
+- [ ] Verify billing history and active session navigation.
+
 - [x] Rename Manager → Floor Manager label everywhere (Admin → Sales Manager already done)
 - [x] Mock approval service layer (pending new-cafe + edit requests, approve/reject/resubmit)
 - [x] Branch model: pending/rejected status, pendingEdit, rejectionFeedback
