@@ -10,10 +10,18 @@ const FIELDS: { key: keyof BranchEditProposal; label: string }[] = [
   { key: 'managerId', label: 'Floor Manager' },
 ];
 
+/** What the backend stores for a branch (and so what an edit request can change). */
+const BACKEND_FIELDS: { key: keyof BranchEditProposal; label: string }[] = [
+  { key: 'name', label: 'Branch Name' },
+  { key: 'address', label: 'Address' },
+  { key: 'dailySpendLimitMinor', label: 'Daily spend limit' },
+];
+
 function display(p: BranchEditProposal, key: keyof BranchEditProposal): string {
   const v = p[key];
   if (key === 'totalSeats') return String(v ?? '—');
   if (key === 'name' || key === 'address') return (v as string) || '—';
+  if (key === 'dailySpendLimitMinor') return v == null ? 'No limit' : `RM ${((v as number) / 100).toFixed(2)}`;
   return v ? MOCK_USERS.find(u => u.id === v)?.name ?? '—' : 'Unassigned';
 }
 
@@ -21,9 +29,12 @@ function display(p: BranchEditProposal, key: keyof BranchEditProposal): string {
 export function PendingChangesCompare({
   current,
   proposed,
+  backend = false,
 }: {
   current: BranchEditProposal;
   proposed: BranchEditProposal;
+  /** Compare the fields the backend stores (name, address, spend limit) instead of the demo fields. */
+  backend?: boolean;
 }) {
   return (
     <div className="rounded-lg border overflow-hidden">
@@ -32,7 +43,7 @@ export function PendingChangesCompare({
         <div className="p-2.5 border-l">Current</div>
         <div className="p-2.5 border-l">Proposed</div>
       </div>
-      {FIELDS.map(f => {
+      {(backend ? BACKEND_FIELDS : FIELDS).map(f => {
         const cur = display(current, f.key);
         const next = display(proposed, f.key);
         const changed = cur !== next;

@@ -23,9 +23,8 @@ export const PERMISSIONS = {
   'users.delete': { feature: 'Users', description: 'Delete a user', locked: false },
 
   'branches.view': { feature: 'Branches', description: 'List and open branches in scope', locked: false },
-  'branches.create': { feature: 'Branches', description: 'Add a branch, live at once', locked: false },
   'branches.edit': { feature: 'Branches', description: 'Edit a branch, applied at once', locked: false },
-  'branches.request': { feature: 'Branches', description: 'Add or edit a branch through approval; resubmit', locked: false },
+  'branches.request': { feature: 'Branches', description: 'Add a branch (always through Super Admin approval), propose an edit, resubmit', locked: false },
   'branches.enable': { feature: 'Branches', description: 'Turn an inactive branch on', locked: false },
   'branches.disable': { feature: 'Branches', description: 'Turn a branch off', locked: false },
   'branches.maintenance': { feature: 'Branches', description: 'Start or end maintenance mode', locked: false },
@@ -75,7 +74,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
     'dashboard.view',
     'users.view', 'users.create.admin', 'users.create.cafe_owner', 'users.create.manager', 'users.edit', 'users.disable',
     'users.reset_2fa', 'users.reset_password', 'users.delete',
-    'branches.view', 'branches.create', 'branches.edit', 'branches.enable', 'branches.disable', 'branches.maintenance', 'branches.delete',
+    'branches.view', 'branches.request', 'branches.edit', 'branches.enable', 'branches.disable', 'branches.maintenance', 'branches.delete',
     'seats.config.view', 'seats.config.edit',
     'approvals.view', 'approvals.decide',
     'billing.view', 'billing.invoices.download', 'sessions.view', 'settlements.view',
@@ -93,7 +92,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
   cafe_owner: [
     'dashboard.view',
     'users.view', 'users.create.manager', 'users.edit', 'users.disable', 'users.reset_2fa', 'users.reset_password',
-    'branches.view', 'branches.create', 'branches.edit',
+    'branches.view', 'branches.request', 'branches.edit',
     'seats.config.view', 'seats.config.edit',
     'sessions.end',
     'billing.view', 'billing.pay', 'billing.invoices.download', 'sessions.view', 'settlements.view',

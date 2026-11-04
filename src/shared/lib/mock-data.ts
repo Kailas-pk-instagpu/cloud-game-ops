@@ -31,6 +31,8 @@ export interface BranchEditProposal {
   adminId?: string;
   cafeOwnerId?: string;
   managerId?: string;
+  /** Backend only: daily spend limit in sen (null = none). */
+  dailySpendLimitMinor?: number | null;
 }
 
 export interface Branch {
@@ -53,6 +55,12 @@ export interface Branch {
   pendingEdit?: BranchEditProposal;
   createdById?: string;
   createdAt?: string;
+  /** Backend only: row version for edits (optimistic lock). */
+  version?: number;
+  /** Backend only: the cafe (owner company) name. */
+  tenantName?: string;
+  /** Backend only: daily spend limit in sen (null = none). */
+  dailySpendLimitMinor?: number | null;
 }
 
 export interface Seat {

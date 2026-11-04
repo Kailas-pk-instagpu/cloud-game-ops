@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApprovalStore, ApprovalRequest } from '@/features/approvals/approvalService';
+import { useBackendApprovals } from '@/features/approvals/approvalsApi';
+import { useBackendBranches } from '@/features/branches/branchesApi';
+import { AUTH_MODE } from '@/shared/lib/bff';
 import { useBranchStore } from '@/shared/lib/store';
 import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,15 +20,26 @@ import {
 import { ClipboardCheck, Building2, User, CalendarDays, Check, X, GitCompareArrows } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** Real backend unless VITE_AUTH_MODE=mock (features/approvals/approvalsApi.ts). */
+const BACKEND = AUTH_MODE === 'bff';
+
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function ApprovalsPage() {
-  const { requests, approve, reject } = useApprovalStore();
-  const branches = useBranchStore(s => s.branches);
+  const mockStore = useApprovalStore();
+  const backend = useBackendApprovals();
+  const requests = BACKEND ? backend.requests : mockStore.requests;
+  const mockBranches = useBranchStore(s => s.branches);
+  const branches = BACKEND ? [] : mockBranches;
   const pending = requests.filter(r => r.status === 'pending');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (BACKEND) void backend.load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [reviewing, setReviewing] = useState<ApprovalRequest | null>(null);
   const [confirmApprove, setConfirmApprove] = useState(false);
@@ -40,9 +54,29 @@ export default function ApprovalsPage() {
     setFeedback('');
   };
 
-  const handleApprove = () => {
+  /** Backend: run the decision, refresh the queue (and branches, whose status changes); false when it failed. */
+  const decide = async (action: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await action();
+      void useBackendBranches.getState().load();
+      return true;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+      void backend.load();
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleApprove = async () => {
     if (!reviewing) return;
-    approve(reviewing.id);
+    if (BACKEND) {
+      if (!(await decide(() => backend.approve(reviewing.id)))) return;
+    } else {
+      mockStore.approve(reviewing.id);
+    }
     toast.success(
       reviewing.type === 'new_cafe'
         ? `Cafe "${branchName(reviewing)}" approved and is now Active`
@@ -52,9 +86,14 @@ export default function ApprovalsPage() {
     setReviewing(null);
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!reviewing || !feedback.trim()) return;
-    reject(reviewing.id, feedback);
+    if (BACKEND) {
+      if (feedback.trim().length < 5) { toast.error('Give the Sales Manager at least 5 characters of feedback'); return; }
+      if (!(await decide(() => backend.reject(reviewing.id, feedback.trim())))) return;
+    } else {
+      mockStore.reject(reviewing.id, feedback);
+    }
     toast.success(`Request rejected — feedback sent to ${reviewing.createdByName}`);
     setShowReject(false);
     setReviewing(null);
@@ -104,7 +143,7 @@ export default function ApprovalsPage() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
-                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> Owner: {r.ownerName}</span>
+                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> {BACKEND ? 'Cafe' : 'Owner'}: {r.ownerName}</span>
                       <span className="hidden sm:inline">·</span>
                       <span>By {r.createdByName}</span>
                       <span className="hidden sm:inline">·</span>
@@ -137,21 +176,30 @@ export default function ApprovalsPage() {
           {reviewing?.type === 'new_cafe' && (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
-                <span className="text-muted-foreground">Cafe Owner</span>
+                <span className="text-muted-foreground">{BACKEND ? 'Cafe' : 'Cafe Owner'}</span>
                 <span className="font-medium text-right">{reviewing.ownerName}</span>
               </div>
               <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground">Address</span>
                 <span className="font-medium text-right">
-                  {branches.find(b => b.id === reviewing.branchId)?.address ?? '—'}
+                  {(BACKEND ? reviewing.current?.address : branches.find(b => b.id === reviewing.branchId)?.address) || '—'}
                 </span>
               </div>
+              {BACKEND ? (
+                <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground">Daily spend limit</span>
+                  <span className="font-medium text-right">
+                    {reviewing.current?.dailySpendLimitMinor == null ? 'No limit' : `RM ${(reviewing.current.dailySpendLimitMinor / 100).toFixed(2)}`}
+                  </span>
+                </div>
+              ) : (
               <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground">Seats</span>
                 <span className="font-medium text-right">
                   {branches.find(b => b.id === reviewing.branchId)?.totalSeats ?? '—'}
                 </span>
               </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Approving makes this cafe Active and visible to the Cafe Owner. Rejecting keeps it Disabled and sends your feedback to the Sales Manager.
               </p>
@@ -160,7 +208,7 @@ export default function ApprovalsPage() {
 
           {reviewing?.type === 'edit_cafe' && reviewing.proposed && reviewing.current && (
             <div className="space-y-3">
-              <PendingChangesCompare current={reviewing.current} proposed={reviewing.proposed} />
+              <PendingChangesCompare current={reviewing.current} proposed={reviewing.proposed} backend={BACKEND} />
               <p className="text-xs text-muted-foreground">
                 Approving replaces the live values with the proposed ones. Rejecting keeps the current values live.
               </p>
@@ -171,11 +219,12 @@ export default function ApprovalsPage() {
             <Button
               variant="outline"
               className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
+              disabled={busy}
               onClick={() => setShowReject(true)}
             >
               <X className="h-4 w-4" /> Reject
             </Button>
-            <Button className="gradient-primary text-primary-foreground gap-1.5" onClick={() => setConfirmApprove(true)}>
+            <Button className="gradient-primary text-primary-foreground gap-1.5" disabled={busy} onClick={() => setConfirmApprove(true)}>
               <Check className="h-4 w-4" /> Approve
             </Button>
           </DialogFooter>
@@ -195,7 +244,7 @@ export default function ApprovalsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove}>Approve</AlertDialogAction>
+            <AlertDialogAction disabled={busy} onClick={() => void handleApprove()}>Approve</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -221,7 +270,7 @@ export default function ApprovalsPage() {
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => { setShowReject(false); setFeedback(''); }}>Cancel</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={!feedback.trim()}>
+            <Button variant="destructive" onClick={() => void handleReject()} disabled={busy || !feedback.trim()}>
               Reject with feedback
             </Button>
           </DialogFooter>

@@ -1,5 +1,13 @@
 # Roadmap — Cafe onboarding & approvals
 
+## Branches & Approvals on the real backend
+- [x] Branches page: cafes and branches from cafe-management-service (add, add through approval, edit, edit request, resubmit, enable/disable, maintenance, close)
+- [x] Approvals page and sidebar badge: real queue, compare, approve, reject with feedback
+- [x] Delete Branch confirmation dialog (it never opened before)
+- [x] Every new branch goes through Super Admin approval (no live create); the owner sees the pending branches they asked for
+- [ ] Team assignment (owner / Floor Manager) once user management is in the backend
+- [ ] Seat configuration once the seats API exists
+
 ## E2Links removal
 - [x] Remove E2Links settings, dedicated components, status registration, and related monitoring entries; preserve unrelated billing and VMware Horizon.
 - [x] Verify settings and billing remain usable and run affected tests.

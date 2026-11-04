@@ -1,6 +1,10 @@
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { Branch, BranchEditProposal, MOCK_USERS } from '@/shared/lib/mock-data';
 import { useBranchStore } from '@/shared/lib/store';
+import { AUTH_MODE } from '@/shared/lib/bff';
+import { useCan } from '@/shared/lib/permissions';
+import { useBackendApprovals } from './approvalsApi';
 
 /**
  * Mock approval service layer for cafe onboarding.
@@ -48,6 +52,7 @@ export function toProposal(b: Branch): BranchEditProposal {
     adminId: b.adminId,
     cafeOwnerId: b.cafeOwnerId,
     managerId: b.managerId,
+    dailySpendLimitMinor: b.dailySpendLimitMinor,
   };
 }
 
@@ -183,6 +188,15 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
     get().requests.find(r => r.branchId === branchId && r.status === 'pending'),
 }));
 
-/** Live count of pending approvals for the sidebar badge. */
-export const usePendingApprovalCount = () =>
-  useApprovalStore(s => s.requests.filter(r => r.status === 'pending').length);
+/** Live count of pending approvals for the sidebar badge (backend queue unless VITE_AUTH_MODE=mock). */
+export function usePendingApprovalCount() {
+  const mock = useApprovalStore(s => s.requests.filter(r => r.status === 'pending').length);
+  const backend = useBackendApprovals(s => s.requests.length);
+  const loaded = useBackendApprovals(s => s.loaded);
+  const load = useBackendApprovals(s => s.load);
+  const mayView = useCan()('approvals.view');
+  useEffect(() => {
+    if (AUTH_MODE === 'bff' && mayView && !loaded) void load();
+  }, [mayView, loaded, load]);
+  return AUTH_MODE === 'bff' ? (mayView ? backend : 0) : mock;
+}
