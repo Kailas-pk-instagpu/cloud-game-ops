@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useCafeStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
@@ -30,19 +30,55 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { AUTH_MODE, BffError } from '@/shared/lib/bff';
+import { useBackendUsers, type ApiUser } from '@/features/users/usersApi';
+import { useBackendCafes } from '@/features/cafes/cafesApi';
+
+/** Backend mode: people come from auth-service; creating one makes their Keycloak login. VITE_AUTH_MODE=mock keeps the demo list. */
+const BACKEND = AUTH_MODE === 'bff';
 
 type UserStatus = 'active' | 'disabled';
 
 interface ManagedUser extends User {
   status: UserStatus;
+  /** Backend: the owner account (cafe owners, Floor Managers) and the cafes a Floor Manager runs. */
+  tenantId?: string | null;
+  tenantName?: string | null;
+  cafes?: Array<{ id: string; name: string }>;
 }
+
+const fromApi = (u: ApiUser): ManagedUser => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  createdBy: u.created_by,
+  assignedScope: u.cafes.map(c => c.id),
+  is2FAEnabled: false,
+  twoFAMethod: null,
+  phone: u.phone ?? undefined,
+  createdAt: u.created_at.split('T')[0],
+  status: u.status === 'disabled' ? 'disabled' : 'active',
+  tenantId: u.tenant_id,
+  tenantName: u.tenant_name,
+  cafes: u.cafes,
+});
 
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
   const navigate = useNavigate();
-  const [users, setUsers] = useState<ManagedUser[]>(
+  const [mockUsers, setUsers] = useState<ManagedUser[]>(
     MOCK_USERS.map(u => ({ ...u, status: 'active' as UserStatus }))
   );
+  const backendUsers = useBackendUsers();
+  const backendCafes = useBackendCafes();
+  useEffect(() => {
+    if (!BACKEND) return;
+    void backendUsers.load();
+    if (!backendCafes.loaded) void backendCafes.load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const users: ManagedUser[] = BACKEND ? backendUsers.users.map(fromApi) : mockUsers;
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
@@ -57,6 +93,11 @@ export default function UsersPage() {
   const [formEmail, setFormEmail] = useState('');
   const [formRole, setFormRole] = useState<Role | ''>('');
   const [formPhone, setFormPhone] = useState('');
+  const [formCafe, setFormCafe] = useState('');
+  const [creating, setCreating] = useState(false);
+  // The one-time password of the person just created (backend), shown once.
+  const [created, setCreated] = useState<{ name: string; email: string; role: Role; password: string } | null>(null);
+  const mockCafes = useCafeStore(s => s.cafes);
 
   const can = useCan();
   if (!currentUser) return null;
@@ -66,14 +107,18 @@ export default function UsersPage() {
   const isCafeOwner = currentUser.role === 'cafe_owner';
 
   // Cafe owners can add Floor Managers only once one of their cafes is Active.
-  const ownerHasActiveCafe = useCafeStore(s => s.cafes).some(
-    b => b.cafeOwnerId === currentUser.id && b.status === 'active'
-  );
+  // Backend: the API returns only the owner's own cafes.
+  const activeCafes = BACKEND ? backendCafes.cafes.filter(c => c.status === 'active') : [];
+  const ownerHasActiveCafe = BACKEND
+    ? activeCafes.length > 0
+    : mockCafes.some(b => b.cafeOwnerId === currentUser.id && b.status === 'active');
   const createBlocked = isCafeOwner && !ownerHasActiveCafe;
 
   // On Cafe Management, only cafe owners open the cafes page.
+  // Backend: a cafe owner's row opens their owner account's cafes; other rows do not open anything.
   const rowOpensCafes = (u: ManagedUser) =>
-    currentUser.role === 'admin' ? u.role === 'cafe_owner' : true;
+    BACKEND ? u.role === 'cafe_owner' && !!u.tenantId : currentUser.role === 'admin' ? u.role === 'cafe_owner' : true;
+  const cafesLink = (u: ManagedUser) => `/cafes?owner=${BACKEND ? u.tenantId : u.id}`;
 
   // Super Admin sees all; others see manageable users.
   const visibleUsers = users
@@ -99,13 +144,15 @@ export default function UsersPage() {
   const canReset2FA = can('users.reset_2fa');
   const canResetPassword = can('users.reset_password');
   const canDeleteUser = can('users.delete');
-  const hasUserActions = canEditUser || canDisableUser || canReset2FA || canResetPassword || canDeleteUser;
+  // Backend: edit, disable, 2FA, password reset and delete are not built yet (auth-service), so the menu stays hidden there.
+  const hasUserActions = !BACKEND && (canEditUser || canDisableUser || canReset2FA || canResetPassword || canDeleteUser);
 
   const resetForm = () => {
     setFormName('');
     setFormEmail('');
     setFormRole('');
     setFormPhone('');
+    setFormCafe(activeCafes.length === 1 ? activeCafes[0].id : '');
   };
 
   const openCreate = () => {
@@ -129,7 +176,33 @@ export default function UsersPage() {
   };
 
 
+  const needsCafe = BACKEND && formRole === 'manager';
+  const createReady = !!formName.trim() && !!formEmail.trim() && !!formRole && (!needsCafe || !!formCafe) && !creating;
+
+  const handleCreateBackend = async () => {
+    if (!createReady || !formRole || formRole === 'super_admin') return;
+    setCreating(true);
+    try {
+      const r = await backendUsers.create(formRole, {
+        full_name: formName.trim(),
+        email: formEmail.trim(),
+        phone: formPhone.trim() || undefined,
+        cafe_id: formRole === 'manager' ? formCafe : undefined,
+      });
+      setShowCreate(false);
+      resetForm();
+      setCreated({ name: r.user.name, email: r.user.email, role: r.user.role, password: r.temporary_password });
+      // A new owner account appears in the cafe lists (the Sales Manager adds its cafes next).
+      if (formRole === 'cafe_owner') void backendCafes.load();
+    } catch (e) {
+      toast.error(e instanceof BffError || e instanceof Error ? e.message : 'Could not create the user.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleCreate = () => {
+    if (BACKEND) { void handleCreateBackend(); return; }
     if (!formName.trim() || !formEmail.trim() || !formRole) return;
     const newUser: ManagedUser = {
       id: `user-${Date.now()}`,
@@ -303,7 +376,7 @@ export default function UsersPage() {
           <Card
             key={u.id}
             className={`transition-shadow ${rowOpensCafes(u) ? 'hover:shadow-sm cursor-pointer' : ''} ${u.status === 'disabled' ? 'opacity-60' : ''}`}
-            onClick={() => { if (rowOpensCafes(u)) navigate(`/cafes?owner=${u.id}`); }}
+            onClick={() => { if (rowOpensCafes(u)) navigate(cafesLink(u)); }}
           >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -318,6 +391,20 @@ export default function UsersPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                  {(() => {
+                    if (!BACKEND) return null;
+                    // Floor Managers: the cafes they run. Cafe owners: every cafe of their owner account (pending ones too).
+                    const names = u.role === 'manager'
+                      ? (u.cafes ?? []).map(c => c.name)
+                      : u.role === 'cafe_owner'
+                        ? backendCafes.cafes.filter(c => c.tenantId === u.tenantId).map(c => c.name).sort((a, b) => a.localeCompare(b))
+                        : [];
+                    return names.length ? (
+                      <p className="text-[11px] text-muted-foreground/70 mt-0.5 truncate">
+                        {names.length > 1 ? 'Cafes' : 'Cafe'}: {names.join(', ')}
+                      </p>
+                    ) : null;
+                  })()}
                   {(() => {
                     const chain: string[] = [];
                     const creator = users.find(c => c.id === u.createdBy);
@@ -395,7 +482,10 @@ export default function UsersPage() {
             </CardContent>
           </Card>
         ))}
-        {visibleUsers.length === 0 && (
+        {BACKEND && backendUsers.error && (
+          <p className="text-sm text-destructive text-center">{backendUsers.error}</p>
+        )}
+        {visibleUsers.length === 0 && !(BACKEND && !backendUsers.loaded) && (
           <div className="text-center py-12 text-muted-foreground">
             <UsersIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p>No users found</p>
@@ -454,15 +544,35 @@ export default function UsersPage() {
               <Label>Phone (optional)</Label>
               <Input type="tel" placeholder="+1 555 000 0000" value={formPhone} onChange={e => setFormPhone(e.target.value)} />
             </div>
+            {BACKEND && formRole === 'cafe_owner' && (
+              <p className="text-xs text-muted-foreground">Add this owner's cafes from the Cafes page next.</p>
+            )}
+            {needsCafe && (
+              <div className="space-y-2">
+                <Label>Cafe</Label>
+                <Select value={formCafe} onValueChange={setFormCafe}>
+                  <SelectTrigger><SelectValue placeholder="Choose the cafe they will run" /></SelectTrigger>
+                  <SelectContent>
+                    {activeCafes.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{currentUser.role === 'super_admin' && c.tenantName ? `${c.name} (${c.tenantName})` : c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {activeCafes.length === 0 && <p className="text-xs text-muted-foreground">No active cafe yet: a cafe must be approved first.</p>}
+              </div>
+            )}
+            {BACKEND && (
+              <p className="text-xs text-muted-foreground">A login is created for this person. You get a one-time password to give them; they choose their own at first sign-in.</p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowCreate(false); resetForm(); }}>Cancel</Button>
             <Button
               onClick={handleCreate}
               className="gradient-primary text-primary-foreground"
-              disabled={!formName.trim() || !formEmail.trim() || !formRole}
+              disabled={!createReady}
             >
-              {currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create User'}
+              {creating ? 'Creating…' : currentUser.role === 'admin' ? 'Create Cafe Owner' : 'Create User'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -519,6 +629,27 @@ export default function UsersPage() {
             <Button onClick={handleEdit} className="gradient-primary text-primary-foreground" disabled={!formName.trim() || !formEmail.trim()}>
               Save Changes
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* One-time password of the person just created (backend) */}
+      <Dialog open={!!created} onOpenChange={v => { if (!v) setCreated(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{created ? `${ROLE_LABELS[created.role]} created` : ''}</DialogTitle>
+            <DialogDescription>
+              Give {created?.name} this one-time password. They sign in with {created?.email} and must choose their own password at first sign-in. It is shown only now.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={created?.password ?? ''} className="font-mono" onFocus={e => e.currentTarget.select()} />
+            <Button variant="outline" onClick={() => { if (created) void navigator.clipboard?.writeText(created.password).then(() => toast.success('Password copied')); }}>
+              Copy
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button className="gradient-primary text-primary-foreground" onClick={() => setCreated(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

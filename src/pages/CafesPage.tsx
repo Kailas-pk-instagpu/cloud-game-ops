@@ -314,7 +314,12 @@ export default function CafesPage() {
   // Cafes the signed-in user may see, narrowed to the person whose list was opened
   // Backend: the API already returns only the caller's cafes (and hides pending ones from cafe roles).
   const scopedCafes = useMemo(() => (BACKEND ? allCafes : getScopedCafes(allCafes, currentUser)), [allCafes, currentUser]);
-  const visibleCafes = useMemo(() => (BACKEND ? scopedCafes : getCafesForUser(scopedCafes, selectedUser)), [scopedCafes, selectedUser]);
+  // Backend: ?owner=<owner account id> (from Cafe Management) narrows the list to that owner's cafes.
+  const visibleCafes = useMemo(
+    () => (BACKEND ? (userParam ? scopedCafes.filter(c => c.tenantId === userParam) : scopedCafes) : getCafesForUser(scopedCafes, selectedUser)),
+    [scopedCafes, selectedUser, userParam],
+  );
+  const selectedOwner = BACKEND && userParam ? backend.owners.find(o => o.id === userParam) : undefined;
 
   const displayedCafes = useMemo(() => {
     let list = [...visibleCafes];
@@ -342,7 +347,7 @@ export default function CafesPage() {
   const handleAdd = () => {
     const f = { ...emptyForm };
     if (BACKEND) {
-      f.tenantId = backend.owners.length === 1 ? backend.owners[0].id : '';
+      f.tenantId = selectedOwner ? selectedOwner.id : backend.owners.length === 1 ? backend.owners[0].id : '';
       setForm(f);
       setShowAddDialog(true);
       return;
@@ -644,7 +649,7 @@ export default function CafesPage() {
             </Button>
           )}
           <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedUser ? `${selectedUser.name}'s Cafes` : 'Cafes'}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedUser ? `${selectedUser.name}'s Cafes` : selectedOwner ? `${selectedOwner.name}: Cafes` : 'Cafes'}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-1">{selectedUser ? `${ROLE_LABELS[selectedUser.role]} — showing only cafes assigned to them` : 'Manage gaming cafe locations, seats, and team assignments'}</p>
           </div>
         </div>
