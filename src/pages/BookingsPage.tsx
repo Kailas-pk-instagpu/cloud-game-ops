@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useAuthStore, useBookingStore, useBranchStore } from '@/shared/lib/store';
-import { MOCK_BRANCHES, MOCK_SEATS, Booking } from '@/shared/lib/mock-data';
+import { useAuthStore, useBookingStore, useCafeStore } from '@/shared/lib/store';
+import { MOCK_CAFES, MOCK_SEATS, Booking } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,16 +26,16 @@ const STATUS_CONFIG: Record<Booking['status'], { label: string; variant: 'defaul
 export default function BookingsPage() {
   const { user } = useAuthStore();
   const { bookings, addBooking, cancelBooking, updateBookingStatus } = useBookingStore();
-  const { branches } = useBranchStore();
+  const { cafes } = useCafeStore();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const [selectedCafe, setSelectedCafe] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewTab, setViewTab] = useState<'list' | 'calendar'>('calendar');
 
   // Form state
-  const [formBranch, setFormBranch] = useState('');
+  const [formCafe, setFormCafe] = useState('');
   const [formSeat, setFormSeat] = useState('');
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('');
@@ -45,24 +45,24 @@ export default function BookingsPage() {
   const [formGpu, setFormGpu] = useState('');
   const [formNotes, setFormNotes] = useState('');
 
-  // Get accessible branches based on role
-  const accessibleBranches = useMemo(() => {
+  // Get accessible cafes based on role
+  const accessibleCafes = useMemo(() => {
     if (!user) return [];
     if (user.role === 'cafe_owner') {
-      return branches.filter(b => user.assignedScope.includes(b.cafeId));
+      return cafes.filter(b => user.assignedScope.includes(b.tenantId));
     }
     if (user.role === 'manager') {
-      return branches.filter(b => user.assignedScope.includes(b.id));
+      return cafes.filter(b => user.assignedScope.includes(b.id));
     }
-    return branches;
-  }, [user, branches]);
+    return cafes;
+  }, [user, cafes]);
 
   const filteredBookings = useMemo(() => {
     let result = bookings.filter(b =>
-      accessibleBranches.some(br => br.id === b.branchId)
+      accessibleCafes.some(br => br.id === b.cafeId)
     );
-    if (selectedBranch !== 'all') {
-      result = result.filter(b => b.branchId === selectedBranch);
+    if (selectedCafe !== 'all') {
+      result = result.filter(b => b.cafeId === selectedCafe);
     }
     if (statusFilter !== 'all') {
       result = result.filter(b => b.status === statusFilter);
@@ -71,7 +71,7 @@ export default function BookingsPage() {
       if (a.date !== b.date) return a.date > b.date ? -1 : 1;
       return a.startTime > b.startTime ? -1 : 1;
     });
-  }, [bookings, accessibleBranches, selectedBranch, statusFilter]);
+  }, [bookings, accessibleCafes, selectedCafe, statusFilter]);
 
   const stats = useMemo(() => ({
     total: filteredBookings.length,
@@ -80,18 +80,18 @@ export default function BookingsPage() {
     cancelled: filteredBookings.filter(b => b.status === 'cancelled').length,
   }), [filteredBookings]);
 
-  // Compute available seats for the selected branch/date/time slot
+  // Compute available seats for the selected cafe/date/time slot
   const availableSeats = useMemo(() => {
-    if (!formBranch) return [];
-    const branch = branches.find(b => b.id === formBranch) || MOCK_BRANCHES.find(b => b.id === formBranch);
-    if (!branch) return [];
-    const branchSeats = MOCK_SEATS.filter(s => s.branchId === formBranch);
-    return Array.from({ length: branch.totalSeats }, (_, i) => i + 1).filter(num => {
-      const seat = branchSeats.find(s => s.number === num);
+    if (!formCafe) return [];
+    const cafe = cafes.find(b => b.id === formCafe) || MOCK_CAFES.find(b => b.id === formCafe);
+    if (!cafe) return [];
+    const cafeSeats = MOCK_SEATS.filter(s => s.cafeId === formCafe);
+    return Array.from({ length: cafe.totalSeats }, (_, i) => i + 1).filter(num => {
+      const seat = cafeSeats.find(s => s.number === num);
       if (seat?.status === 'maintenance') return false;
       if (!formDate || !formStartTime || !formEndTime) return true;
       const clash = bookings.some(b =>
-        b.branchId === formBranch &&
+        b.cafeId === formCafe &&
         b.seatNumber === num &&
         b.date === formDate &&
         b.status === 'upcoming' &&
@@ -100,10 +100,10 @@ export default function BookingsPage() {
       );
       return !clash;
     });
-  }, [formBranch, formDate, formStartTime, formEndTime, bookings, branches]);
+  }, [formCafe, formDate, formStartTime, formEndTime, bookings, cafes]);
 
   const resetForm = () => {
-    setFormBranch('');
+    setFormCafe('');
     setFormSeat('');
     setFormName('');
     setFormPhone('');
@@ -115,7 +115,7 @@ export default function BookingsPage() {
   };
 
   const handleCreate = () => {
-    if (!formBranch || !formSeat || !formName || !formDate || !formStartTime || !formEndTime) {
+    if (!formCafe || !formSeat || !formName || !formDate || !formStartTime || !formEndTime) {
       toast.error('Please fill all required fields');
       return;
     }
@@ -125,10 +125,10 @@ export default function BookingsPage() {
       return;
     }
 
-    // Conflict detection: check for overlapping bookings on the same seat, branch, and date
+    // Conflict detection: check for overlapping bookings on the same seat, cafe, and date
     const seatNum = parseInt(formSeat);
     const conflict = bookings.find(b =>
-      b.branchId === formBranch &&
+      b.cafeId === formCafe &&
       b.seatNumber === seatNum &&
       b.date === formDate &&
       b.status === 'upcoming' &&
@@ -141,7 +141,7 @@ export default function BookingsPage() {
     }
 
     const payload = {
-      branchId: formBranch,
+      cafeId: formCafe,
       seatNumber: parseInt(formSeat),
       customerName: formName,
       customerPhone: formPhone,
@@ -171,8 +171,8 @@ export default function BookingsPage() {
   };
 
 
-  const getBranchName = (branchId: string) =>
-    MOCK_BRANCHES.find(b => b.id === branchId)?.name || branchId;
+  const getCafeName = (cafeId: string) =>
+    MOCK_CAFES.find(b => b.id === cafeId)?.name || cafeId;
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -209,13 +209,13 @@ export default function BookingsPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+            <Select value={selectedCafe} onValueChange={setSelectedCafe}>
               <SelectTrigger className="w-[180px] h-9">
-                <SelectValue placeholder="All Branches" />
+                <SelectValue placeholder="All Cafes" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Branches</SelectItem>
-                {accessibleBranches.map(b => (
+                <SelectItem value="all">All Cafes</SelectItem>
+                {accessibleCafes.map(b => (
                   <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -249,7 +249,7 @@ export default function BookingsPage() {
       {viewTab === 'calendar' && (
         <BookingCalendarView
           bookings={bookings}
-          branchFilter={selectedBranch}
+          cafeFilter={selectedCafe}
           onSlotClick={(date, startTime) => {
             resetForm();
             setFormDate(date);
@@ -257,7 +257,7 @@ export default function BookingsPage() {
             const [h, m] = startTime.split(':').map(Number);
             const endH = Math.min(h + 1, 23);
             setFormEndTime(`${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-            if (selectedBranch !== 'all') setFormBranch(selectedBranch);
+            if (selectedCafe !== 'all') setFormCafe(selectedCafe);
             setShowCreateDialog(true);
           }}
         />
@@ -284,7 +284,7 @@ export default function BookingsPage() {
                   <TableRow>
                     <TableHead>Booking ID</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Branch</TableHead>
+                    <TableHead>Cafe</TableHead>
                     <TableHead>Seat</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Time Slot</TableHead>
@@ -305,7 +305,7 @@ export default function BookingsPage() {
                           <p className="text-xs text-muted-foreground">{booking.customerPhone}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">{getBranchName(booking.branchId)}</TableCell>
+                      <TableCell className="text-sm">{getCafeName(booking.cafeId)}</TableCell>
                       <TableCell>
                         <span className="inline-flex items-center gap-1 text-sm">
                           <Monitor className="h-3 w-3" /> #{booking.seatNumber}
@@ -373,11 +373,11 @@ export default function BookingsPage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Branch *</Label>
-                <Select value={formBranch} onValueChange={setFormBranch}>
-                  <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                <Label>Cafe *</Label>
+                <Select value={formCafe} onValueChange={setFormCafe}>
+                  <SelectTrigger><SelectValue placeholder="Select cafe" /></SelectTrigger>
                   <SelectContent>
-                    {accessibleBranches.map(b => (
+                    {accessibleCafes.map(b => (
                       <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -385,9 +385,9 @@ export default function BookingsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Available Seat *</Label>
-                <Select value={formSeat} onValueChange={setFormSeat} disabled={!formBranch}>
+                <Select value={formSeat} onValueChange={setFormSeat} disabled={!formCafe}>
                   <SelectTrigger>
-                    <SelectValue placeholder={!formBranch ? 'Select branch first' : availableSeats.length === 0 ? 'No seats available' : 'Pick a seat'} />
+                    <SelectValue placeholder={!formCafe ? 'Select cafe first' : availableSeats.length === 0 ? 'No seats available' : 'Pick a seat'} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableSeats.map(n => (
@@ -395,7 +395,7 @@ export default function BookingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {formBranch && formDate && formStartTime && formEndTime && (
+                {formCafe && formDate && formStartTime && formEndTime && (
                   <p className="text-xs text-muted-foreground">{availableSeats.length} seat(s) free for this slot</p>
                 )}
               </div>
@@ -445,7 +445,7 @@ export default function BookingsPage() {
             <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }}>Cancel</Button>
             <Button
               onClick={handleCreate}
-              disabled={!formBranch || !formSeat || !formName.trim() || !formDate || !formStartTime || !formEndTime}
+              disabled={!formCafe || !formSeat || !formName.trim() || !formDate || !formStartTime || !formEndTime}
             >
               Create Booking
             </Button>
@@ -470,7 +470,7 @@ export default function BookingsPage() {
               </div>
               <div className="text-sm space-y-1.5">
                 <div className="flex justify-between"><span className="text-muted-foreground">Customer</span><span className="font-medium">{confirmedBooking.customerName}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Branch</span><span className="font-medium">{getBranchName(confirmedBooking.branchId)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Cafe</span><span className="font-medium">{getCafeName(confirmedBooking.cafeId)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Seat</span><span className="font-medium">#{confirmedBooking.seatNumber}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="font-medium">{confirmedBooking.date}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="font-medium">{confirmedBooking.startTime} – {confirmedBooking.endTime}</span></div>

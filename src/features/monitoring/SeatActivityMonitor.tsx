@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Armchair, Search, FilterX, History, Cpu, Tag, Activity, Download, Trash2, ArrowRight, User } from 'lucide-react';
 import { useSeatActivityStore, SeatActivityField, SeatActivityEntry } from '@/shared/lib/seatActivityStore';
 import SeatActivityDetailsDrawer from './SeatActivityDetailsDrawer';
-import { useBranchStore } from '@/shared/lib/store';
+import { useCafeStore } from '@/shared/lib/store';
 import TablePagination from '@/shared/ui/molecules/TablePagination';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
 import TableSkeletonRows from '@/shared/ui/molecules/TableSkeletonRows';
@@ -31,10 +31,10 @@ function fmtAbs(iso: string) {
 export default function SeatActivityMonitor() {
   const entries = useSeatActivityStore((s) => s.entries);
   const clear = useSeatActivityStore((s) => s.clear);
-  const branches = useBranchStore((s) => s.branches);
+  const cafes = useCafeStore((s) => s.cafes);
 
   const [query, setQuery] = useState('');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
+  const [cafeFilter, setCafeFilter] = useState<string>('all');
   const [fieldFilter, setFieldFilter] = useState<SeatActivityField | 'all'>('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -47,16 +47,16 @@ export default function SeatActivityMonitor() {
 
   const filtered = useMemo(() => {
     return entries.filter((e) => {
-      if (branchFilter !== 'all' && e.branchId !== branchFilter) return false;
+      if (cafeFilter !== 'all' && e.cafeId !== cafeFilter) return false;
       if (fieldFilter !== 'all' && e.field !== fieldFilter) return false;
       if (query) {
         const q = query.toLowerCase();
-        const hay = `${e.seatNumber} ${e.branchName} ${e.actorName} ${e.fromValue} ${e.toValue} ${e.field}`.toLowerCase();
+        const hay = `${e.seatNumber} ${e.cafeName} ${e.actorName} ${e.fromValue} ${e.toValue} ${e.field}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [entries, query, branchFilter, fieldFilter]);
+  }, [entries, query, cafeFilter, fieldFilter]);
 
   const paged = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -68,12 +68,12 @@ export default function SeatActivityMonitor() {
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
 
-  const filtersActive = query.trim() !== '' || branchFilter !== 'all' || fieldFilter !== 'all';
-  const isLoading = useDeferredLoading([query, branchFilter, fieldFilter, page, pageSize]);
+  const filtersActive = query.trim() !== '' || cafeFilter !== 'all' || fieldFilter !== 'all';
+  const isLoading = useDeferredLoading([query, cafeFilter, fieldFilter, page, pageSize]);
 
   const clearFilters = () => {
     setQuery('');
-    setBranchFilter('all');
+    setCafeFilter('all');
     setFieldFilter('all');
   };
 
@@ -103,7 +103,7 @@ export default function SeatActivityMonitor() {
               Seat Activity Log
             </CardTitle>
             <CardDescription>
-              Audit trail of every seat change — name, GPU and status updates across all branches.
+              Audit trail of every seat change — name, GPU and status updates across all cafes.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -123,15 +123,15 @@ export default function SeatActivityMonitor() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search seat, branch, actor, value..."
+              placeholder="Search seat, cafe, actor, value..."
               className="pl-8 h-9"
             />
           </div>
-          <Select value={branchFilter} onValueChange={setBranchFilter}>
+          <Select value={cafeFilter} onValueChange={setCafeFilter}>
             <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All branches</SelectItem>
-              {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+              <SelectItem value="all">All cafes</SelectItem>
+              {cafes.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={fieldFilter} onValueChange={(v) => setFieldFilter(v as SeatActivityField | 'all')}>
@@ -152,7 +152,7 @@ export default function SeatActivityMonitor() {
             <TableRow>
               <TableHead className="w-[170px]">When</TableHead>
               <TableHead>Seat</TableHead>
-              <TableHead>Branch</TableHead>
+              <TableHead>Cafe</TableHead>
               <TableHead>Field</TableHead>
               <TableHead>Change</TableHead>
               <TableHead>Actor</TableHead>
@@ -195,7 +195,7 @@ export default function SeatActivityMonitor() {
                         #{e.seatNumber}
                       </span>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{e.branchName}</TableCell>
+                    <TableCell className="text-muted-foreground">{e.cafeName}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn('gap-1 text-[10px]', meta.cls)}>
                         <Icon className="h-3 w-3" /> {meta.label}

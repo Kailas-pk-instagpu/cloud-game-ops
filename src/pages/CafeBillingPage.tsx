@@ -3,9 +3,9 @@ import { NavLink, useLocation, useSearchParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
 import { CheckCircle2, Download, Loader2, RefreshCw, XCircle } from 'lucide-react';
-import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useAuthStore, useCafeStore } from '@/shared/lib/store';
 import { useCan } from '@/shared/lib/permissions';
-import { getScopedBranches } from '@/shared/lib/branchScope';
+import { getScopedCafes } from '@/shared/lib/cafeScope';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,19 +18,19 @@ import { cn } from '@/lib/utils';
 import {
   Charge, DuitNowQr, Payment, PaymentStatus,
   createDuitNowQr, getDuePayments, getInvoicePdf, getPaymentHistory, getPaymentStatus, getUsage,
-} from '@/features/branch-billing/billingService';
+} from '@/features/cafe-billing/billingService';
 
 const rm = (n: number) => `RM ${n.toFixed(2)}`;
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' });
 
-function useInvoiceDownload(branchId: string, branchName: string) {
+function useInvoiceDownload(cafeId: string, cafeName: string) {
   return useCallback(async (payment: Payment) => {
     try {
-      const branches = useBranchStore.getState().branches;
-      const b = branches.find((x) => x.id === branchId);
+      const cafes = useCafeStore.getState().cafes;
+      const b = cafes.find((x) => x.id === cafeId);
       const owner = MOCK_USERS.find((u) => u.id === b?.cafeOwnerId);
       const blob = await getInvoicePdf(payment.id, {
-        branchName,
+        cafeName,
         ownerName: owner?.name ?? 'Cafe Owner',
         ownerEmail: owner?.email ?? '-',
         ownerPhone: owner?.phone,
@@ -45,7 +45,7 @@ function useInvoiceDownload(branchId: string, branchName: string) {
     } catch {
       toast.error('Could not download invoice');
     }
-  }, [branchId, branchName]);
+  }, [cafeId, cafeName]);
 }
 
 function LoadingRows({ cols }: { cols: number }) {
@@ -63,29 +63,29 @@ function LoadingRows({ cols }: { cols: number }) {
 }
 
 function PayDialog({
-  open, onClose, branchId, branchName, chargeIds, onPaid,
+  open, onClose, cafeId, cafeName, chargeIds, onPaid,
 }: {
-  open: boolean; onClose: () => void; branchId: string; branchName: string; chargeIds: string[]; onPaid: () => void;
+  open: boolean; onClose: () => void; cafeId: string; cafeName: string; chargeIds: string[]; onPaid: () => void;
 }) {
   const [qr, setQr] = useState<DuitNowQr | null>(null);
   const [status, setStatus] = useState<PaymentStatus | 'creating' | 'error'>('creating');
   const [payment, setPayment] = useState<Payment | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const download = useInvoiceDownload(branchId, branchName);
+  const download = useInvoiceDownload(cafeId, cafeName);
 
   const start = useCallback(async () => {
     setStatus('creating');
     setQr(null);
     setPayment(null);
     try {
-      const q = await createDuitNowQr(branchId, chargeIds);
+      const q = await createDuitNowQr(cafeId, chargeIds);
       setQr(q);
       setStatus('pending');
     } catch {
       setStatus('error');
       toast.error('Could not create DuitNow QR');
     }
-  }, [branchId, chargeIds]);
+  }, [cafeId, chargeIds]);
 
   useEffect(() => { if (open) start(); }, [open, start]);
 
@@ -156,7 +156,7 @@ function PayDialog({
         {qr && (
           <dl className="grid grid-cols-2 gap-y-2 rounded-lg border p-3 text-sm">
             <dt className="text-muted-foreground">Amount</dt><dd className="text-right font-mono font-semibold">{rm(qr.amount)}</dd>
-            <dt className="text-muted-foreground">Branch</dt><dd className="text-right">{branchName}</dd>
+            <dt className="text-muted-foreground">Cafe</dt><dd className="text-right">{cafeName}</dd>
             <dt className="text-muted-foreground">Reference</dt><dd className="text-right font-mono">{qr.reference}</dd>
           </dl>
         )}
@@ -177,14 +177,14 @@ function StatusPill({ status }: { status: string }) {
   return <Badge variant="outline" className={cn('font-medium', map[status])}>{label}</Badge>;
 }
 
-function Overview({ branchId, branchName, canPay }: { branchId: string; branchName: string; canPay: boolean }) {
+function Overview({ cafeId, cafeName, canPay }: { cafeId: string; cafeName: string; canPay: boolean }) {
   const [rows, setRows] = useState<Charge[] | null>(null);
   const [payIds, setPayIds] = useState<string[] | null>(null);
 
   const load = useCallback(() => {
     setRows(null);
-    getDuePayments(branchId).then(setRows).catch(() => { setRows([]); toast.error('Could not load due payments'); });
-  }, [branchId]);
+    getDuePayments(cafeId).then(setRows).catch(() => { setRows([]); toast.error('Could not load due payments'); });
+  }, [cafeId]);
   useEffect(load, [load]);
 
   const total = (rows ?? []).reduce((s, r) => s + r.amount, 0);
@@ -241,8 +241,8 @@ function Overview({ branchId, branchName, canPay }: { branchId: string; branchNa
         <PayDialog
           open
           onClose={() => { setPayIds(null); load(); }}
-          branchId={branchId}
-          branchName={branchName}
+          cafeId={cafeId}
+          cafeName={cafeName}
           chargeIds={payIds}
           onPaid={() => {}}
         />
@@ -264,14 +264,14 @@ function monthOptions() {
   return out;
 }
 
-function Usage({ branchId }: { branchId: string }) {
+function Usage({ cafeId }: { cafeId: string }) {
   const months = useMemo(monthOptions, []);
   const [month, setMonth] = useState(months[0].value);
   const [rows, setRows] = useState<Charge[] | null>(null);
   useEffect(() => {
     setRows(null);
-    getUsage(branchId, month).then(setRows).catch(() => { setRows([]); toast.error('Could not load usage'); });
-  }, [branchId, month]);
+    getUsage(cafeId, month).then(setRows).catch(() => { setRows([]); toast.error('Could not load usage'); });
+  }, [cafeId, month]);
   const total = (rows ?? []).reduce((s, r) => s + r.amount, 0);
 
   return (
@@ -319,13 +319,13 @@ function Usage({ branchId }: { branchId: string }) {
   );
 }
 
-function History({ branchId, branchName, canDownload }: { branchId: string; branchName: string; canDownload: boolean }) {
+function History({ cafeId, cafeName, canDownload }: { cafeId: string; cafeName: string; canDownload: boolean }) {
   const [rows, setRows] = useState<Payment[] | null>(null);
-  const download = useInvoiceDownload(branchId, branchName);
+  const download = useInvoiceDownload(cafeId, cafeName);
   useEffect(() => {
     setRows(null);
-    getPaymentHistory(branchId).then(setRows).catch(() => { setRows([]); toast.error('Could not load payment history'); });
-  }, [branchId]);
+    getPaymentHistory(cafeId).then(setRows).catch(() => { setRows([]); toast.error('Could not load payment history'); });
+  }, [cafeId]);
   const cols = canDownload ? 5 : 4;
 
   return (
@@ -373,31 +373,31 @@ const TABS = [
   { to: '/billing/history', label: 'Payment History' },
 ];
 
-export default function BranchBillingPage() {
+export default function CafeBillingPage() {
   const user = useAuthStore((s) => s.user);
-  const allBranches = useBranchStore((s) => s.branches);
-  const branches = useMemo(() => getScopedBranches(allBranches, user), [allBranches, user]);
+  const allCafes = useCafeStore((s) => s.cafes);
+  const cafes = useMemo(() => getScopedCafes(allCafes, user), [allCafes, user]);
   const [params, setParams] = useSearchParams();
   const { pathname } = useLocation();
-  const branchId = params.get('branch') ?? branches[0]?.id ?? '';
-  const branch = branches.find((b) => b.id === branchId) ?? branches[0];
+  const cafeId = params.get('cafe') ?? cafes[0]?.id ?? '';
+  const cafe = cafes.find((b) => b.id === cafeId) ?? cafes[0];
 
   const can = useCan();
   const canPay = can('billing.pay');
   const canDownload = can('billing.invoices.download');
-  const qs = branch ? `?branch=${branch.id}` : '';
+  const qs = cafe ? `?cafe=${cafe.id}` : '';
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Billing</h1>
-          <p className="text-sm text-muted-foreground">Daily usage billed separately for each branch, in MYR.</p>
+          <p className="text-sm text-muted-foreground">Daily usage billed separately for each cafe, in MYR.</p>
         </div>
-        {branches.length > 0 && (
-          <Select value={branch?.id} onValueChange={(v) => setParams({ branch: v })}>
-            <SelectTrigger className="w-full sm:w-64"><SelectValue placeholder="Select branch" /></SelectTrigger>
-            <SelectContent>{branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
+        {cafes.length > 0 && (
+          <Select value={cafe?.id} onValueChange={(v) => setParams({ cafe: v })}>
+            <SelectTrigger className="w-full sm:w-64"><SelectValue placeholder="Select cafe" /></SelectTrigger>
+            <SelectContent>{cafes.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
           </Select>
         )}
       </div>
@@ -419,14 +419,14 @@ export default function BranchBillingPage() {
       </nav>
 
 
-      {!branch ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No branches available.</CardContent></Card>
+      {!cafe ? (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">No cafes available.</CardContent></Card>
       ) : pathname === '/billing/usage' ? (
-        <Usage branchId={branch.id} />
+        <Usage cafeId={cafe.id} />
       ) : pathname === '/billing/history' ? (
-        <History branchId={branch.id} branchName={branch.name} canDownload={canDownload} />
+        <History cafeId={cafe.id} cafeName={cafe.name} canDownload={canDownload} />
       ) : (
-        <Overview key={branch.id} branchId={branch.id} branchName={branch.name} canPay={canPay} />
+        <Overview key={cafe.id} cafeId={cafe.id} cafeName={cafe.name} canPay={canPay} />
       )}
     </div>
   );

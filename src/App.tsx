@@ -11,7 +11,7 @@ import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
 import ApprovalsPage from "./pages/ApprovalsPage";
 import GPUNodesPage from "./pages/GPUNodesPage";
-import BranchesPage from "./pages/BranchesPage";
+import CafesPage from "./pages/CafesPage";
 import SeatsPage from "./pages/SeatsPage";
 import BookingsPage from "./pages/BookingsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -21,7 +21,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import BillingSessionPage from "./pages/BillingSessionPage";
 import MonitoringPage from "./pages/MonitoringPage";
 import IssuesPage from "./pages/IssuesPage";
-import BranchBillingPage from "./pages/BranchBillingPage";
+import CafeBillingPage from "./pages/CafeBillingPage";
 import PermissionsPage from "./pages/PermissionsPage";
 import NotFound from "./pages/NotFound";
 
@@ -44,15 +44,15 @@ const App = () => (
             <Route path="/users" element={<PermissionGuard permission="users.view"><UsersPage /></PermissionGuard>} />
             <Route path="/approvals" element={<PermissionGuard permission="approvals.view"><ApprovalsPage /></PermissionGuard>} />
             <Route path="/gpu-nodes" element={<PermissionGuard permission="gpu_nodes.view"><GPUNodesPage /></PermissionGuard>} />
-            <Route path="/branches" element={<PermissionGuard permission="branches.view"><BranchesPage /></PermissionGuard>} />
+            <Route path="/cafes" element={<PermissionGuard permission="cafes.view"><CafesPage /></PermissionGuard>} />
             <Route path="/seats" element={<PermissionGuard permission="seats.operate.view"><SeatsPage /></PermissionGuard>} />
             <Route path="/bookings" element={<PermissionGuard hidden><BookingsPage /></PermissionGuard>} />
             <Route path="/analytics" element={<PermissionGuard permission="analytics.view"><AnalyticsPage /></PermissionGuard>} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/billing" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
-            <Route path="/billing/usage" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
-            <Route path="/billing/history" element={<PermissionGuard permission="billing.view"><BranchBillingPage /></PermissionGuard>} />
+            <Route path="/billing" element={<PermissionGuard permission="billing.view"><CafeBillingPage /></PermissionGuard>} />
+            <Route path="/billing/usage" element={<PermissionGuard permission="billing.view"><CafeBillingPage /></PermissionGuard>} />
+            <Route path="/billing/history" element={<PermissionGuard permission="billing.view"><CafeBillingPage /></PermissionGuard>} />
             <Route path="/billing/session" element={<PermissionGuard permission="sessions.view"><BillingSessionPage /></PermissionGuard>} />
             <Route path="/monitoring" element={<PermissionGuard permission="monitoring.view"><MonitoringPage /></PermissionGuard>} />
             <Route path="/permissions" element={<PermissionGuard permission="permissions.manage"><PermissionsPage /></PermissionGuard>} />

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_SEATS, MOCK_BRANCHES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
+import { MOCK_SEATS, MOCK_CAFES, MOCK_CUSTOMER_WALLETS, Booking } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
 import { useAuthStore, useBookingStore, useSettlementStore } from '@/shared/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,7 +31,7 @@ function getCurrentTime(): string {
 }
 
 export default function SeatManagement() {
-  const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.branchId === 'branch-1'));
+  const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.cafeId === 'cafe-1'));
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [dialogMode, setDialogMode] = useState<'checkin' | 'checkout' | 'restart' | 'extend' | null>(null);
   const [playerName, setPlayerName] = useState('');
@@ -45,16 +45,16 @@ export default function SeatManagement() {
 
   const seatWallet = useMemo(() => {
     if (!selectedSeat?.playerName) return undefined;
-    const branchCustomers = MOCK_CUSTOMER_WALLETS.filter(c => c.branchId === selectedSeat.branchId);
+    const cafeCustomers = MOCK_CUSTOMER_WALLETS.filter(c => c.cafeId === selectedSeat.cafeId);
     const name = selectedSeat.playerName.toLowerCase();
     return (
-      branchCustomers.find(c => c.name.toLowerCase() === name) ||
-      branchCustomers.find(c => c.name.toLowerCase().split(' ')[0] === name.split(' ')[0]) ||
-      branchCustomers[0]
+      cafeCustomers.find(c => c.name.toLowerCase() === name) ||
+      cafeCustomers.find(c => c.name.toLowerCase().split(' ')[0] === name.split(' ')[0]) ||
+      cafeCustomers[0]
     );
   }, [selectedSeat]);
 
-  const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
+  const cafe = MOCK_CAFES.find(b => b.id === 'cafe-1');
 
   // Compute end-session totals for the currently-selected occupied seat
   const sessionTotals = useMemo(() => {
@@ -65,19 +65,19 @@ export default function SeatManagement() {
     const start = new Date();
     start.setHours(sh, sm, 0, 0);
     const durationSec = Math.max(0, Math.floor((Date.now() - start.getTime()) / 1000));
-    const costPerMinute = branch?.billing.costPerMinute ?? 0;
-    const lockedAmount = seatWallet?.lockedAmount ?? branch?.billing.lockedAmount ?? 0;
+    const costPerMinute = cafe?.billing.costPerMinute ?? 0;
+    const lockedAmount = seatWallet?.lockedAmount ?? cafe?.billing.lockedAmount ?? 0;
     const usageCost = Math.min(lockedAmount, +(durationSec / 60 * costPerMinute).toFixed(2));
     const refund = +(lockedAmount - usageCost).toFixed(2);
     return { durationSec, usageCost, refund, lockedAmount };
-  }, [selectedSeat, branch, seatWallet, confirmEndOpen]);
+  }, [selectedSeat, cafe, seatWallet, confirmEndOpen]);
 
   const bookedSeatMap = useMemo(() => {
     if (!SHOW_PREBOOKING) return new Map<number, Booking>();
     const today = new Date().toISOString().split('T')[0];
     const map = new Map<number, Booking>();
     bookings
-      .filter(b => b.branchId === 'branch-1' && b.status === 'upcoming' && b.date >= today)
+      .filter(b => b.cafeId === 'cafe-1' && b.status === 'upcoming' && b.date >= today)
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
       .forEach(b => {
         if (!map.has(b.seatNumber)) map.set(b.seatNumber, b);
@@ -112,7 +112,7 @@ export default function SeatManagement() {
     if (!selectedSeat) return;
     // Redirect to the billing page for this customer; settlement happens there.
     if (seatWallet) {
-      navigate(`/billing/session?branchId=${seatWallet.branchId}&customerId=${seatWallet.id}`);
+      navigate(`/billing/session?cafeId=${seatWallet.cafeId}&customerId=${seatWallet.id}`);
     } else {
       navigate('/billing/session');
     }
@@ -120,7 +120,7 @@ export default function SeatManagement() {
   };
 
   const handleConfirmEndSession = () => {
-    if (!selectedSeat || !branch) return;
+    if (!selectedSeat || !cafe) return;
     // Record settlement if a wallet is matched and current user can settle
     if (seatWallet && user && (user.role === 'cafe_owner' || user.role === 'manager')) {
       const startIso = (() => {
@@ -132,14 +132,14 @@ export default function SeatManagement() {
       })();
       addSettlement({
         sessionId: `seat-${selectedSeat.id}-${Date.now()}`,
-        branchId: branch.id,
-        branchName: branch.name,
+        cafeId: cafe.id,
+        cafeName: cafe.name,
         customerId: seatWallet.id,
         customerName: seatWallet.name,
         startTime: startIso,
         endTime: new Date().toISOString(),
         durationSec: sessionTotals.durationSec,
-        costPerMinute: branch.billing.costPerMinute,
+        costPerMinute: cafe.billing.costPerMinute,
         lockedAmount: sessionTotals.lockedAmount,
         usageCost: sessionTotals.usageCost,
         refund: sessionTotals.refund,
@@ -199,7 +199,7 @@ export default function SeatManagement() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Seat Management</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
+        <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {cafe?.name || 'your cafe'}</p>
       </div>
 
       {/* Quick Stats */}
@@ -399,12 +399,12 @@ export default function SeatManagement() {
         onOpenChange={setConfirmEndOpen}
         onConfirm={handleConfirmEndSession}
         customerName={seatWallet?.name ?? selectedSeat?.playerName}
-        branchName={branch?.name}
+        cafeName={cafe?.name}
         durationSec={sessionTotals.durationSec}
         lockedAmount={sessionTotals.lockedAmount}
         usageCost={sessionTotals.usageCost}
         refund={sessionTotals.refund}
-        costPerMinute={branch?.billing.costPerMinute}
+        costPerMinute={cafe?.billing.costPerMinute}
       />
     </div>
   );

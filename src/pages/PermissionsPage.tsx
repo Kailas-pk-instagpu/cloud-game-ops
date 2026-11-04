@@ -16,7 +16,7 @@ import {
 
 const CAFE_ROLES: Role[] = ['cafe_owner', 'manager'];
 
-// Show features and keys in the order of the app's catalog (Dashboard, Users, Branches, ...); keys the app does not know go last.
+// Show features and keys in the order of the app's catalog (Dashboard, Users, Cafes, ...); keys the app does not know go last.
 const CATALOG_ORDER = Object.keys(PERMISSIONS);
 const rank = (key: string) => {
   const i = CATALOG_ORDER.indexOf(key);
@@ -105,7 +105,7 @@ export default function PermissionsPage() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Permissions</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-2xl">
             Choose what each role may do. Changes apply to everyone with that role within 30 seconds. Which cafes and
-            branches a person can see is set by their assignments, not here.
+            cafes a person can see is set by their assignments, not here.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">

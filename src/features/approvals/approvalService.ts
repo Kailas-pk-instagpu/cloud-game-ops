@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { Branch, BranchEditProposal, MOCK_USERS } from '@/shared/lib/mock-data';
-import { useBranchStore } from '@/shared/lib/store';
+import { Cafe, CafeEditProposal, MOCK_USERS } from '@/shared/lib/mock-data';
+import { useCafeStore } from '@/shared/lib/store';
 import { AUTH_MODE } from '@/shared/lib/bff';
 import { useCan } from '@/shared/lib/permissions';
 import { useBackendApprovals } from './approvalsApi';
@@ -19,8 +19,8 @@ export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 export interface ApprovalRequest {
   id: string;
   type: ApprovalRequestType;
-  branchId: string;
-  branchName: string;
+  cafeId: string;
+  cafeName: string;
   ownerId?: string;
   ownerName: string;
   createdById: string;
@@ -29,9 +29,9 @@ export interface ApprovalRequest {
   status: ApprovalStatus;
   feedback?: string;
   /** Proposed values (edit requests only). */
-  proposed?: BranchEditProposal;
+  proposed?: CafeEditProposal;
   /** Snapshot of live values at submission time (edit requests only). */
-  current?: BranchEditProposal;
+  current?: CafeEditProposal;
   resolvedAt?: string;
 }
 
@@ -43,8 +43,8 @@ interface Actor {
 const ownerName = (id?: string) =>
   (id ? MOCK_USERS.find(u => u.id === id)?.name : undefined) ?? 'Unassigned';
 
-/** Extract the editable fields of a branch as a proposal/snapshot. */
-export function toProposal(b: Branch): BranchEditProposal {
+/** Extract the editable fields of a cafe as a proposal/snapshot. */
+export function toProposal(b: Cafe): CafeEditProposal {
   return {
     name: b.name,
     address: b.address,
@@ -60,30 +60,30 @@ const newId = () => `ap-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
 interface ApprovalState {
   requests: ApprovalRequest[];
-  /** Sales Manager submitted a brand-new cafe (branch already stored as pending). */
-  submitNewCafe: (branch: Branch, actor: Actor) => ApprovalRequest;
+  /** Sales Manager submitted a brand-new cafe (cafe already stored as pending). */
+  submitNewCafe: (cafe: Cafe, actor: Actor) => ApprovalRequest;
   /** Sales Manager proposed edits to an Active cafe; live values are NOT changed. */
-  submitEdit: (branch: Branch, proposed: BranchEditProposal, actor: Actor) => ApprovalRequest;
+  submitEdit: (cafe: Cafe, proposed: CafeEditProposal, actor: Actor) => ApprovalRequest;
   /** Super Admin approves: new cafe goes Active / edit values replace live values. */
   approve: (id: string) => void;
   /** Super Admin rejects: feedback is mandatory. */
   reject: (id: string, feedback: string) => void;
   /** Sales Manager resubmits a rejected cafe for approval. */
-  resubmit: (branchId: string, actor: Actor) => ApprovalRequest | null;
-  pendingForBranch: (branchId: string) => ApprovalRequest | undefined;
+  resubmit: (cafeId: string, actor: Actor) => ApprovalRequest | null;
+  pendingForCafe: (cafeId: string) => ApprovalRequest | undefined;
 }
 
 export const useApprovalStore = create<ApprovalState>()((set, get) => ({
   requests: [],
 
-  submitNewCafe: (branch, actor) => {
+  submitNewCafe: (cafe, actor) => {
     const req: ApprovalRequest = {
       id: newId(),
       type: 'new_cafe',
-      branchId: branch.id,
-      branchName: branch.name,
-      ownerId: branch.cafeOwnerId,
-      ownerName: ownerName(branch.cafeOwnerId),
+      cafeId: cafe.id,
+      cafeName: cafe.name,
+      ownerId: cafe.cafeOwnerId,
+      ownerName: ownerName(cafe.cafeOwnerId),
       createdById: actor.id,
       createdByName: actor.name,
       createdAt: new Date().toISOString(),
@@ -93,13 +93,13 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
     return req;
   },
 
-  submitEdit: (branch, proposed, actor) => {
-    // Mark the branch as edit-pending without touching live values.
-    useBranchStore.getState().updateBranch(branch.id, { pendingEdit: proposed, editFeedback: undefined });
+  submitEdit: (cafe, proposed, actor) => {
+    // Mark the cafe as edit-pending without touching live values.
+    useCafeStore.getState().updateCafe(cafe.id, { pendingEdit: proposed, editFeedback: undefined });
 
     // A second edit while one is already pending replaces the previous proposal.
     const existing = get().requests.find(
-      r => r.branchId === branch.id && r.type === 'edit_cafe' && r.status === 'pending'
+      r => r.cafeId === cafe.id && r.type === 'edit_cafe' && r.status === 'pending'
     );
     if (existing) {
       set(s => ({
@@ -113,16 +113,16 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
     const req: ApprovalRequest = {
       id: newId(),
       type: 'edit_cafe',
-      branchId: branch.id,
-      branchName: branch.name,
-      ownerId: branch.cafeOwnerId,
-      ownerName: ownerName(branch.cafeOwnerId),
+      cafeId: cafe.id,
+      cafeName: cafe.name,
+      ownerId: cafe.cafeOwnerId,
+      ownerName: ownerName(cafe.cafeOwnerId),
       createdById: actor.id,
       createdByName: actor.name,
       createdAt: new Date().toISOString(),
       status: 'pending',
       proposed,
-      current: toProposal(branch),
+      current: toProposal(cafe),
     };
     set(s => ({ requests: [req, ...s.requests] }));
     return req;
@@ -131,13 +131,13 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
   approve: (id) => {
     const req = get().requests.find(r => r.id === id);
     if (!req || req.status !== 'pending') return;
-    const branchStore = useBranchStore.getState();
+    const cafeStore = useCafeStore.getState();
 
     if (req.type === 'new_cafe') {
-      branchStore.updateBranch(req.branchId, { status: 'active', approvalFeedback: undefined });
+      cafeStore.updateCafe(req.cafeId, { status: 'active', approvalFeedback: undefined });
     } else if (req.proposed) {
       const p = req.proposed;
-      branchStore.updateBranch(req.branchId, {
+      cafeStore.updateCafe(req.cafeId, {
         name: p.name,
         address: p.address,
         totalSeats: p.totalSeats,
@@ -159,13 +159,13 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
   reject: (id, feedback) => {
     const req = get().requests.find(r => r.id === id);
     if (!req || req.status !== 'pending' || !feedback.trim()) return;
-    const branchStore = useBranchStore.getState();
+    const cafeStore = useCafeStore.getState();
 
     if (req.type === 'new_cafe') {
-      branchStore.updateBranch(req.branchId, { status: 'rejected', approvalFeedback: feedback.trim() });
+      cafeStore.updateCafe(req.cafeId, { status: 'rejected', approvalFeedback: feedback.trim() });
     } else {
       // Old values stay live; the Sales Manager can revise and resubmit.
-      branchStore.updateBranch(req.branchId, { pendingEdit: undefined, editFeedback: feedback.trim() });
+      cafeStore.updateCafe(req.cafeId, { pendingEdit: undefined, editFeedback: feedback.trim() });
     }
 
     set(s => ({
@@ -177,15 +177,15 @@ export const useApprovalStore = create<ApprovalState>()((set, get) => ({
     }));
   },
 
-  resubmit: (branchId, actor) => {
-    const branch = useBranchStore.getState().branches.find(b => b.id === branchId);
-    if (!branch || branch.status !== 'rejected') return null;
-    useBranchStore.getState().updateBranch(branchId, { status: 'pending', approvalFeedback: undefined });
-    return get().submitNewCafe({ ...branch, status: 'pending' }, actor);
+  resubmit: (cafeId, actor) => {
+    const cafe = useCafeStore.getState().cafes.find(b => b.id === cafeId);
+    if (!cafe || cafe.status !== 'rejected') return null;
+    useCafeStore.getState().updateCafe(cafeId, { status: 'pending', approvalFeedback: undefined });
+    return get().submitNewCafe({ ...cafe, status: 'pending' }, actor);
   },
 
-  pendingForBranch: (branchId) =>
-    get().requests.find(r => r.branchId === branchId && r.status === 'pending'),
+  pendingForCafe: (cafeId) =>
+    get().requests.find(r => r.cafeId === cafeId && r.status === 'pending'),
 }));
 
 /** Live count of pending approvals for the sidebar badge (backend queue unless VITE_AUTH_MODE=mock). */

@@ -8,7 +8,7 @@ export type ChargeStatus = 'due' | 'overdue' | 'paid';
 
 export interface Charge {
   id: string;
-  branchId: string;
+  cafeId: string;
   date: string; // YYYY-MM-DD
   description: string;
   hours: number;
@@ -21,7 +21,7 @@ export interface Charge {
 
 export interface Payment {
   id: string;
-  branchId: string;
+  cafeId: string;
   date: string;
   reference: string;
   amount: number;
@@ -34,7 +34,7 @@ export interface DuitNowQr {
   reference: string;
   qrPayload: string;
   amount: number;
-  branchId: string;
+  cafeId: string;
   chargeIds: string[];
   expiresAt: number;
 }
@@ -42,7 +42,7 @@ export interface DuitNowQr {
 export type PaymentStatus = 'pending' | 'success' | 'failed' | 'expired';
 
 export interface InvoiceContext {
-  branchName: string;
+  cafeName: string;
   ownerName: string;
   ownerEmail: string;
   ownerPhone?: string;
@@ -58,10 +58,10 @@ const payments: Payment[] = [];
 const seeded = new Set<string>();
 const qrs = new Map<string, DuitNowQr & { createdAt: number }>();
 
-function seed(branchId: string) {
-  if (seeded.has(branchId)) return;
-  seeded.add(branchId);
-  const seedNum = branchId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+function seed(cafeId: string) {
+  if (seeded.has(cafeId)) return;
+  seeded.add(cafeId);
+  const seedNum = cafeId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const rate = 6 + (seedNum % 5);
   const today = new Date();
   const paidGroups: Record<string, Charge[]> = {};
@@ -73,8 +73,8 @@ function seed(branchId: string) {
     due.setDate(d.getDate() + 7);
     const status: ChargeStatus = i > 10 ? 'paid' : due < today ? 'overdue' : 'due';
     const c: Charge = {
-      id: `${branchId}-${iso(d)}`,
-      branchId,
+      id: `${cafeId}-${iso(d)}`,
+      cafeId,
       date: iso(d),
       description: `GPU usage · ${iso(d)}`,
       hours,
@@ -96,37 +96,37 @@ function seed(branchId: string) {
     const reference = `DN${(seedNum * 1000 + idx).toString().padStart(8, '0')}`;
     group.forEach((g) => (g.paymentRef = reference));
     payments.push({
-      id: `${branchId}-p${idx}`,
-      branchId,
+      id: `${cafeId}-p${idx}`,
+      cafeId,
       date: payDate.toISOString(),
       reference,
       amount: round2(group.reduce((s, g) => s + g.amount, 0)),
       status: 'success',
       chargeIds: group.map((g) => g.id),
-      invoiceNumber: `INV-${branchId.toUpperCase().slice(0, 6)}-${String(idx + 1).padStart(4, '0')}`,
+      invoiceNumber: `INV-${cafeId.toUpperCase().slice(0, 6)}-${String(idx + 1).padStart(4, '0')}`,
     });
   });
 }
 
-export async function getDuePayments(branchId: string): Promise<Charge[]> {
-  seed(branchId);
+export async function getDuePayments(cafeId: string): Promise<Charge[]> {
+  seed(cafeId);
   await delay(400);
-  return charges.filter((c) => c.branchId === branchId && c.status !== 'paid').map((c) => ({ ...c }));
+  return charges.filter((c) => c.cafeId === cafeId && c.status !== 'paid').map((c) => ({ ...c }));
 }
 
-export async function getUsage(branchId: string, month: string): Promise<Charge[]> {
-  seed(branchId);
+export async function getUsage(cafeId: string, month: string): Promise<Charge[]> {
+  seed(cafeId);
   await delay(350);
-  return charges.filter((c) => c.branchId === branchId && c.date.startsWith(month)).map((c) => ({ ...c }));
+  return charges.filter((c) => c.cafeId === cafeId && c.date.startsWith(month)).map((c) => ({ ...c }));
 }
 
-export async function getPaymentHistory(branchId: string): Promise<Payment[]> {
-  seed(branchId);
+export async function getPaymentHistory(cafeId: string): Promise<Payment[]> {
+  seed(cafeId);
   await delay(350);
-  return payments.filter((p) => p.branchId === branchId).sort((a, b) => b.date.localeCompare(a.date)).map((p) => ({ ...p }));
+  return payments.filter((p) => p.cafeId === cafeId).sort((a, b) => b.date.localeCompare(a.date)).map((p) => ({ ...p }));
 }
 
-export async function createDuitNowQr(branchId: string, chargeIds: string[]): Promise<DuitNowQr> {
+export async function createDuitNowQr(cafeId: string, chargeIds: string[]): Promise<DuitNowQr> {
   await delay(500);
   const amount = round2(charges.filter((c) => chargeIds.includes(c.id)).reduce((s, c) => s + c.amount, 0));
   if (!amount) throw new Error('Nothing to pay');
@@ -134,7 +134,7 @@ export async function createDuitNowQr(branchId: string, chargeIds: string[]): Pr
   const qr: DuitNowQr = {
     reference,
     amount,
-    branchId,
+    cafeId,
     chargeIds,
     qrPayload: `00020101021226580014A000000615000101068900000208${reference}5303458540${amount.toFixed(2)}5802MY6304`,
     expiresAt: Date.now() + 90_000,
@@ -156,16 +156,16 @@ export async function getPaymentStatus(reference: string): Promise<{ status: Pay
     qrs.delete(reference);
     return { status: 'failed' };
   }
-  const count = payments.filter((p) => p.branchId === qr.branchId).length;
+  const count = payments.filter((p) => p.cafeId === qr.cafeId).length;
   const payment: Payment = {
-    id: `${qr.branchId}-p${Date.now()}`,
-    branchId: qr.branchId,
+    id: `${qr.cafeId}-p${Date.now()}`,
+    cafeId: qr.cafeId,
     date: new Date().toISOString(),
     reference,
     amount: qr.amount,
     status: 'success',
     chargeIds: qr.chargeIds,
-    invoiceNumber: `INV-${qr.branchId.toUpperCase().slice(0, 6)}-${String(count + 1).padStart(4, '0')}`,
+    invoiceNumber: `INV-${qr.cafeId.toUpperCase().slice(0, 6)}-${String(count + 1).padStart(4, '0')}`,
   };
   payments.push(payment);
   charges.forEach((c) => {
@@ -194,7 +194,7 @@ export async function getInvoicePdf(paymentId: string, ctx: InvoiceContext): Pro
     y += 6;
   };
   line(`Invoice number: ${p.invoiceNumber}`, `Payment date: ${new Date(p.date).toLocaleDateString('en-MY')}`);
-  line(`Branch: ${ctx.branchName}`, `Payment reference: ${p.reference}`);
+  line(`Cafe: ${ctx.cafeName}`, `Payment reference: ${p.reference}`);
   line(`Billing period: ${items[0]?.date ?? '-'} to ${items[items.length - 1]?.date ?? '-'}`);
   y += 4;
   doc.setFontSize(11);

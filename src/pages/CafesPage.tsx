@@ -1,16 +1,16 @@
 import { useState, useMemo, useEffect, Dispatch, SetStateAction } from 'react';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useBranchStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
+import { useCafeStore, useAuthStore, useSeatStore } from '@/shared/lib/store';
 import { useCan } from '@/shared/lib/permissions';
 import { useApprovalStore, toProposal } from '@/features/approvals/approvalService';
 import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
-import { BranchEditProposal } from '@/shared/lib/mock-data';
+import { CafeEditProposal } from '@/shared/lib/mock-data';
 import { useSeatActivityStore } from '@/shared/lib/seatActivityStore';
 import { ROLE_LABELS } from '@/shared/types/auth';
 import { MOCK_USERS, GPU_MODEL_OPTIONS } from '@/shared/lib/mock-data';
-import { Branch, Seat } from '@/shared/lib/mock-data';
-import { getScopedBranches, getBranchesForUser } from '@/shared/lib/branchScope';
+import { Cafe, Seat } from '@/shared/lib/mock-data';
+import { getScopedCafes, getCafesForUser } from '@/shared/lib/cafeScope';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,22 +26,22 @@ import { Building2, MapPin, Monitor, Plus, Settings, Edit, Trash2, UserCheck, Ar
 import { toast } from 'sonner';
 import { Role } from '@/shared/types/auth';
 import { cn } from '@/lib/utils';
-import ShiftManagementDialog from '@/features/branches/ShiftManagementDialog';
+import ShiftManagementDialog from '@/features/cafes/ShiftManagementDialog';
 import { SHIFTS_ENABLED } from '@/shared/lib/featureFlags';
 import { AUTH_MODE } from '@/shared/lib/bff';
-import { useBackendBranches, changedFields, parseRinggit, formatRinggit, type Cafe } from '@/features/branches/branchesApi';
+import { useBackendCafes, changedFields, parseRinggit, formatRinggit, type OwnerAccount } from '@/features/cafes/cafesApi';
 
 /**
- * Real backend (default): branches, cafes and every action go to cafe-management-service (features/branches/branchesApi.ts).
+ * Real backend (default): cafes, cafes and every action go to cafe-management-service (features/cafes/cafesApi.ts).
  * VITE_AUTH_MODE=mock keeps the demo stores. Team assignment (user management) and seat configuration are not connected yet,
  * so in backend mode the form asks only for what the API stores and the seat grid stays a demo feature.
  */
 const BACKEND = AUTH_MODE === 'bff';
 
-interface BranchForm {
+interface CafeForm {
   name: string;
   address: string;
-  cafeId: string;
+  tenantId: string;
   totalSeats: number;
   adminId: string;
   cafeOwnerId: string;
@@ -50,7 +50,7 @@ interface BranchForm {
   dailySpendLimit: string;
 }
 
-const emptyForm: BranchForm = { name: '', address: '', cafeId: '', totalSeats: 10, adminId: '', cafeOwnerId: '', managerId: '', dailySpendLimit: '' };
+const emptyForm: CafeForm = { name: '', address: '', tenantId: '', totalSeats: 10, adminId: '', cafeOwnerId: '', managerId: '', dailySpendLimit: '' };
 
 function getUsersByRole(role: Role) {
   return MOCK_USERS.filter(u => u.role === role);
@@ -62,45 +62,45 @@ function getUserName(id?: string) {
 }
 
 // Defined at module scope so typing in the form doesn't remount the inputs and steal focus.
-interface BranchFormFieldsProps {
+interface CafeFormFieldsProps {
   isEdit: boolean;
-  form: BranchForm;
-  setForm: Dispatch<SetStateAction<BranchForm>>;
-  selectedBranch: Branch | null;
+  form: CafeForm;
+  setForm: Dispatch<SetStateAction<CafeForm>>;
+  selectedCafe: Cafe | null;
   assignableAdmins: typeof MOCK_USERS;
   assignableCafeOwners: typeof MOCK_USERS;
   assignableManagers: typeof MOCK_USERS;
-  /** Backend mode: the cafes the caller may add branches to (create only). */
-  cafes?: Cafe[];
+  /** Backend mode: the owners the caller may add cafes for (create only). */
+  owners?: OwnerAccount[];
 }
 
-function BranchFormFields({
+function CafeFormFields({
   isEdit,
   form,
   setForm,
-  selectedBranch,
+  selectedCafe,
   assignableAdmins,
   assignableCafeOwners,
   assignableManagers,
-  cafes = [],
-}: BranchFormFieldsProps) {
+  owners = [],
+}: CafeFormFieldsProps) {
   if (BACKEND) {
     return (
       <div className="space-y-3">
         {!isEdit && (
           <div>
-            <Label>Cafe *</Label>
-            <Select value={form.cafeId} onValueChange={v => setForm(f => ({ ...f, cafeId: v }))}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Choose the cafe this branch belongs to" /></SelectTrigger>
+            <Label>Owner *</Label>
+            <Select value={form.tenantId} onValueChange={v => setForm(f => ({ ...f, tenantId: v }))}>
+              <SelectTrigger className="mt-1"><SelectValue placeholder="Choose the owner this cafe belongs to" /></SelectTrigger>
               <SelectContent>
-                {cafes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {owners.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            {cafes.length === 0 && <p className="text-xs text-muted-foreground mt-1">No cafe yet: create the cafe owner's company first.</p>}
+            {owners.length === 0 && <p className="text-xs text-muted-foreground mt-1">No owner yet: onboard the cafe owner first.</p>}
           </div>
         )}
         <div>
-          <Label htmlFor="name">Branch Name *</Label>
+          <Label htmlFor="name">Cafe Name *</Label>
           <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
         </div>
         <div>
@@ -113,7 +113,7 @@ function BranchFormFields({
           <p className="text-xs text-muted-foreground mt-1">Alerts at 80% and 100% of this amount per day. Leave empty for no limit.</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          {isEdit && selectedBranch ? `${selectedBranch.totalSeats} seats. ` : ''}Seats and team assignments are set up separately.
+          {isEdit && selectedCafe ? `${selectedCafe.totalSeats} seats. ` : ''}Seats and team assignments are set up separately.
         </p>
       </div>
     );
@@ -123,18 +123,18 @@ function BranchFormFields({
       {/* Step 1: Basic Info */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Step 1 — Branch Details
+          Step 1 — Cafe Details
         </p>
         <div className="space-y-3">
           <div>
-            <Label htmlFor="name">Branch Name *</Label>
+            <Label htmlFor="name">Cafe Name *</Label>
             <Input id="name" placeholder="e.g. Downtown Gaming Hub" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <p className="text-xs text-muted-foreground mt-1">Give your branch a recognizable name</p>
+            <p className="text-xs text-muted-foreground mt-1">Give your cafe a recognizable name</p>
           </div>
           <div>
             <Label htmlFor="address">Address *</Label>
             <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
-            <p className="text-xs text-muted-foreground mt-1">Full street address of the branch</p>
+            <p className="text-xs text-muted-foreground mt-1">Full street address of the cafe</p>
           </div>
         </div>
       </div>
@@ -154,9 +154,9 @@ function BranchFormFields({
             <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setForm(f => ({ ...f, totalSeats: f.totalSeats + 1 }))}>+</Button>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {isEdit && selectedBranch
-              ? `Currently ${selectedBranch.activeSeats} seats are active out of ${selectedBranch.totalSeats}`
-              : 'How many gaming stations does this branch have?'}
+            {isEdit && selectedCafe
+              ? `Currently ${selectedCafe.activeSeats} seats are active out of ${selectedCafe.totalSeats}`
+              : 'How many gaming stations does this cafe have?'}
           </p>
         </div>
       </div>
@@ -168,7 +168,7 @@ function BranchFormFields({
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Step 3 — Assign Team
         </p>
-        <p className="text-xs text-muted-foreground mb-4">Assign users to manage and operate this branch</p>
+        <p className="text-xs text-muted-foreground mb-4">Assign users to manage and operate this cafe</p>
         <div className="space-y-4">
           {/* Sales Manager Assignment - only Super Admin can assign */}
           {assignableAdmins.length > 0 && (
@@ -189,7 +189,7 @@ function BranchFormFields({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">Sales Manager will oversee this branch's operations</p>
+              <p className="text-xs text-muted-foreground mt-1">Sales Manager will oversee this cafe's operations</p>
             </div>
           )}
 
@@ -235,7 +235,7 @@ function BranchFormFields({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific branch</p>
+              <p className="text-xs text-muted-foreground mt-1">Floor Manager will handle this specific cafe</p>
             </div>
           )}
 
@@ -248,28 +248,28 @@ function BranchFormFields({
   );
 }
 
-export default function BranchesPage() {
-  const { branches, addBranch, updateBranch, deleteBranch, toggleBranchStatus } = useBranchStore();
-  const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForBranch } = useSeatStore();
+export default function CafesPage() {
+  const { cafes, addCafe, updateCafe, deleteCafe, toggleCafeStatus } = useCafeStore();
+  const { seats, updateSeatStatus, updateSeat, provisionSeats, syncSeatCount, removeSeatsForCafe } = useSeatStore();
   const currentUser = useAuthStore(s => s.user);
   // What this person may do here (configurable permissions). A role that may only *request* changes (the Sales Manager by
   // default) goes through Super Admin approval for new cafes and for edits of a live cafe.
   const can = useCan();
-  const canRequest = can('branches.request');
-  const canEditDirect = can('branches.edit');
-  const canEnable = can('branches.enable');
-  const canDisable = can('branches.disable');
-  const canMaintain = can('branches.maintenance');
-  const canDeleteBranch = can('branches.delete');
+  const canRequest = can('cafes.request');
+  const canEditDirect = can('cafes.edit');
+  const canEnable = can('cafes.enable');
+  const canDisable = can('cafes.disable');
+  const canMaintain = can('cafes.maintenance');
+  const canDeleteCafe = can('cafes.delete');
   const canViewSeats = can('seats.config.view');
   const canEditSeats = can('seats.config.edit');
   const { submitNewCafe, submitEdit, resubmit } = useApprovalStore();
-  const backend = useBackendBranches();
+  const backend = useBackendCafes();
   useEffect(() => {
     if (BACKEND) void backend.load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const allBranches = BACKEND ? backend.branches : branches;
+  const allCafes = BACKEND ? backend.cafes : cafes;
   const [busy, setBusy] = useState(false);
   /** Run a backend change: one at a time, toast on success, the API's message on failure. Returns whether it worked. */
   const run = async (action: () => Promise<void>, success: string) => {
@@ -293,8 +293,8 @@ export default function BranchesPage() {
   const [showSeatGrid, setShowSeatGrid] = useState(false);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
-  const [form, setForm] = useState<BranchForm>(emptyForm);
+  const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
+  const [form, setForm] = useState<CafeForm>(emptyForm);
   const [editingSeat, setEditingSeat] = useState<Seat | null>(null);
   const [seatForm, setSeatForm] = useState<{ label: string; gpuModel: string; status: Seat['status'] }>({ label: '', gpuModel: 'RTX 4070', status: 'available' });
   const [defaultGpu, setDefaultGpu] = useState<string>('RTX 4070');
@@ -311,19 +311,19 @@ export default function BranchesPage() {
   const userParam = searchParams.get('owner') || searchParams.get('user');
   const selectedUser = userParam ? MOCK_USERS.find(u => u.id === userParam) : undefined;
 
-  // Branches the signed-in user may see, narrowed to the person whose list was opened
-  // Backend: the API already returns only the caller's branches (and hides pending ones from cafe roles).
-  const scopedBranches = useMemo(() => (BACKEND ? allBranches : getScopedBranches(allBranches, currentUser)), [allBranches, currentUser]);
-  const visibleBranches = useMemo(() => (BACKEND ? scopedBranches : getBranchesForUser(scopedBranches, selectedUser)), [scopedBranches, selectedUser]);
+  // Cafes the signed-in user may see, narrowed to the person whose list was opened
+  // Backend: the API already returns only the caller's cafes (and hides pending ones from cafe roles).
+  const scopedCafes = useMemo(() => (BACKEND ? allCafes : getScopedCafes(allCafes, currentUser)), [allCafes, currentUser]);
+  const visibleCafes = useMemo(() => (BACKEND ? scopedCafes : getCafesForUser(scopedCafes, selectedUser)), [scopedCafes, selectedUser]);
 
-  const displayedBranches = useMemo(() => {
-    let list = [...visibleBranches];
+  const displayedCafes = useMemo(() => {
+    let list = [...visibleCafes];
     const q = searchQuery.trim().toLowerCase();
     if (q) list = list.filter(b => b.name.toLowerCase().includes(q));
     if (filterStatus !== 'all') list = list.filter(b => b.status === filterStatus);
     list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [visibleBranches, searchQuery, filterStatus]);
+  }, [visibleCafes, searchQuery, filterStatus]);
 
   const activeFilterCount = filterStatus !== 'all' ? 1 : 0;
 
@@ -336,13 +336,13 @@ export default function BranchesPage() {
   const cafeOwners = getUsersByRole('cafe_owner');
   const managers = getUsersByRole('manager');
 
-  // Every new branch goes through Super Admin approval (no live create), whoever adds it.
+  // Every new cafe goes through Super Admin approval (no live create), whoever adds it.
   const canCreate = canRequest;
 
   const handleAdd = () => {
     const f = { ...emptyForm };
     if (BACKEND) {
-      f.cafeId = backend.cafes.length === 1 ? backend.cafes[0].id : '';
+      f.tenantId = backend.owners.length === 1 ? backend.owners[0].id : '';
       setForm(f);
       setShowAddDialog(true);
       return;
@@ -350,7 +350,7 @@ export default function BranchesPage() {
     // Auto-assign current user based on role
     if (userRole === 'admin') f.adminId = currentUser!.id;
     if (userRole === 'cafe_owner') f.cafeOwnerId = currentUser!.id;
-    // Pre-assign the person whose branch list is currently open
+    // Pre-assign the person whose cafe list is currently open
     if (selectedUser?.role === 'cafe_owner') {
       f.cafeOwnerId = selectedUser.id;
       if (userRole !== 'admin') f.adminId = selectedUser.createdBy || '';
@@ -368,23 +368,23 @@ export default function BranchesPage() {
     setShowAddDialog(true);
   };
 
-  const handleManage = (branch: Branch) => {
-    setSelectedBranch(branch);
+  const handleManage = (cafe: Cafe) => {
+    setSelectedCafe(cafe);
     setForm({
-      name: branch.name,
-      address: branch.address,
-      cafeId: branch.cafeId,
-      totalSeats: branch.totalSeats,
-      adminId: branch.adminId || '',
-      cafeOwnerId: branch.cafeOwnerId || '',
-      managerId: branch.managerId || '',
-      dailySpendLimit: formatRinggit(branch.dailySpendLimitMinor),
+      name: cafe.name,
+      address: cafe.address,
+      tenantId: cafe.tenantId,
+      totalSeats: cafe.totalSeats,
+      adminId: cafe.adminId || '',
+      cafeOwnerId: cafe.cafeOwnerId || '',
+      managerId: cafe.managerId || '',
+      dailySpendLimit: formatRinggit(cafe.dailySpendLimitMinor),
     });
     setShowManageDialog(true);
   };
 
-  const handleSettings = (branch: Branch) => {
-    setSelectedBranch(branch);
+  const handleSettings = (cafe: Cafe) => {
+    setSelectedCafe(cafe);
     setShowSettingsDialog(true);
   };
 
@@ -400,29 +400,29 @@ export default function BranchesPage() {
 
   const submitAdd = async () => {
     if (!form.name || !form.address) {
-      toast.error('Please fill in branch name and address');
+      toast.error('Please fill in cafe name and address');
       return;
     }
     if (BACKEND) {
-      if (!form.cafeId) { toast.error('Choose the cafe this branch belongs to'); return; }
+      if (!form.tenantId) { toast.error('Choose the owner this cafe belongs to'); return; }
       const limit = spendLimitSen();
       if (limit === undefined) return;
       const ok = await run(
-        () => backend.create(form.cafeId, { name: form.name.trim(), address: form.address.trim(), daily_spend_limit_minor: limit }),
+        () => backend.create(form.tenantId, { name: form.name.trim(), address: form.address.trim(), daily_spend_limit_minor: limit }),
         `Cafe "${form.name}" submitted for Super Admin approval`,
       );
       if (ok) setShowAddDialog(false);
       return;
     }
     // Cafes created by a Sales Manager need Super Admin approval before going live.
-    const needsApproval = true; // every new branch goes through Super Admin approval
+    const needsApproval = true; // every new cafe goes through Super Admin approval
     const base = {
       name: form.name,
       address: form.address,
-      cafeId: form.cafeId || 'cafe-1',
+      tenantId: form.tenantId || 'tenant-1',
       totalSeats: form.totalSeats,
       activeSeats: 0,
-      status: (needsApproval ? 'pending' : 'active') as Branch['status'],
+      status: (needsApproval ? 'pending' : 'active') as Cafe['status'],
       adminId: form.adminId || undefined,
       cafeOwnerId: form.cafeOwnerId || undefined,
       managerId: form.managerId || undefined,
@@ -430,48 +430,48 @@ export default function BranchesPage() {
       createdById: currentUser!.id,
       createdAt: new Date().toISOString(),
     };
-    const newId = addBranch(base);
-    const newBranch: Branch = { ...base, id: newId };
+    const newId = addCafe(base);
+    const newCafe: Cafe = { ...base, id: newId };
 
     if (needsApproval) {
-      submitNewCafe(newBranch, { id: currentUser!.id, name: currentUser!.name });
+      submitNewCafe(newCafe, { id: currentUser!.id, name: currentUser!.name });
       toast.success(`Cafe "${form.name}" submitted for Super Admin approval`);
       setShowAddDialog(false);
       return;
     }
 
     provisionSeats(newId, form.totalSeats, defaultGpu);
-    toast.success(`Branch "${form.name}" created with ${form.totalSeats} seats`);
+    toast.success(`Cafe "${form.name}" created with ${form.totalSeats} seats`);
     setShowAddDialog(false);
     // Open seat grid so the owner can immediately configure GPUs
-    setSelectedBranch(newBranch);
+    setSelectedCafe(newCafe);
     setBaselineGpu(defaultGpu);
     setCanSaveSeatConfig(false);
     setShowSeatGrid(true);
   };
 
   const submitUpdate = async () => {
-    if (!selectedBranch) return;
+    if (!selectedCafe) return;
     if (BACKEND) {
       const limit = spendLimitSen();
       if (limit === undefined) return;
-      const input = changedFields(selectedBranch, { name: form.name, address: form.address, dailySpendLimitMinor: limit });
+      const input = changedFields(selectedCafe, { name: form.name, address: form.address, dailySpendLimitMinor: limit });
       let ok = false;
-      if (selectedBranch.status === 'rejected' && canRequest) {
+      if (selectedCafe.status === 'rejected' && canRequest) {
         // A rejected new cafe: the corrections go back for approval together.
-        ok = await run(() => backend.resubmit(selectedBranch, input), `Cafe "${form.name}" corrected and resubmitted for approval`);
+        ok = await run(() => backend.resubmit(selectedCafe, input), `Cafe "${form.name}" corrected and resubmitted for approval`);
       } else if (!Object.keys(input).length) {
         toast.info('Nothing changed');
         ok = true;
       } else if (canEditDirect) {
-        ok = await run(() => backend.update(selectedBranch, input), `Branch "${form.name}" updated successfully`);
+        ok = await run(() => backend.update(selectedCafe, input), `Cafe "${form.name}" updated successfully`);
       } else if (canRequest) {
-        ok = await run(() => backend.requestEdit(selectedBranch, input), 'Edit submitted for Super Admin approval — live values are unchanged');
+        ok = await run(() => backend.requestEdit(selectedCafe, input), 'Edit submitted for Super Admin approval — live values are unchanged');
       }
       if (ok) setShowManageDialog(false);
       return;
     }
-    const proposed: BranchEditProposal = {
+    const proposed: CafeEditProposal = {
       name: form.name,
       address: form.address,
       totalSeats: form.totalSeats,
@@ -482,76 +482,76 @@ export default function BranchesPage() {
 
     // Sales Manager edits to a live cafe become a pending change request;
     // the cafe stays Active with the old values until approved.
-    if (!canEditDirect && selectedBranch.status === 'active') {
-      submitEdit(selectedBranch, proposed, { id: currentUser!.id, name: currentUser!.name });
+    if (!canEditDirect && selectedCafe.status === 'active') {
+      submitEdit(selectedCafe, proposed, { id: currentUser!.id, name: currentUser!.name });
       toast.success('Edit submitted for Super Admin approval — live values are unchanged');
       setShowManageDialog(false);
       return;
     }
 
-    updateBranch(selectedBranch.id, {
+    updateCafe(selectedCafe.id, {
       ...proposed,
-      activeSeats: Math.min(selectedBranch.activeSeats, form.totalSeats),
+      activeSeats: Math.min(selectedCafe.activeSeats, form.totalSeats),
     });
-    syncSeatCount(selectedBranch.id, form.totalSeats, defaultGpu);
+    syncSeatCount(selectedCafe.id, form.totalSeats, defaultGpu);
     toast.success(
-      !canEditDirect && selectedBranch.status === 'rejected'
+      !canEditDirect && selectedCafe.status === 'rejected'
         ? `Cafe "${form.name}" updated — resubmit it for approval when ready`
-        : `Branch "${form.name}" updated successfully`
+        : `Cafe "${form.name}" updated successfully`
     );
     setShowManageDialog(false);
   };
 
-  const handleResubmit = (branch: Branch) => {
+  const handleResubmit = (cafe: Cafe) => {
     if (BACKEND) {
-      void run(() => backend.resubmit(branch), `Cafe "${branch.name}" resubmitted for approval`);
+      void run(() => backend.resubmit(cafe), `Cafe "${cafe.name}" resubmitted for approval`);
       return;
     }
-    const req = resubmit(branch.id, { id: currentUser!.id, name: currentUser!.name });
-    if (req) toast.success(`Cafe "${branch.name}" resubmitted for approval`);
+    const req = resubmit(cafe.id, { id: currentUser!.id, name: currentUser!.name });
+    if (req) toast.success(`Cafe "${cafe.name}" resubmitted for approval`);
     else toast.error('This cafe cannot be resubmitted');
   };
 
   const handleToggleStatus = async () => {
-    if (!selectedBranch) return;
+    if (!selectedCafe) return;
     if (BACKEND) {
-      const enable = selectedBranch.status === 'inactive';
-      const ok = await run(() => backend.setActive(selectedBranch, enable), `Branch "${selectedBranch.name}" ${enable ? 'enabled' : 'disabled'}`);
+      const enable = selectedCafe.status === 'inactive';
+      const ok = await run(() => backend.setActive(selectedCafe, enable), `Cafe "${selectedCafe.name}" ${enable ? 'enabled' : 'disabled'}`);
       if (ok) setShowSettingsDialog(false);
       return;
     }
-    toggleBranchStatus(selectedBranch.id);
-    const newStatus = selectedBranch.status === 'inactive' ? 'active' : 'inactive';
-    toast.success(`Branch "${selectedBranch.name}" ${newStatus === 'active' ? 'enabled' : 'disabled'}`);
+    toggleCafeStatus(selectedCafe.id);
+    const newStatus = selectedCafe.status === 'inactive' ? 'active' : 'inactive';
+    toast.success(`Cafe "${selectedCafe.name}" ${newStatus === 'active' ? 'enabled' : 'disabled'}`);
     setShowSettingsDialog(false);
   };
 
   const handleDelete = async () => {
-    if (!selectedBranch) return;
+    if (!selectedCafe) return;
     if (BACKEND) {
-      const ok = await run(() => backend.close(selectedBranch), `Branch "${selectedBranch.name}" closed`);
+      const ok = await run(() => backend.close(selectedCafe), `Cafe "${selectedCafe.name}" closed`);
       if (ok) { setShowDeleteConfirm(false); setShowSettingsDialog(false); }
       return;
     }
-    removeSeatsForBranch(selectedBranch.id);
-    deleteBranch(selectedBranch.id);
-    toast.success(`Branch "${selectedBranch.name}" deleted`);
+    removeSeatsForCafe(selectedCafe.id);
+    deleteCafe(selectedCafe.id);
+    toast.success(`Cafe "${selectedCafe.name}" deleted`);
     setShowDeleteConfirm(false);
     setShowSettingsDialog(false);
   };
 
   const setMaintenance = async () => {
-    if (!selectedBranch) return;
+    if (!selectedCafe) return;
     if (BACKEND) {
-      const on = selectedBranch.status !== 'maintenance';
-      const ok = await run(() => backend.setMaintenance(selectedBranch, on), `Branch "${selectedBranch.name}" ${on ? 'set to maintenance' : 'back to active'}`);
+      const on = selectedCafe.status !== 'maintenance';
+      const ok = await run(() => backend.setMaintenance(selectedCafe, on), `Cafe "${selectedCafe.name}" ${on ? 'set to maintenance' : 'back to active'}`);
       if (ok) setShowSettingsDialog(false);
       return;
     }
-    updateBranch(selectedBranch.id, {
-      status: selectedBranch.status === 'maintenance' ? 'active' : 'maintenance',
+    updateCafe(selectedCafe.id, {
+      status: selectedCafe.status === 'maintenance' ? 'active' : 'maintenance',
     });
-    toast.success(`Branch "${selectedBranch.name}" ${selectedBranch.status === 'maintenance' ? 'back to active' : 'set to maintenance'}`);
+    toast.success(`Cafe "${selectedCafe.name}" ${selectedCafe.status === 'maintenance' ? 'back to active' : 'set to maintenance'}`);
     setShowSettingsDialog(false);
   };
 
@@ -588,10 +588,10 @@ export default function BranchesPage() {
     );
   };
 
-  const AssignedTeamCard = ({ branch }: { branch: Branch }) => {
-    const admin = getUserName(branch.adminId);
-    const owner = getUserName(branch.cafeOwnerId);
-    const manager = getUserName(branch.managerId);
+  const AssignedTeamCard = ({ cafe }: { cafe: Cafe }) => {
+    const admin = getUserName(cafe.adminId);
+    const owner = getUserName(cafe.cafeOwnerId);
+    const manager = getUserName(cafe.managerId);
 
     const assignments = [
       { label: 'Sales Manager', user: admin, icon: Shield, color: 'text-destructive' },
@@ -616,13 +616,13 @@ export default function BranchesPage() {
     );
   };
 
-  const BranchStatusBadge = ({ branch }: { branch: Branch }) => {
-    if (branch.status === 'pending') return <StatusBadge status="pending" label="Disabled (Pending)" />;
-    if (branch.status === 'rejected') return <StatusBadge status="rejected" label="Disabled (Rejected)" />;
+  const CafeStatusBadge = ({ cafe }: { cafe: Cafe }) => {
+    if (cafe.status === 'pending') return <StatusBadge status="pending" label="Disabled (Pending)" />;
+    if (cafe.status === 'rejected') return <StatusBadge status="rejected" label="Disabled (Rejected)" />;
     return (
       <span className="flex items-center gap-1.5 flex-wrap justify-end">
-        <StatusBadge status={branch.status} />
-        {branch.status === 'active' && branch.pendingEdit && (
+        <StatusBadge status={cafe.status} />
+        {cafe.status === 'active' && cafe.pendingEdit && (
           <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-[10px] px-1.5 py-0 normal-case">
             Edit pending
           </Badge>
@@ -631,7 +631,7 @@ export default function BranchesPage() {
     );
   };
 
-  // Demo mode: the Sales Manager opens branches from a cafe owner in User Management. Backend: their scope is every cafe.
+  // Demo mode: the Sales Manager opens cafes from a cafe owner in User Management. Backend: their scope is every cafe.
   if (!BACKEND && userRole === 'admin' && !selectedUser) return <Navigate to="/users" replace />;
 
   return (
@@ -644,13 +644,13 @@ export default function BranchesPage() {
             </Button>
           )}
           <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedUser ? `${selectedUser.name}'s Branches` : 'Branches'}</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">{selectedUser ? `${ROLE_LABELS[selectedUser.role]} — showing only branches assigned to them` : 'Manage gaming cafe locations, seats, and team assignments'}</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{selectedUser ? `${selectedUser.name}'s Cafes` : 'Cafes'}</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">{selectedUser ? `${ROLE_LABELS[selectedUser.role]} — showing only cafes assigned to them` : 'Manage gaming cafe locations, seats, and team assignments'}</p>
           </div>
         </div>
         {canCreate && (
           <Button className="gradient-primary text-primary-foreground gap-2 w-full sm:w-auto" onClick={handleAdd}>
-            <Plus className="h-4 w-4" /> Add Branch
+            <Plus className="h-4 w-4" /> Add Cafe
           </Button>
         )}
       </div>
@@ -662,7 +662,7 @@ export default function BranchesPage() {
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by branch name..."
+                placeholder="Search by cafe name..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -698,33 +698,33 @@ export default function BranchesPage() {
         </CardContent>
       </Card>
 
-      {/* Branch Grid */}
+      {/* Cafe Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displayedBranches.map(branch => {
-          const isBlocked = branch.status === 'pending' || branch.status === 'rejected';
+        {displayedCafes.map(cafe => {
+          const isBlocked = cafe.status === 'pending' || cafe.status === 'rejected';
           return (
-          <Card key={branch.id} className={`hover:shadow-md transition-shadow ${branch.status === 'inactive' || isBlocked ? 'opacity-60' : ''}`}>
+          <Card key={cafe.id} className={`hover:shadow-md transition-shadow ${cafe.status === 'inactive' || isBlocked ? 'opacity-60' : ''}`}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">{branch.name}</h3>
+                  <h3 className="font-semibold">{cafe.name}</h3>
                 </div>
-                <BranchStatusBadge branch={branch} />
+                <CafeStatusBadge cafe={cafe} />
               </div>
               <div className="space-y-2 text-sm text-muted-foreground mb-2">
-                <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {branch.address}</p>
+                <p className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {cafe.address}</p>
                 {BACKEND ? (
-                  <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {branch.totalSeats} seats</p>
+                  <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {cafe.totalSeats} seats</p>
                 ) : (
-                  <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {branch.activeSeats} active / {branch.totalSeats} total seats</p>
+                  <p className="flex items-center gap-1.5"><Armchair className="h-3.5 w-3.5" /> {cafe.activeSeats} active / {cafe.totalSeats} total seats</p>
                 )}
               </div>
 
               {BACKEND ? (
                 <div className="p-3 rounded-lg bg-muted/50 border mb-4 text-xs space-y-1">
-                  <p className="flex items-center gap-1.5"><User className="h-3 w-3 text-primary" /><span className="text-muted-foreground">Cafe:</span> <span className="font-medium">{branch.tenantName}</span></p>
-                  <p className="text-muted-foreground">Daily spend limit: {branch.dailySpendLimitMinor == null ? 'none' : `RM ${formatRinggit(branch.dailySpendLimitMinor)}`}</p>
+                  <p className="flex items-center gap-1.5"><User className="h-3 w-3 text-primary" /><span className="text-muted-foreground">Owner:</span> <span className="font-medium">{cafe.tenantName}</span></p>
+                  <p className="text-muted-foreground">Daily spend limit: {cafe.dailySpendLimitMinor == null ? 'none' : `RM ${formatRinggit(cafe.dailySpendLimitMinor)}`}</p>
                 </div>
               ) : (
               /* Assigned Team */
@@ -732,19 +732,19 @@ export default function BranchesPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
                   <Users className="h-3 w-3" /> Assigned Team
                 </p>
-                <AssignedTeamCard branch={branch} />
+                <AssignedTeamCard cafe={cafe} />
               </div>
               )}
 
               {/* Rejection feedback + resubmit (new cafe flow) */}
-              {branch.status === 'rejected' && branch.approvalFeedback && (
+              {cafe.status === 'rejected' && cafe.approvalFeedback && (
                 <div className="mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
                   <p className="flex items-center gap-1.5 font-medium text-destructive text-xs mb-1">
                     <AlertCircle className="h-3.5 w-3.5" /> Rejected by Super Admin
                   </p>
-                  <p className="text-xs text-muted-foreground">{branch.approvalFeedback}</p>
+                  <p className="text-xs text-muted-foreground">{cafe.approvalFeedback}</p>
                   {canRequest && (
-                    <Button size="sm" variant="outline" className="mt-2 gap-1.5" disabled={busy} onClick={() => handleResubmit(branch)}>
+                    <Button size="sm" variant="outline" className="mt-2 gap-1.5" disabled={busy} onClick={() => handleResubmit(cafe)}>
                       <Send className="h-3.5 w-3.5" /> Resubmit for approval
                     </Button>
                   )}
@@ -752,23 +752,23 @@ export default function BranchesPage() {
               )}
 
               {/* Rejected edit feedback */}
-              {branch.editFeedback && canRequest && (
+              {cafe.editFeedback && canRequest && (
                 <div className="mb-3 p-3 rounded-lg border border-warning/30 bg-warning/5">
                   <p className="flex items-center gap-1.5 font-medium text-warning text-xs mb-1">
                     <AlertCircle className="h-3.5 w-3.5" /> Edit request rejected
                   </p>
-                  <p className="text-xs text-muted-foreground">{branch.editFeedback}</p>
+                  <p className="text-xs text-muted-foreground">{cafe.editFeedback}</p>
                   <p className="text-[11px] text-muted-foreground mt-1 italic">Revise the cafe details and save again to resubmit.</p>
                 </div>
               )}
 
               {/* Pending edit comparison */}
-              {branch.pendingEdit && (
+              {cafe.pendingEdit && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full mb-3 gap-1.5"
-                  onClick={() => { setSelectedBranch(branch); setShowCompareDialog(true); }}
+                  onClick={() => { setSelectedCafe(cafe); setShowCompareDialog(true); }}
                 >
                   <GitCompareArrows className="h-3.5 w-3.5" /> View pending changes
                 </Button>
@@ -776,22 +776,22 @@ export default function BranchesPage() {
 
               <div className="flex flex-wrap gap-2">
                 {!BACKEND && !isBlocked && canViewSeats && (
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedCafe(cafe); setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); setShowSeatGrid(true); }}>
                     <LayoutGrid className="h-3.5 w-3.5" /> Seats
                   </Button>
                 )}
                 {SHIFTS_ENABLED && !isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedBranch(branch); setShowShiftDialog(true); }}>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedCafe(cafe); setShowShiftDialog(true); }}>
                     <Clock className="h-3.5 w-3.5" /> Shifts
                   </Button>
                 )}
                 {(canEditDirect || canRequest) && (
-                  <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(branch)}>
+                  <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleManage(cafe)}>
                     <Edit className="h-3.5 w-3.5" /> Manage
                   </Button>
                 )}
-                {(canDisable || canMaintain || canDeleteBranch || (canEnable && !isBlocked)) && (
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(branch)}>
+                {(canDisable || canMaintain || canDeleteCafe || (canEnable && !isBlocked)) && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleSettings(cafe)}>
                     <Settings className="h-3.5 w-3.5" /> Settings
                   </Button>
                 )}
@@ -806,7 +806,7 @@ export default function BranchesPage() {
         <Card>
           <CardContent className="p-6 text-center text-sm">
             <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
-            <p className="font-medium mb-1">Could not load branches</p>
+            <p className="font-medium mb-1">Could not load cafes</p>
             <p className="text-muted-foreground mb-3">{backend.error}</p>
             <Button size="sm" variant="outline" onClick={() => void backend.load()}>Try again</Button>
           </CardContent>
@@ -814,20 +814,20 @@ export default function BranchesPage() {
       )}
 
       {BACKEND && !backend.loaded && (
-        <p className="text-sm text-muted-foreground text-center py-8">Loading branches…</p>
+        <p className="text-sm text-muted-foreground text-center py-8">Loading cafes…</p>
       )}
 
-      {displayedBranches.length === 0 && (!BACKEND || (backend.loaded && !backend.error)) && (
+      {displayedCafes.length === 0 && (!BACKEND || (backend.loaded && !backend.error)) && (
         <Card>
           <CardContent className="p-12 text-center">
             <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-1">{selectedUser ? `No branches assigned to ${selectedUser.name}` : 'No branches found'}</h3>
+            <h3 className="font-semibold text-lg mb-1">{selectedUser ? `No cafes assigned to ${selectedUser.name}` : 'No cafes found'}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {visibleBranches.length === 0
-                ? (canCreate ? 'Get started by adding your first branch' : 'No branches are assigned to you yet')
-                : 'No branches match your current search and filters'}
+              {visibleCafes.length === 0
+                ? (canCreate ? 'Get started by adding your first cafe' : 'No cafes are assigned to you yet')
+                : 'No cafes match your current search and filters'}
             </p>
-            {visibleBranches.length > 0 && (
+            {visibleCafes.length > 0 && (
               <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5">
                 <X className="h-3.5 w-3.5" /> Clear filters
               </Button>
@@ -836,42 +836,42 @@ export default function BranchesPage() {
         </Card>
       )}
 
-      {/* Add Branch Dialog */}
+      {/* Add Cafe Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Add New Branch</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Add New Cafe</DialogTitle>
             <DialogDescription>Set up a new gaming cafe location with seats and team assignments</DialogDescription>
           </DialogHeader>
-          <BranchFormFields
+          <CafeFormFields
             isEdit={false}
             form={form}
             setForm={setForm}
-            selectedBranch={selectedBranch}
+            selectedCafe={selectedCafe}
             assignableAdmins={getAssignableAdmins()}
             assignableCafeOwners={getAssignableCafeOwners()}
             assignableManagers={getAssignableManagers()}
-            cafes={backend.cafes}
+            owners={backend.owners}
           />
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button className="gradient-primary text-primary-foreground" onClick={() => void submitAdd()} disabled={busy || !form.name.trim() || !form.address.trim() || (BACKEND && !form.cafeId)}>Create Branch</Button>
+            <Button className="gradient-primary text-primary-foreground" onClick={() => void submitAdd()} disabled={busy || !form.name.trim() || !form.address.trim() || (BACKEND && !form.tenantId)}>Create Cafe</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Manage Branch Dialog */}
+      {/* Manage Cafe Dialog */}
       <Dialog open={showManageDialog} onOpenChange={setShowManageDialog}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Edit className="h-5 w-5" /> Edit Branch</DialogTitle>
-            <DialogDescription>Update branch details, seats, and team assignments</DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Edit className="h-5 w-5" /> Edit Cafe</DialogTitle>
+            <DialogDescription>Update cafe details, seats, and team assignments</DialogDescription>
           </DialogHeader>
-          <BranchFormFields
+          <CafeFormFields
             isEdit={true}
             form={form}
             setForm={setForm}
-            selectedBranch={selectedBranch}
+            selectedCafe={selectedCafe}
             assignableAdmins={getAssignableAdmins()}
             assignableCafeOwners={getAssignableCafeOwners()}
             assignableManagers={getAssignableManagers()}
@@ -887,48 +887,48 @@ export default function BranchesPage() {
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Branch Settings</DialogTitle>
-            <DialogDescription>{selectedBranch?.name}</DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Cafe Settings</DialogTitle>
+            <DialogDescription>{selectedCafe?.name}</DialogDescription>
           </DialogHeader>
-          {selectedBranch && (
+          {selectedCafe && (
             <div className="space-y-4">
-              {selectedBranch.status === 'pending' || selectedBranch.status === 'rejected' ? (
+              {selectedCafe.status === 'pending' || selectedCafe.status === 'rejected' ? (
                 <p className="text-xs text-muted-foreground p-3 rounded-lg border bg-muted/30">
-                  This cafe is {selectedBranch.status === 'pending' ? 'awaiting Super Admin approval' : 'rejected'} — status controls are locked.
+                  This cafe is {selectedCafe.status === 'pending' ? 'awaiting Super Admin approval' : 'rejected'} — status controls are locked.
                 </p>
               ) : (
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div>
-                  <p className="font-medium text-sm">Branch Active</p>
+                  <p className="font-medium text-sm">Cafe Active</p>
                   <p className="text-xs text-muted-foreground">
-                    {!canDisable ? 'Enable this branch' : 'Enable or disable this branch'}
+                    {!canDisable ? 'Enable this cafe' : 'Enable or disable this cafe'}
                   </p>
                 </div>
                 <Switch
-                  checked={selectedBranch.status !== 'inactive'}
-                  disabled={!(selectedBranch.status === 'inactive' ? canEnable : canDisable)}
-                  onCheckedChange={() => { if (!busy && (selectedBranch.status === 'inactive' ? canEnable : canDisable)) void handleToggleStatus(); }}
+                  checked={selectedCafe.status !== 'inactive'}
+                  disabled={!(selectedCafe.status === 'inactive' ? canEnable : canDisable)}
+                  onCheckedChange={() => { if (!busy && (selectedCafe.status === 'inactive' ? canEnable : canDisable)) void handleToggleStatus(); }}
                 />
               </div>
               )}
 
-              {(canMaintain || canDeleteBranch) && selectedBranch.status !== 'pending' && selectedBranch.status !== 'rejected' && (
+              {(canMaintain || canDeleteCafe) && selectedCafe.status !== 'pending' && selectedCafe.status !== 'rejected' && (
                 <>
                   {canMaintain && (
                     <Button variant="outline" className="w-full justify-start gap-2" disabled={busy} onClick={() => void setMaintenance()}>
                       <Monitor className="h-4 w-4" />
-                      {selectedBranch.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
+                      {selectedCafe.status === 'maintenance' ? 'End Maintenance Mode' : 'Set Maintenance Mode'}
                     </Button>
                   )}
 
-                  {canMaintain && canDeleteBranch && <Separator />}
+                  {canMaintain && canDeleteCafe && <Separator />}
 
-                  {canDeleteBranch && (
+                  {canDeleteCafe && (
                     <>
                       <Button variant="destructive" className="w-full justify-start gap-2" onClick={() => setShowDeleteConfirm(true)}>
-                        <Trash2 className="h-4 w-4" /> Delete Branch
+                        <Trash2 className="h-4 w-4" /> Delete Cafe
                       </Button>
-                      <p className="text-xs text-muted-foreground">{BACKEND ? 'The branch is closed and hidden; its history is kept' : 'Deleting a branch is permanent and cannot be undone'}</p>
+                      <p className="text-xs text-muted-foreground">{BACKEND ? 'The cafe is closed and hidden; its history is kept' : 'Deleting a cafe is permanent and cannot be undone'}</p>
                     </>
                   )}
                 </>
@@ -945,19 +945,19 @@ export default function BranchesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <LayoutGrid className="h-5 w-5 text-primary" />
-              {selectedBranch?.name} — Seat Configuration
+              {selectedCafe?.name} — Seat Configuration
             </DialogTitle>
             <DialogDescription>
               {!canEditSeats
-                ? 'Read-only view of this branch seats. Only the branch owner or super admin can change them.'
+                ? 'Read-only view of this cafe seats. Only the cafe owner or super admin can change them.'
                 : 'Click any seat to edit its name, GPU model and status.'}
             </DialogDescription>
           </DialogHeader>
-          {selectedBranch && (() => {
-            const branchSeats = seats.filter(s => s.branchId === selectedBranch.id).sort((a, b) => a.number - b.number);
-            const available = branchSeats.filter(s => s.status === 'available').length;
-            const occupied = branchSeats.filter(s => s.status === 'occupied').length;
-            const maintenance = branchSeats.filter(s => s.status === 'maintenance').length;
+          {selectedCafe && (() => {
+            const cafeSeats = seats.filter(s => s.cafeId === selectedCafe.id).sort((a, b) => a.number - b.number);
+            const available = cafeSeats.filter(s => s.status === 'available').length;
+            const occupied = cafeSeats.filter(s => s.status === 'occupied').length;
+            const maintenance = cafeSeats.filter(s => s.status === 'maintenance').length;
             const canEdit = canEditSeats;
 
             return (
@@ -979,7 +979,7 @@ export default function BranchesPage() {
                 </div>
 
                 {/* Bulk GPU assignment */}
-                {canEdit && branchSeats.length > 0 && (
+                {canEdit && cafeSeats.length > 0 && (
                   <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg border bg-muted/30">
                     <div className="flex-1 min-w-[180px]">
                       <Label className="text-xs flex items-center gap-1.5"><Cpu className="h-3 w-3" /> Default GPU for new/unassigned seats</Label>
@@ -998,14 +998,14 @@ export default function BranchesPage() {
                       onClick={() => {
                         let count = 0;
                         const actor = currentUser;
-                        branchSeats.forEach(s => {
+                        cafeSeats.forEach(s => {
                           if (s.status !== 'occupied' && s.gpuModel !== defaultGpu) {
                             if (actor) {
                               useSeatActivityStore.getState().log({
                                 seatId: s.id,
                                 seatNumber: s.number,
-                                branchId: s.branchId,
-                                branchName: selectedBranch.name,
+                                cafeId: s.cafeId,
+                                cafeName: selectedCafe.name,
                                 field: 'gpuModel',
                                 fromValue: s.gpuModel || '—',
                                 toValue: defaultGpu,
@@ -1044,7 +1044,7 @@ export default function BranchesPage() {
                 {/* Grid */}
                 <TooltipProvider delayDuration={200}>
                   <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                    {branchSeats.map(seat => {
+                    {cafeSeats.map(seat => {
                       const statusColor = seat.status === 'available'
                         ? 'bg-success/15 border-success/30 hover:bg-success/25 text-success'
                         : seat.status === 'occupied'
@@ -1093,19 +1093,19 @@ export default function BranchesPage() {
                   </div>
                 </TooltipProvider>
 
-                {branchSeats.length === 0 && (
+                {cafeSeats.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Armchair className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm mb-3">No seats configured for this branch yet</p>
+                    <p className="text-sm mb-3">No seats configured for this cafe yet</p>
                     {canEdit && (
                       <Button
                         size="sm"
                         onClick={() => {
-                          provisionSeats(selectedBranch.id, selectedBranch.totalSeats || 1, defaultGpu);
-                          toast.success(`Provisioned ${selectedBranch.totalSeats} seats`);
+                          provisionSeats(selectedCafe.id, selectedCafe.totalSeats || 1, defaultGpu);
+                          toast.success(`Provisioned ${selectedCafe.totalSeats} seats`);
                         }}
                       >
-                        <Plus className="h-3.5 w-3.5 mr-1.5" /> Provision {selectedBranch.totalSeats} seats
+                        <Plus className="h-3.5 w-3.5 mr-1.5" /> Provision {selectedCafe.totalSeats} seats
                       </Button>
                     )}
                   </div>
@@ -1189,15 +1189,15 @@ export default function BranchesPage() {
                 const wasOccupied = editingSeat.status === 'occupied';
                 const becomesNonOccupied = seatForm.status !== 'occupied';
                 const newLabel = seatForm.label.trim() || undefined;
-                const branchName = selectedBranch?.name || '';
+                const cafeName = selectedCafe?.name || '';
                 const logChange = (field: 'label' | 'gpuModel' | 'status', from: string, to: string) => {
                   if (from === to) return;
                   if (!currentUser) return;
                   useSeatActivityStore.getState().log({
                     seatId: editingSeat.id,
                     seatNumber: editingSeat.number,
-                    branchId: editingSeat.branchId,
-                    branchName,
+                    cafeId: editingSeat.cafeId,
+                    cafeName,
                     field,
                     fromValue: from,
                     toValue: to,
@@ -1229,16 +1229,16 @@ export default function BranchesPage() {
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Trash2 className="h-5 w-5 text-destructive" /> Delete {selectedBranch?.name}?</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Trash2 className="h-5 w-5 text-destructive" /> Delete {selectedCafe?.name}?</DialogTitle>
             <DialogDescription>
               {BACKEND
-                ? 'The branch is closed: it disappears from every list and stops taking sessions. Its history is kept.'
-                : 'This removes the branch and its seats. It cannot be undone.'}
+                ? 'The cafe is closed: it disappears from every list and stops taking sessions. Its history is kept.'
+                : 'This removes the cafe and its seats. It cannot be undone.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-            <Button variant="destructive" disabled={busy} onClick={() => void handleDelete()}>Delete Branch</Button>
+            <Button variant="destructive" disabled={busy} onClick={() => void handleDelete()}>Delete Cafe</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1248,14 +1248,14 @@ export default function BranchesPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <GitCompareArrows className="h-5 w-5 text-primary" /> Pending changes — {selectedBranch?.name}
+              <GitCompareArrows className="h-5 w-5 text-primary" /> Pending changes — {selectedCafe?.name}
             </DialogTitle>
             <DialogDescription>
               Current live values vs the proposed changes awaiting Super Admin approval
             </DialogDescription>
           </DialogHeader>
-          {selectedBranch?.pendingEdit && (
-            <PendingChangesCompare current={toProposal(selectedBranch)} proposed={selectedBranch.pendingEdit} backend={BACKEND} />
+          {selectedCafe?.pendingEdit && (
+            <PendingChangesCompare current={toProposal(selectedCafe)} proposed={selectedCafe.pendingEdit} backend={BACKEND} />
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCompareDialog(false)}>Close</Button>
@@ -1267,7 +1267,7 @@ export default function BranchesPage() {
         <ShiftManagementDialog
           open={showShiftDialog}
           onOpenChange={setShowShiftDialog}
-          branch={selectedBranch}
+          cafe={selectedCafe}
         />
       )}
     </div>

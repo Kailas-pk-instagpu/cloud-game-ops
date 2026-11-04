@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { MOCK_GPU_NODES, MOCK_BRANCHES, GPU_MODEL_OPTIONS, type GPUNode } from '@/shared/lib/mock-data';
+import { MOCK_GPU_NODES, MOCK_CAFES, GPU_MODEL_OPTIONS, type GPUNode } from '@/shared/lib/mock-data';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -39,7 +39,7 @@ function tempClass(t: number) {
 
 export default function GPUNodesPage() {
   const [search, setSearch] = useState('');
-  const [branch, setBranch] = useState<string>('all');
+  const [cafe, setCafe] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [model, setModel] = useState<string>('all');
   const [health, setHealth] = useState<string>('all');
@@ -51,7 +51,7 @@ export default function GPUNodesPage() {
     const q = search.trim().toLowerCase();
     let list = MOCK_GPU_NODES.filter(n => {
       if (q && !n.name.toLowerCase().includes(q) && !n.id.toLowerCase().includes(q)) return false;
-      if (branch !== 'all' && n.branchId !== branch) return false;
+      if (cafe !== 'all' && n.cafeId !== cafe) return false;
       if (status !== 'all' && n.status !== status) return false;
       if (model !== 'all' && n.gpuModel !== model) return false;
       if (health !== 'all' && n.health !== health) return false;
@@ -73,12 +73,12 @@ export default function GPUNodesPage() {
       }
     });
     return list;
-  }, [search, branch, status, model, health, utilBucket, sortBy]);
+  }, [search, cafe, status, model, health, utilBucket, sortBy]);
 
-  const activeFilters = [branch, status, model, health, utilBucket].filter(v => v !== 'all').length + (search ? 1 : 0);
+  const activeFilters = [cafe, status, model, health, utilBucket].filter(v => v !== 'all').length + (search ? 1 : 0);
 
   const reset = () => {
-    setSearch(''); setBranch('all'); setStatus('all'); setModel('all'); setHealth('all'); setUtilBucket('all');
+    setSearch(''); setCafe('all'); setStatus('all'); setModel('all'); setHealth('all'); setUtilBucket('all');
   };
 
   return (
@@ -105,11 +105,11 @@ export default function GPUNodesPage() {
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            <Select value={branch} onValueChange={setBranch}>
-              <SelectTrigger><SelectValue placeholder="Branch" /></SelectTrigger>
+            <Select value={cafe} onValueChange={setCafe}>
+              <SelectTrigger><SelectValue placeholder="Cafe" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All branches</SelectItem>
-                {MOCK_BRANCHES.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                <SelectItem value="all">All cafes</SelectItem>
+                {MOCK_CAFES.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>

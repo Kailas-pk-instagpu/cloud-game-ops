@@ -1,8 +1,8 @@
-import { BranchEditProposal, MOCK_USERS } from '@/shared/lib/mock-data';
+import { CafeEditProposal, MOCK_USERS } from '@/shared/lib/mock-data';
 import { cn } from '@/lib/utils';
 
-const FIELDS: { key: keyof BranchEditProposal; label: string }[] = [
-  { key: 'name', label: 'Branch Name' },
+const FIELDS: { key: keyof CafeEditProposal; label: string }[] = [
+  { key: 'name', label: 'Cafe Name' },
   { key: 'address', label: 'Address' },
   { key: 'totalSeats', label: 'Seats' },
   { key: 'adminId', label: 'Sales Manager' },
@@ -10,14 +10,14 @@ const FIELDS: { key: keyof BranchEditProposal; label: string }[] = [
   { key: 'managerId', label: 'Floor Manager' },
 ];
 
-/** What the backend stores for a branch (and so what an edit request can change). */
-const BACKEND_FIELDS: { key: keyof BranchEditProposal; label: string }[] = [
-  { key: 'name', label: 'Branch Name' },
+/** What the backend stores for a cafe (and so what an edit request can change). */
+const BACKEND_FIELDS: { key: keyof CafeEditProposal; label: string }[] = [
+  { key: 'name', label: 'Cafe Name' },
   { key: 'address', label: 'Address' },
   { key: 'dailySpendLimitMinor', label: 'Daily spend limit' },
 ];
 
-function display(p: BranchEditProposal, key: keyof BranchEditProposal): string {
+function display(p: CafeEditProposal, key: keyof CafeEditProposal): string {
   const v = p[key];
   if (key === 'totalSeats') return String(v ?? '—');
   if (key === 'name' || key === 'address') return (v as string) || '—';
@@ -31,8 +31,8 @@ export function PendingChangesCompare({
   proposed,
   backend = false,
 }: {
-  current: BranchEditProposal;
-  proposed: BranchEditProposal;
+  current: CafeEditProposal;
+  proposed: CafeEditProposal;
   /** Compare the fields the backend stores (name, address, spend limit) instead of the demo fields. */
   backend?: boolean;
 }) {

@@ -9,7 +9,7 @@ interface EndSessionConfirmDialogProps {
   onConfirm: () => void;
   isProcessing?: boolean;
   customerName?: string;
-  branchName?: string;
+  cafeName?: string;
   durationSec: number;
   lockedAmount: number;
   usageCost: number;
@@ -30,7 +30,7 @@ export function EndSessionConfirmDialog({
   onConfirm,
   isProcessing = false,
   customerName,
-  branchName,
+  cafeName,
   durationSec,
   lockedAmount,
   usageCost,
@@ -51,10 +51,10 @@ export function EndSessionConfirmDialog({
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          {(customerName || branchName) && (
+          {(customerName || cafeName) && (
             <div className="rounded-lg border bg-muted/40 p-3 text-sm space-y-0.5">
               {customerName && <p><span className="text-muted-foreground">Customer:</span> <strong>{customerName}</strong></p>}
-              {branchName && <p><span className="text-muted-foreground">Branch:</span> <strong>{branchName}</strong></p>}
+              {cafeName && <p><span className="text-muted-foreground">Cafe:</span> <strong>{cafeName}</strong></p>}
             </div>
           )}
 

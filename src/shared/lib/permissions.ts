@@ -5,8 +5,8 @@ import { useAuthStore } from './store';
 
 /**
  * Permissions (backend: insta-gpu-backend-dev docs/permissions.md). What a role may do is configurable by the super admin; the
- * backend sends the signed-in person's list in GET /me (`User.permissions`). Pages ask `can('branches.edit')` instead of checking
- * role names. Which cafe or branch a person sees is NOT a permission: that stays in branchScope.ts and the backend.
+ * backend sends the signed-in person's list in GET /me (`User.permissions`). Pages ask `can('cafes.edit')` instead of checking
+ * role names. Which cafe or cafe a person sees is NOT a permission: that stays in cafeScope.ts and the backend.
  * `locked` = platform-only: never given to cafe_owner or manager.
  */
 export const PERMISSIONS = {
@@ -22,26 +22,26 @@ export const PERMISSIONS = {
   'users.reset_password': { feature: 'Users', description: 'Send a user a password reset', locked: false },
   'users.delete': { feature: 'Users', description: 'Delete a user', locked: false },
 
-  'branches.view': { feature: 'Branches', description: 'List and open branches in scope', locked: false },
-  'branches.edit': { feature: 'Branches', description: 'Edit a branch, applied at once', locked: false },
-  'branches.request': { feature: 'Branches', description: 'Add a branch (always through Super Admin approval), propose an edit, resubmit', locked: false },
-  'branches.enable': { feature: 'Branches', description: 'Turn an inactive branch on', locked: false },
-  'branches.disable': { feature: 'Branches', description: 'Turn a branch off', locked: false },
-  'branches.maintenance': { feature: 'Branches', description: 'Start or end maintenance mode', locked: false },
-  'branches.delete': { feature: 'Branches', description: 'Delete a branch', locked: false },
-  'seats.config.view': { feature: 'Branches', description: "See a branch's seat configuration", locked: false },
-  'seats.config.edit': { feature: 'Branches', description: 'Rename seats, set GPU model and status', locked: false },
+  'cafes.view': { feature: 'Cafes', description: 'List and open cafes in scope', locked: false },
+  'cafes.edit': { feature: 'Cafes', description: 'Edit a cafe, applied at once', locked: false },
+  'cafes.request': { feature: 'Cafes', description: 'Add a cafe (always through Super Admin approval), propose an edit, resubmit', locked: false },
+  'cafes.enable': { feature: 'Cafes', description: 'Turn an inactive cafe on', locked: false },
+  'cafes.disable': { feature: 'Cafes', description: 'Turn a cafe off', locked: false },
+  'cafes.maintenance': { feature: 'Cafes', description: 'Start or end maintenance mode', locked: false },
+  'cafes.delete': { feature: 'Cafes', description: 'Delete a cafe', locked: false },
+  'seats.config.view': { feature: 'Cafes', description: "See a cafe's seat configuration", locked: false },
+  'seats.config.edit': { feature: 'Cafes', description: 'Rename seats, set GPU model and status', locked: false },
 
   'approvals.view': { feature: 'Approvals', description: 'List approval requests', locked: true },
   'approvals.decide': { feature: 'Approvals', description: 'Approve or reject a request', locked: true },
 
-  'seats.operate.view': { feature: 'Seat Management', description: 'Live seat grid of own branch', locked: false },
+  'seats.operate.view': { feature: 'Seat Management', description: 'Live seat grid of own cafe', locked: false },
   'sessions.start': { feature: 'Seat Management', description: 'Check a player in', locked: false },
   'sessions.extend': { feature: 'Seat Management', description: 'Extend a running session', locked: false },
   'sessions.end': { feature: 'Seat Management', description: 'End billing and settle a session', locked: false },
   'seats.restart': { feature: 'Seat Management', description: 'Restart a seat', locked: false },
 
-  'billing.view': { feature: 'Billing', description: 'Branch billing overview, usage and history', locked: false },
+  'billing.view': { feature: 'Billing', description: 'Cafe billing overview, usage and history', locked: false },
   'billing.pay': { feature: 'Billing', description: 'Pay outstanding invoices', locked: false },
   'billing.invoices.download': { feature: 'Billing', description: 'Download invoices', locked: false },
   'sessions.view': { feature: 'Billing', description: 'Session billing detail and active sessions', locked: false },
@@ -74,7 +74,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
     'dashboard.view',
     'users.view', 'users.create.admin', 'users.create.cafe_owner', 'users.create.manager', 'users.edit', 'users.disable',
     'users.reset_2fa', 'users.reset_password', 'users.delete',
-    'branches.view', 'branches.request', 'branches.edit', 'branches.enable', 'branches.disable', 'branches.maintenance', 'branches.delete',
+    'cafes.view', 'cafes.request', 'cafes.edit', 'cafes.enable', 'cafes.disable', 'cafes.maintenance', 'cafes.delete',
     'seats.config.view', 'seats.config.edit',
     'approvals.view', 'approvals.decide',
     'billing.view', 'billing.invoices.download', 'sessions.view', 'settlements.view',
@@ -84,7 +84,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
   admin: [
     'dashboard.view',
     'users.view', 'users.create.cafe_owner', 'users.edit', 'users.disable',
-    'branches.view', 'branches.request', 'branches.enable',
+    'cafes.view', 'cafes.request', 'cafes.enable',
     'seats.config.view',
     'billing.view', 'sessions.view', 'settlements.view',
     'integrations.status.view',
@@ -92,7 +92,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
   cafe_owner: [
     'dashboard.view',
     'users.view', 'users.create.manager', 'users.edit', 'users.disable', 'users.reset_2fa', 'users.reset_password',
-    'branches.view', 'branches.request', 'branches.edit',
+    'cafes.view', 'cafes.request', 'cafes.edit',
     'seats.config.view', 'seats.config.edit',
     'sessions.end',
     'billing.view', 'billing.pay', 'billing.invoices.download', 'sessions.view', 'settlements.view',
@@ -123,7 +123,7 @@ export function hasPermission(user: User | null, permission: Permission): boolea
   return permissionsOf(user).includes(permission);
 }
 
-/** React: `const can = useCan(); if (can('branches.edit')) ...` — re-renders when the person or the mock matrix changes. */
+/** React: `const can = useCan(); if (can('cafes.edit')) ...` — re-renders when the person or the mock matrix changes. */
 export function useCan(): (permission: Permission) => boolean {
   const user = useAuthStore((s) => s.user);
   const mockGrants = useMockGrants((s) => s.grants);

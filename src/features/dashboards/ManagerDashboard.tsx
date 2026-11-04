@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MOCK_SEATS, MOCK_BRANCHES, REVENUE_DATA } from '@/shared/lib/mock-data';
+import { MOCK_SEATS, MOCK_CAFES, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Seat } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ const RECENT_ACTIVITY = [
 ];
 
 export default function ManagerDashboard() {
-  const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.branchId === 'branch-1'));
+  const [seats, setSeats] = useState<Seat[]>(MOCK_SEATS.filter(s => s.cafeId === 'cafe-1'));
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [dialogMode, setDialogMode] = useState<'checkin' | 'checkout' | 'restart' | null>(null);
   const [playerName, setPlayerName] = useState('');
@@ -38,7 +38,7 @@ export default function ManagerDashboard() {
   const maintenance = seats.filter(s => s.status === 'maintenance').length;
   const todayEarnings = REVENUE_DATA[5].revenue;
   const totalSessions = REVENUE_DATA.reduce((a, b) => a + b.sessions, 0);
-  const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
+  const cafe = MOCK_CAFES.find(b => b.id === 'cafe-1');
 
   const handleSeatClick = (seat: Seat) => {
     setSelectedSeat(seat);
@@ -82,7 +82,7 @@ export default function ManagerDashboard() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {branch?.name || 'your branch'}</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage players and seats at {cafe?.name || 'your cafe'}</p>
         </div>
         {SHIFTS_ENABLED && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">

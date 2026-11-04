@@ -9,9 +9,9 @@ const menu = (role: Role) => getRoutesForUser(role, can(role)).map(r => r.path);
 describe("menu by permission, default matrix", () => {
   // The menus the signed-off frontend showed per role before permissions (rbac.ts roles lists), plus the new Permissions page.
   it("matches the old role menus exactly", () => {
-    expect(menu("super_admin")).toEqual(["/dashboard", "/users", "/approvals", "/gpu-nodes", "/branches", "/billing", "/monitoring", "/issues", "/analytics", "/permissions", "/notifications", "/settings"]);
+    expect(menu("super_admin")).toEqual(["/dashboard", "/users", "/approvals", "/gpu-nodes", "/cafes", "/billing", "/monitoring", "/issues", "/analytics", "/permissions", "/notifications", "/settings"]);
     expect(menu("admin")).toEqual(["/dashboard", "/users", "/billing", "/notifications", "/settings"]);
-    expect(menu("cafe_owner")).toEqual(["/dashboard", "/users", "/branches", "/billing", "/issues", "/analytics", "/notifications", "/settings"]);
+    expect(menu("cafe_owner")).toEqual(["/dashboard", "/users", "/cafes", "/billing", "/issues", "/analytics", "/notifications", "/settings"]);
     expect(menu("manager")).toEqual(["/dashboard", "/seats", "/billing", "/notifications", "/settings"]);
   });
 

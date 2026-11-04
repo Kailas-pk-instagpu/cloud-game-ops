@@ -1,5 +1,5 @@
 /**
- * Where to go after sign-in: only a path inside this app ("/branches?x=1"), never another site ("//evil.com", "/\evil.com",
+ * Where to go after sign-in: only a path inside this app ("/cafes?x=1"), never another site ("//evil.com", "/\evil.com",
  * "https://evil.com"). The BFF checks the same again (services/bff-service/src/modules/auth/safe-redirect.ts).
  */
 export function safeReturnTo(value: string | null | undefined, fallback = '/dashboard'): string {

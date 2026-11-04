@@ -153,32 +153,32 @@ if (savedTheme === 'dark') {
   document.documentElement.classList.remove('dark');
 }
 
-// Branch store
-import { Branch, MOCK_BRANCHES } from './mock-data';
+// Cafe store
+import { Cafe, MOCK_CAFES } from './mock-data';
 
-interface BranchState {
-  branches: Branch[];
-  addBranch: (branch: Omit<Branch, 'id'>) => string;
-  updateBranch: (id: string, updates: Partial<Branch>) => void;
-  deleteBranch: (id: string) => void;
-  toggleBranchStatus: (id: string) => void;
+interface CafeState {
+  cafes: Cafe[];
+  addCafe: (cafe: Omit<Cafe, 'id'>) => string;
+  updateCafe: (id: string, updates: Partial<Cafe>) => void;
+  deleteCafe: (id: string) => void;
+  toggleCafeStatus: (id: string) => void;
 }
 
-export const useBranchStore = create<BranchState>((set) => ({
-  branches: [...MOCK_BRANCHES],
-  addBranch: (branch) => {
-    const id = `branch-${Date.now()}`;
-    set((s) => ({ branches: [...s.branches, { ...branch, id }] }));
+export const useCafeStore = create<CafeState>((set) => ({
+  cafes: [...MOCK_CAFES],
+  addCafe: (cafe) => {
+    const id = `cafe-${Date.now()}`;
+    set((s) => ({ cafes: [...s.cafes, { ...cafe, id }] }));
     return id;
   },
-  updateBranch: (id, updates) => set((s) => ({
-    branches: s.branches.map(b => b.id === id ? { ...b, ...updates } : b),
+  updateCafe: (id, updates) => set((s) => ({
+    cafes: s.cafes.map(b => b.id === id ? { ...b, ...updates } : b),
   })),
-  deleteBranch: (id) => set((s) => ({
-    branches: s.branches.filter(b => b.id !== id),
+  deleteCafe: (id) => set((s) => ({
+    cafes: s.cafes.filter(b => b.id !== id),
   })),
-  toggleBranchStatus: (id) => set((s) => ({
-    branches: s.branches.map(b =>
+  toggleCafeStatus: (id) => set((s) => ({
+    cafes: s.cafes.map(b =>
       b.id === id ? { ...b, status: b.status === 'inactive' ? 'active' : 'inactive' } : b
     ),
   })),
@@ -189,55 +189,55 @@ import { Seat, MOCK_SEATS } from './mock-data';
 
 interface SeatState {
   seats: Seat[];
-  getSeatsByBranch: (branchId: string) => Seat[];
+  getSeatsByCafe: (cafeId: string) => Seat[];
   updateSeatStatus: (seatId: string, status: Seat['status']) => void;
   updateSeat: (seatId: string, updates: Partial<Seat>) => void;
-  provisionSeats: (branchId: string, total: number, defaultGpu?: string) => void;
-  syncSeatCount: (branchId: string, total: number, defaultGpu?: string) => void;
-  removeSeatsForBranch: (branchId: string) => void;
+  provisionSeats: (cafeId: string, total: number, defaultGpu?: string) => void;
+  syncSeatCount: (cafeId: string, total: number, defaultGpu?: string) => void;
+  removeSeatsForCafe: (cafeId: string) => void;
 }
 
 export const useSeatStore = create<SeatState>((set, get) => ({
   seats: [...MOCK_SEATS],
-  getSeatsByBranch: (branchId: string) => get().seats.filter(s => s.branchId === branchId),
+  getSeatsByCafe: (cafeId: string) => get().seats.filter(s => s.cafeId === cafeId),
   updateSeatStatus: (seatId, status) => set((s) => ({
     seats: s.seats.map(seat => seat.id === seatId ? { ...seat, status, ...(status !== 'occupied' ? { playerName: undefined, startTime: undefined } : {}) } : seat),
   })),
   updateSeat: (seatId, updates) => set((s) => ({
     seats: s.seats.map(seat => seat.id === seatId ? { ...seat, ...updates } : seat),
   })),
-  provisionSeats: (branchId, total, defaultGpu = 'RTX 4070') => set((s) => {
-    if (s.seats.some(seat => seat.branchId === branchId)) return s;
+  provisionSeats: (cafeId, total, defaultGpu = 'RTX 4070') => set((s) => {
+    if (s.seats.some(seat => seat.cafeId === cafeId)) return s;
     const newSeats: Seat[] = Array.from({ length: total }, (_, i) => ({
-      id: `${branchId}-seat-${i + 1}`,
-      branchId,
+      id: `${cafeId}-seat-${i + 1}`,
+      cafeId,
       number: i + 1,
       status: 'available',
       gpuModel: defaultGpu,
     }));
     return { seats: [...s.seats, ...newSeats] };
   }),
-  syncSeatCount: (branchId, total, defaultGpu = 'RTX 4070') => set((s) => {
-    const branchSeats = s.seats.filter(seat => seat.branchId === branchId).sort((a, b) => a.number - b.number);
-    const others = s.seats.filter(seat => seat.branchId !== branchId);
-    if (branchSeats.length === total) return s;
-    if (branchSeats.length < total) {
+  syncSeatCount: (cafeId, total, defaultGpu = 'RTX 4070') => set((s) => {
+    const cafeSeats = s.seats.filter(seat => seat.cafeId === cafeId).sort((a, b) => a.number - b.number);
+    const others = s.seats.filter(seat => seat.cafeId !== cafeId);
+    if (cafeSeats.length === total) return s;
+    if (cafeSeats.length < total) {
       const toAdd: Seat[] = [];
-      for (let i = branchSeats.length; i < total; i++) {
+      for (let i = cafeSeats.length; i < total; i++) {
         toAdd.push({
-          id: `${branchId}-seat-${i + 1}-${Date.now()}`,
-          branchId,
+          id: `${cafeId}-seat-${i + 1}-${Date.now()}`,
+          cafeId,
           number: i + 1,
           status: 'available',
           gpuModel: defaultGpu,
         });
       }
-      return { seats: [...others, ...branchSeats, ...toAdd] };
+      return { seats: [...others, ...cafeSeats, ...toAdd] };
     }
     // remove from the end, but skip occupied seats
-    const sorted = [...branchSeats].sort((a, b) => b.number - a.number);
+    const sorted = [...cafeSeats].sort((a, b) => b.number - a.number);
     const kept: Seat[] = [];
-    let removable = branchSeats.length - total;
+    let removable = cafeSeats.length - total;
     for (const seat of sorted) {
       if (removable > 0 && seat.status !== 'occupied') {
         removable--;
@@ -247,8 +247,8 @@ export const useSeatStore = create<SeatState>((set, get) => ({
     }
     return { seats: [...others, ...kept] };
   }),
-  removeSeatsForBranch: (branchId) => set((s) => ({
-    seats: s.seats.filter(seat => seat.branchId !== branchId),
+  removeSeatsForCafe: (cafeId) => set((s) => ({
+    seats: s.seats.filter(seat => seat.cafeId !== cafeId),
   })),
 }));
 
@@ -275,7 +275,7 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: [
     { id: '1', title: 'GPU Node Warning', message: 'Node Gamma temperature exceeds threshold', type: 'warning', timestamp: '5 min ago', read: false },
-    { id: '2', title: 'New Branch Added', message: 'Eastside Den has been added to the network', type: 'success', timestamp: '1 hour ago', read: false },
+    { id: '2', title: 'New Cafe Added', message: 'Eastside Den has been added to the network', type: 'success', timestamp: '1 hour ago', read: false },
     { id: '3', title: 'Revenue Milestone', message: 'Monthly revenue exceeded RM 130,000', type: 'info', timestamp: '3 hours ago', read: true },
     { id: '4', title: 'Node Offline', message: 'Node Delta went offline in Westside Lounge', type: 'error', timestamp: '5 hours ago', read: false },
     { id: '5', title: 'System Maintenance Scheduled', message: 'The platform will undergo scheduled maintenance tonight between 2:00 AM and 4:00 AM UTC to apply critical security patches and upgrade the database cluster. During this window, all services may experience brief interruptions. Please save your work and log out before the maintenance window begins to avoid data loss.', type: 'info', timestamp: '10 min ago', read: false },
@@ -309,7 +309,7 @@ interface BookingState {
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => string;
   cancelBooking: (id: string) => void;
   updateBookingStatus: (id: string, status: Booking['status']) => void;
-  getBookingsByBranch: (branchId: string) => Booking[];
+  getBookingsByCafe: (cafeId: string) => Booking[];
 }
 
 export const useBookingStore = create<BookingState>((set, get) => ({
@@ -327,15 +327,15 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   updateBookingStatus: (id, status) => set((s) => ({
     bookings: s.bookings.map(b => b.id === id ? { ...b, status } : b),
   })),
-  getBookingsByBranch: (branchId) => get().bookings.filter(b => b.branchId === branchId),
+  getBookingsByCafe: (cafeId) => get().bookings.filter(b => b.cafeId === cafeId),
 }));
 
 // Settlement store - records each ended billing session
 export interface Settlement {
   id: string;
   sessionId: string;
-  branchId: string;
-  branchName: string;
+  cafeId: string;
+  cafeName: string;
   customerId: string;
   customerName: string;
   startTime: string; // ISO
@@ -353,7 +353,7 @@ export interface Settlement {
 interface SettlementState {
   settlements: Settlement[];
   addSettlement: (s: Omit<Settlement, 'id' | 'status'>) => Settlement;
-  getByBranch: (branchId: string) => Settlement[];
+  getByCafe: (cafeId: string) => Settlement[];
 }
 
 export const useSettlementStore = create<SettlementState>()(
@@ -369,7 +369,7 @@ export const useSettlementStore = create<SettlementState>()(
         set((state) => ({ settlements: [settlement, ...state.settlements] }));
         return settlement;
       },
-      getByBranch: (branchId) => get().settlements.filter((x) => x.branchId === branchId),
+      getByCafe: (cafeId) => get().settlements.filter((x) => x.cafeId === cafeId),
     }),
     { name: 'gpu-cloud-settlements' }
   )
@@ -442,7 +442,7 @@ export const useDeletionRequestStore = create<DeletionRequestState>()(
   )
 );
 
-// Shift Timing store - per-branch shift schedules
+// Shift Timing store - per-cafe shift schedules
 export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export const WEEKDAYS: { id: Weekday; label: string }[] = [
   { id: 'mon', label: 'Mon' },
@@ -456,7 +456,7 @@ export const WEEKDAYS: { id: Weekday; label: string }[] = [
 
 export interface Shift {
   id: string;
-  branchId: string;
+  cafeId: string;
   name: string;
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm" (may be next day if < startTime)
@@ -471,9 +471,9 @@ export interface Shift {
 
 interface ShiftState {
   shifts: Shift[];
-  getByBranch: (branchId: string) => Shift[];
+  getByCafe: (cafeId: string) => Shift[];
   addShift: (s: Omit<Shift, 'id' | 'createdAt'>) => Shift;
-  updateShift: (id: string, updates: Partial<Omit<Shift, 'id' | 'branchId' | 'createdBy' | 'createdAt'>>) => void;
+  updateShift: (id: string, updates: Partial<Omit<Shift, 'id' | 'cafeId' | 'createdBy' | 'createdAt'>>) => void;
   deleteShift: (id: string) => void;
   toggleShiftActive: (id: string) => void;
 }
@@ -482,7 +482,7 @@ export const useShiftStore = create<ShiftState>()(
   persist(
     (set, get) => ({
       shifts: [],
-      getByBranch: (branchId) => get().shifts.filter(s => s.branchId === branchId),
+      getByCafe: (cafeId) => get().shifts.filter(s => s.cafeId === cafeId),
       addShift: (s) => {
         const shift: Shift = {
           ...s,

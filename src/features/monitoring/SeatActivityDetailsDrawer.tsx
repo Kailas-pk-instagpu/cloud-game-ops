@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Armchair, Cpu, Tag, Activity, ArrowRight, User, Building2, Clock, History, Hash } from 'lucide-react';
 import { SeatActivityEntry, SeatActivityField, useSeatActivityStore } from '@/shared/lib/seatActivityStore';
-import { useSeatStore, useBranchStore } from '@/shared/lib/store';
+import { useSeatStore, useCafeStore } from '@/shared/lib/store';
 import { cn } from '@/lib/utils';
 
 const FIELD_META: Record<SeatActivityField, { label: string; icon: typeof Tag; cls: string }> = {
@@ -45,11 +45,11 @@ interface Props {
 
 export default function SeatActivityDetailsDrawer({ entry, onOpenChange }: Props) {
   const seats = useSeatStore((s) => s.seats);
-  const branches = useBranchStore((s) => s.branches);
+  const cafes = useCafeStore((s) => s.cafes);
   const allEntries = useSeatActivityStore((s) => s.entries);
 
   const seat = useMemo(() => seats.find((s) => s.id === entry?.seatId), [seats, entry?.seatId]);
-  const branch = useMemo(() => branches.find((b) => b.id === entry?.branchId), [branches, entry?.branchId]);
+  const cafe = useMemo(() => cafes.find((b) => b.id === entry?.cafeId), [cafes, entry?.cafeId]);
   const relatedHistory = useMemo(
     () => (entry ? allEntries.filter((e) => e.seatId === entry.seatId && e.id !== entry.id).slice(0, 8) : []),
     [allEntries, entry]
@@ -74,7 +74,7 @@ export default function SeatActivityDetailsDrawer({ entry, onOpenChange }: Props
                 {seat?.label && <span className="text-muted-foreground font-normal">· {seat.label}</span>}
               </SheetTitle>
               <SheetDescription className="flex items-center gap-2 text-xs">
-                <Building2 className="h-3.5 w-3.5" /> {entry.branchName}
+                <Building2 className="h-3.5 w-3.5" /> {entry.cafeName}
               </SheetDescription>
             </SheetHeader>
 
@@ -142,16 +142,16 @@ export default function SeatActivityDetailsDrawer({ entry, onOpenChange }: Props
                   )}
                 </section>
 
-                {/* Branch */}
-                {branch && (
+                {/* Cafe */}
+                {cafe && (
                   <section className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Branch</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cafe</h4>
                     <div className="rounded-lg border divide-y">
-                      <Row icon={Building2} label="Name" value={branch.name} />
-                      {('location' in branch) && (branch as any).location && (
-                        <Row icon={Building2} label="Location" value={(branch as any).location} />
+                      <Row icon={Building2} label="Name" value={cafe.name} />
+                      {('location' in cafe) && (cafe as any).location && (
+                        <Row icon={Building2} label="Location" value={(cafe as any).location} />
                       )}
-                      <Row icon={Armchair} label="Total seats" value={String(seats.filter((s) => s.branchId === branch.id).length)} />
+                      <Row icon={Armchair} label="Total seats" value={String(seats.filter((s) => s.cafeId === cafe.id).length)} />
                     </div>
                   </section>
                 )}

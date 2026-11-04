@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useApprovalStore, ApprovalRequest } from '@/features/approvals/approvalService';
 import { useBackendApprovals } from '@/features/approvals/approvalsApi';
-import { useBackendBranches } from '@/features/branches/branchesApi';
+import { useBackendCafes } from '@/features/cafes/cafesApi';
 import { AUTH_MODE } from '@/shared/lib/bff';
-import { useBranchStore } from '@/shared/lib/store';
+import { useCafeStore } from '@/shared/lib/store';
 import { PendingChangesCompare } from '@/features/approvals/PendingChangesCompare';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,8 @@ export default function ApprovalsPage() {
   const mockStore = useApprovalStore();
   const backend = useBackendApprovals();
   const requests = BACKEND ? backend.requests : mockStore.requests;
-  const mockBranches = useBranchStore(s => s.branches);
-  const branches = BACKEND ? [] : mockBranches;
+  const mockCafes = useCafeStore(s => s.cafes);
+  const cafes = BACKEND ? [] : mockCafes;
   const pending = requests.filter(r => r.status === 'pending');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -46,20 +46,20 @@ export default function ApprovalsPage() {
   const [showReject, setShowReject] = useState(false);
   const [feedback, setFeedback] = useState('');
 
-  const branchName = (r: ApprovalRequest) =>
-    branches.find(b => b.id === r.branchId)?.name ?? r.branchName;
+  const cafeName = (r: ApprovalRequest) =>
+    cafes.find(b => b.id === r.cafeId)?.name ?? r.cafeName;
 
   const openReview = (r: ApprovalRequest) => {
     setReviewing(r);
     setFeedback('');
   };
 
-  /** Backend: run the decision, refresh the queue (and branches, whose status changes); false when it failed. */
+  /** Backend: run the decision, refresh the queue (and cafes, whose status changes); false when it failed. */
   const decide = async (action: () => Promise<void>) => {
     setBusy(true);
     try {
       await action();
-      void useBackendBranches.getState().load();
+      void useBackendCafes.getState().load();
       return true;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Something went wrong. Try again.');
@@ -79,8 +79,8 @@ export default function ApprovalsPage() {
     }
     toast.success(
       reviewing.type === 'new_cafe'
-        ? `Cafe "${branchName(reviewing)}" approved and is now Active`
-        : `Edit approved — new values for "${branchName(reviewing)}" are now live`
+        ? `Cafe "${cafeName(reviewing)}" approved and is now Active`
+        : `Edit approved — new values for "${cafeName(reviewing)}" are now live`
     );
     setConfirmApprove(false);
     setReviewing(null);
@@ -105,7 +105,7 @@ export default function ApprovalsPage() {
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Approvals</h1>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-          Review new cafes and edit requests submitted by Sales Managers
+          Review new cafes and edit requests from Sales Managers and cafe owners
         </p>
       </div>
 
@@ -115,7 +115,7 @@ export default function ApprovalsPage() {
             <ClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold text-lg mb-1">No pending approvals</h3>
             <p className="text-sm text-muted-foreground">
-              New cafes and edit requests from Sales Managers will appear here.
+              New cafes and edit requests from Sales Managers and cafe owners will appear here.
             </p>
           </CardContent>
         </Card>
@@ -130,7 +130,7 @@ export default function ApprovalsPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-sm truncate">{branchName(r)}</p>
+                      <p className="font-medium text-sm truncate">{cafeName(r)}</p>
                       <Badge
                         variant="outline"
                         className={
@@ -143,9 +143,9 @@ export default function ApprovalsPage() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
-                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> {BACKEND ? 'Cafe' : 'Owner'}: {r.ownerName}</span>
+                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> Owner: {r.ownerName}</span>
                       <span className="hidden sm:inline">·</span>
-                      <span>By {r.createdByName}</span>
+                      <span>By {r.createdByName === 'the requester' ? 'requester' : r.createdByName}</span>
                       <span className="hidden sm:inline">·</span>
                       <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {formatDate(r.createdAt)}</span>
                     </p>
@@ -166,7 +166,7 @@ export default function ApprovalsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" />
-              {reviewing?.type === 'new_cafe' ? 'New cafe request' : 'Edit request'} — {reviewing ? branchName(reviewing) : ''}
+              {reviewing?.type === 'new_cafe' ? 'New cafe request' : 'Edit request'} — {reviewing ? cafeName(reviewing) : ''}
             </DialogTitle>
             <DialogDescription>
               Submitted by {reviewing?.createdByName} on {reviewing ? formatDate(reviewing.createdAt) : ''}
@@ -182,7 +182,7 @@ export default function ApprovalsPage() {
               <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground">Address</span>
                 <span className="font-medium text-right">
-                  {(BACKEND ? reviewing.current?.address : branches.find(b => b.id === reviewing.branchId)?.address) || '—'}
+                  {(BACKEND ? reviewing.current?.address : cafes.find(b => b.id === reviewing.cafeId)?.address) || '—'}
                 </span>
               </div>
               {BACKEND ? (
@@ -196,7 +196,7 @@ export default function ApprovalsPage() {
               <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-muted-foreground">Seats</span>
                 <span className="font-medium text-right">
-                  {branches.find(b => b.id === reviewing.branchId)?.totalSeats ?? '—'}
+                  {cafes.find(b => b.id === reviewing.cafeId)?.totalSeats ?? '—'}
                 </span>
               </div>
               )}
@@ -238,8 +238,8 @@ export default function ApprovalsPage() {
             <AlertDialogTitle>Approve this request?</AlertDialogTitle>
             <AlertDialogDescription>
               {reviewing?.type === 'new_cafe'
-                ? `"${reviewing ? branchName(reviewing) : ''}" will become Active and visible to the Cafe Owner.`
-                : `The proposed values will replace the current live values for "${reviewing ? branchName(reviewing) : ''}".`}
+                ? `"${reviewing ? cafeName(reviewing) : ''}" will become Active and visible to the Cafe Owner.`
+                : `The proposed values will replace the current live values for "${reviewing ? cafeName(reviewing) : ''}".`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

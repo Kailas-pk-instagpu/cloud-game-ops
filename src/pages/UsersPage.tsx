@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useAuthStore, useCafeStore } from '@/shared/lib/store';
 import { MOCK_USERS } from '@/shared/lib/mock-data';
 import { User, Role, ROLE_LABELS, CHILD_ROLE } from '@/shared/types/auth';
 import { canManageUser } from '@/shared/lib/rbac';
@@ -66,13 +66,13 @@ export default function UsersPage() {
   const isCafeOwner = currentUser.role === 'cafe_owner';
 
   // Cafe owners can add Floor Managers only once one of their cafes is Active.
-  const ownerHasActiveCafe = useBranchStore(s => s.branches).some(
+  const ownerHasActiveCafe = useCafeStore(s => s.cafes).some(
     b => b.cafeOwnerId === currentUser.id && b.status === 'active'
   );
   const createBlocked = isCafeOwner && !ownerHasActiveCafe;
 
-  // On Cafe Management, only cafe owners open the branches page.
-  const rowOpensBranches = (u: ManagedUser) =>
+  // On Cafe Management, only cafe owners open the cafes page.
+  const rowOpensCafes = (u: ManagedUser) =>
     currentUser.role === 'admin' ? u.role === 'cafe_owner' : true;
 
   // Super Admin sees all; others see manageable users.
@@ -302,8 +302,8 @@ export default function UsersPage() {
         {visibleUsers.map(u => (
           <Card
             key={u.id}
-            className={`transition-shadow ${rowOpensBranches(u) ? 'hover:shadow-sm cursor-pointer' : ''} ${u.status === 'disabled' ? 'opacity-60' : ''}`}
-            onClick={() => { if (rowOpensBranches(u)) navigate(`/branches?owner=${u.id}`); }}
+            className={`transition-shadow ${rowOpensCafes(u) ? 'hover:shadow-sm cursor-pointer' : ''} ${u.status === 'disabled' ? 'opacity-60' : ''}`}
+            onClick={() => { if (rowOpensCafes(u)) navigate(`/cafes?owner=${u.id}`); }}
           >
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -431,8 +431,8 @@ export default function UsersPage() {
                 {formRole && (
                   <p className="text-xs text-muted-foreground">
                     {formRole === 'admin' && 'This user will manage cafe owners and their portfolios.'}
-                    {formRole === 'cafe_owner' && 'This user will manage their own branches and create floor managers.'}
-                    {formRole === 'manager' && 'This user will only have access to an assigned branch.'}
+                    {formRole === 'cafe_owner' && 'This user will manage their own cafes and create floor managers.'}
+                    {formRole === 'manager' && 'This user will only have access to an assigned cafe.'}
                   </p>
                 )}
               </div>

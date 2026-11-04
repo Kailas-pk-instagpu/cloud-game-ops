@@ -25,9 +25,9 @@ import {
 export interface InspectorSession {
   id: string;
   player: string;
-  branchId: string;
-  branchName: string;
   cafeId: string;
+  cafeName: string;
+  tenantId: string;
   seatNumber: number;
   gpu: string;
   startedAt: Date;
@@ -114,13 +114,13 @@ export default function LiveSessionInspectorDrawer({ session, open, onOpenChange
             <Separator />
 
             {/* Seat */}
-            <Section icon={MapPin} title="Seat & Branch">
+            <Section icon={MapPin} title="Seat & Cafe">
               <Row
-                label="Branch"
+                label="Cafe"
                 value={
                   <span className="inline-flex items-center gap-1">
                     <Building2 className="h-3 w-3 text-muted-foreground" />
-                    {session.branchName}
+                    {session.cafeName}
                   </span>
                 }
               />

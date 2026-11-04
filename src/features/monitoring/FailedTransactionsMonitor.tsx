@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
-import { MOCK_BRANCHES } from '@/shared/lib/mock-data';
+import { MOCK_CAFES } from '@/shared/lib/mock-data';
 import { AlertTriangle, RotateCcw, Search, Ban, CircleX, Wallet, Building2, Eye, Copy, ShieldAlert, FilterX, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -26,8 +26,8 @@ interface FailedTx {
   type: TxType;
   amount: number;
   player: string;
-  branchId: string;
-  branchName: string;
+  cafeId: string;
+  cafeName: string;
   reason: FailureReason;
   message: string;
   attempts: number;
@@ -69,7 +69,7 @@ const seedFailed = (): FailedTx[] => {
   const now = Date.now();
   return Array.from({ length: 18 }).map((_, i) => {
     const reason = reasons[i % reasons.length];
-    const branch = MOCK_BRANCHES[i % MOCK_BRANCHES.length];
+    const cafe = MOCK_CAFES[i % MOCK_CAFES.length];
     const type = types[i % types.length];
     const messages: Record<FailureReason, string> = {
       gateway_timeout: 'Billing gateway did not respond within 8s.',
@@ -84,8 +84,8 @@ const seedFailed = (): FailedTx[] => {
       type,
       amount: Math.round((Math.random() * 90 + 5) * 100) / 100,
       player: players[i % players.length],
-      branchId: branch.id,
-      branchName: branch.name,
+      cafeId: cafe.id,
+      cafeName: cafe.name,
       reason,
       message: messages[reason],
       attempts: (i % 3) + 1,
@@ -102,7 +102,7 @@ export default function FailedTransactionsMonitor() {
   const [items, setItems] = useState<FailedTx[]>(() => seedFailed());
   const [query, setQuery] = useState('');
   const [reasonFilter, setReasonFilter] = useState<string>('all');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
+  const [cafeFilter, setCafeFilter] = useState<string>('all');
   const [retryFilter, setRetryFilter] = useState<string>('all');
   const [selected, setSelected] = useState<FailedTx | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
@@ -118,15 +118,15 @@ export default function FailedTransactionsMonitor() {
   const filtered = useMemo(() => {
     return items.filter((t) => {
       if (reasonFilter !== 'all' && t.reason !== reasonFilter) return false;
-      if (branchFilter !== 'all' && t.branchId !== branchFilter) return false;
+      if (cafeFilter !== 'all' && t.cafeId !== cafeFilter) return false;
       if (retryFilter !== 'all' && t.retry !== retryFilter) return false;
       if (query) {
         const q = query.toLowerCase();
-        if (!t.id.toLowerCase().includes(q) && !t.player.toLowerCase().includes(q) && !t.branchName.toLowerCase().includes(q)) return false;
+        if (!t.id.toLowerCase().includes(q) && !t.player.toLowerCase().includes(q) && !t.cafeName.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [items, query, reasonFilter, branchFilter, retryFilter]);
+  }, [items, query, reasonFilter, cafeFilter, retryFilter]);
 
   const paged = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -139,13 +139,13 @@ export default function FailedTransactionsMonitor() {
   }, [filtered.length, page, pageSize]);
 
   const filtersActive =
-    query.trim() !== '' || reasonFilter !== 'all' || branchFilter !== 'all' || retryFilter !== 'all';
-  const isLoading = useDeferredLoading([query, reasonFilter, branchFilter, retryFilter, page, pageSize]);
+    query.trim() !== '' || reasonFilter !== 'all' || cafeFilter !== 'all' || retryFilter !== 'all';
+  const isLoading = useDeferredLoading([query, reasonFilter, cafeFilter, retryFilter, page, pageSize]);
 
   const clearFilters = () => {
     setQuery('');
     setReasonFilter('all');
-    setBranchFilter('all');
+    setCafeFilter('all');
     setRetryFilter('all');
   };
 
@@ -154,8 +154,8 @@ export default function FailedTransactionsMonitor() {
     const pending = items.filter((t) => t.retry === 'pending').length;
     const failed = items.filter((t) => t.retry === 'failed').length;
     const lostValue = items.filter((t) => t.retry !== 'resolved').reduce((a, b) => a + b.amount, 0);
-    const branches = new Set(items.filter((t) => t.retry !== 'resolved').map((t) => t.branchId)).size;
-    return { total, pending, failed, lostValue, branches };
+    const cafes = new Set(items.filter((t) => t.retry !== 'resolved').map((t) => t.cafeId)).size;
+    return { total, pending, failed, lostValue, cafes };
   }, [items]);
 
   const retryOne = async (id: string) => {
@@ -204,7 +204,7 @@ export default function FailedTransactionsMonitor() {
         <KPI icon={ShieldAlert} label="Pending retry" value={stats.pending.toString()} tone="text-warning" bg="bg-warning/10" />
         <KPI icon={AlertTriangle} label="Hard failed" value={stats.failed.toString()} tone="text-destructive" bg="bg-destructive/10" />
         <KPI icon={Wallet} label="Value at risk" value={`RM ${stats.lostValue.toFixed(2)}`} tone="text-primary" bg="bg-primary/10" />
-        <KPI icon={Building2} label="Branches affected" value={`${stats.branches}/${MOCK_BRANCHES.length}`} tone="text-info" bg="bg-info/10" />
+        <KPI icon={Building2} label="Cafes affected" value={`${stats.cafes}/${MOCK_CAFES.length}`} tone="text-info" bg="bg-info/10" />
       </div>
 
       <Card>
@@ -232,7 +232,7 @@ export default function FailedTransactionsMonitor() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search TX ID, player, or branch..."
+                placeholder="Search TX ID, player, or cafe..."
                 className="pl-8 h-9"
               />
             </div>
@@ -245,11 +245,11 @@ export default function FailedTransactionsMonitor() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={branchFilter} onValueChange={setBranchFilter}>
+            <Select value={cafeFilter} onValueChange={setCafeFilter}>
               <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All branches</SelectItem>
-                {MOCK_BRANCHES.map((b) => (
+                <SelectItem value="all">All cafes</SelectItem>
+                {MOCK_CAFES.map((b) => (
                   <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -275,7 +275,7 @@ export default function FailedTransactionsMonitor() {
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Transaction</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Type</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider text-right">Amount</TableHead>
-                  <TableHead className="h-9 text-[11px] uppercase tracking-wider">Player / Branch</TableHead>
+                  <TableHead className="h-9 text-[11px] uppercase tracking-wider">Player / Cafe</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Reason</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Attempts</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Time</TableHead>
@@ -295,7 +295,7 @@ export default function FailedTransactionsMonitor() {
                         title={filtersActive ? 'No failures match your filters' : 'All clear — no failed transactions'}
                         description={
                           filtersActive
-                            ? 'Adjust the reason, branch, or retry status, or clear the search to see more results.'
+                            ? 'Adjust the reason, cafe, or retry status, or clear the search to see more results.'
                             : 'Billing is healthy across the network. Any future failures will surface here for review.'
                         }
                         actionLabel={filtersActive ? 'Clear filters' : undefined}
@@ -314,7 +314,7 @@ export default function FailedTransactionsMonitor() {
                       <TableCell className="py-2.5 text-sm">
                         <div className="flex flex-col">
                           <span className="font-medium">{t.player}</span>
-                          <span className="text-[11px] text-muted-foreground">{t.branchName}</span>
+                          <span className="text-[11px] text-muted-foreground">{t.cafeName}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-2.5">
@@ -390,7 +390,7 @@ export default function FailedTransactionsMonitor() {
 
               <div className="mt-6 space-y-4 text-sm">
                 <Row label="Player" value={selected.player} />
-                <Row label="Branch" value={selected.branchName} />
+                <Row label="Cafe" value={selected.cafeName} />
                 <Row label="Occurred" value={fmt(selected.occurredAt)} />
                 <Row label="Attempts" value={selected.attempts.toString()} />
                 <Row

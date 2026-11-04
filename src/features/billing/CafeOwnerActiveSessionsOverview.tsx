@@ -8,7 +8,7 @@ import {
   Activity, Building2, Monitor, Clock, User as UserIcon, Wallet,
   ChevronRight, Search, AlertTriangle,
 } from 'lucide-react';
-import { useAuthStore, useBranchStore, useSeatStore } from '@/shared/lib/store';
+import { useAuthStore, useCafeStore, useSeatStore } from '@/shared/lib/store';
 import { MOCK_CUSTOMER_WALLETS } from '@/shared/lib/mock-data';
 import EmptyState from '@/shared/ui/molecules/EmptyState';
 
@@ -32,31 +32,31 @@ type SortKey = 'recent' | 'duration' | 'usage' | 'name';
 
 export default function CafeOwnerActiveSessionsOverview() {
   const { user } = useAuthStore();
-  const branches = useBranchStore((s) => s.branches);
+  const cafes = useCafeStore((s) => s.cafes);
   const seats = useSeatStore((s) => s.seats);
   const navigate = useNavigate();
   const isManager = user?.role === 'manager';
 
-  const ownerBranches = useMemo(() => {
+  const ownerCafes = useMemo(() => {
     if (!user) return [];
-    if (user.role === 'manager') return branches.filter((b) => b.managerId === user.id);
-    return branches.filter((b) => b.cafeOwnerId === user.id);
-  }, [branches, user]);
+    if (user.role === 'manager') return cafes.filter((b) => b.managerId === user.id);
+    return cafes.filter((b) => b.cafeOwnerId === user.id);
+  }, [cafes, user]);
 
   const allSessions = useMemo(() => {
-    return ownerBranches.flatMap((branch) => {
-      const branchSeats = seats.filter((s) => s.branchId === branch.id);
-      const customers = MOCK_CUSTOMER_WALLETS.filter((c) => c.branchId === branch.id);
+    return ownerCafes.flatMap((cafe) => {
+      const cafeSeats = seats.filter((s) => s.cafeId === cafe.id);
+      const customers = MOCK_CUSTOMER_WALLETS.filter((c) => c.cafeId === cafe.id);
       return customers.map((c, idx) => {
-        const seat = branchSeats[idx % Math.max(branchSeats.length, 1)];
+        const seat = cafeSeats[idx % Math.max(cafeSeats.length, 1)];
         const start = startTimeFor(c.id);
         const durationMin = Math.max(1, Math.floor((Date.now() - start.getTime()) / 60_000));
-        const usage = Math.min(c.lockedAmount, +(durationMin * branch.billing.costPerMinute).toFixed(2));
+        const usage = Math.min(c.lockedAmount, +(durationMin * cafe.billing.costPerMinute).toFixed(2));
         const usagePct = Math.min(100, (usage / c.lockedAmount) * 100);
         return {
           id: c.id,
           customer: c,
-          branch,
+          cafe,
           seat,
           start,
           durationMin,
@@ -65,16 +65,16 @@ export default function CafeOwnerActiveSessionsOverview() {
         };
       });
     });
-  }, [ownerBranches, seats]);
+  }, [ownerCafes, seats]);
 
   const [search, setSearch] = useState('');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
+  const [cafeFilter, setCafeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'normal' | 'warning' | 'critical'>('all');
   const [sort, setSort] = useState<SortKey>('recent');
 
   const filtered = useMemo(() => {
     let list = allSessions;
-    if (branchFilter !== 'all') list = list.filter((s) => s.branch.id === branchFilter);
+    if (cafeFilter !== 'all') list = list.filter((s) => s.cafe.id === cafeFilter);
     if (statusFilter !== 'all') {
       list = list.filter((s) =>
         statusFilter === 'critical' ? s.usagePct >= 80
@@ -88,7 +88,7 @@ export default function CafeOwnerActiveSessionsOverview() {
         (s) =>
           s.customer.name.toLowerCase().includes(q) ||
           s.customer.phone.toLowerCase().includes(q) ||
-          s.branch.name.toLowerCase().includes(q) ||
+          s.cafe.name.toLowerCase().includes(q) ||
           String(s.seat?.number ?? '').includes(q)
       );
     }
@@ -103,7 +103,7 @@ export default function CafeOwnerActiveSessionsOverview() {
       }
     });
     return sorted;
-  }, [allSessions, branchFilter, statusFilter, search, sort]);
+  }, [allSessions, cafeFilter, statusFilter, search, sort]);
 
   const totalActive = allSessions.length;
   const totalUsage = allSessions.reduce((a, s) => a + s.usage, 0);
@@ -117,8 +117,8 @@ export default function CafeOwnerActiveSessionsOverview() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Active Billing Sessions</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isManager
-              ? 'Live view of every customer currently using a seat at your branch.'
-              : 'Live overview of all running sessions across your branches.'}
+              ? 'Live view of every customer currently using a seat at your cafe.'
+              : 'Live overview of all running sessions across your cafes.'}
           </p>
         </div>
       </div>
@@ -137,9 +137,9 @@ export default function CafeOwnerActiveSessionsOverview() {
           <Card className="border-border/60">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                <Building2 className="h-3.5 w-3.5" /> Branches
+                <Building2 className="h-3.5 w-3.5" /> Cafes
               </div>
-              <p className="font-mono text-2xl font-bold">{ownerBranches.length}</p>
+              <p className="font-mono text-2xl font-bold">{ownerCafes.length}</p>
             </CardContent>
           </Card>
         )}
@@ -167,7 +167,7 @@ export default function CafeOwnerActiveSessionsOverview() {
           <div className="relative flex-1 min-w-0">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search customer, phone, branch, or seat..."
+              placeholder="Search customer, phone, cafe, or seat..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -175,13 +175,13 @@ export default function CafeOwnerActiveSessionsOverview() {
           </div>
           <div className="flex flex-wrap gap-2">
             {!isManager && (
-              <Select value={branchFilter} onValueChange={setBranchFilter}>
+              <Select value={cafeFilter} onValueChange={setCafeFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Branch" />
+                  <SelectValue placeholder="Cafe" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All branches</SelectItem>
-                  {ownerBranches.map((b) => (
+                  <SelectItem value="all">All cafes</SelectItem>
+                  {ownerCafes.map((b) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -218,9 +218,9 @@ export default function CafeOwnerActiveSessionsOverview() {
         <span>
           Showing <span className="font-medium text-foreground">{filtered.length}</span> of {totalActive} sessions
         </span>
-        {(search || branchFilter !== 'all' || statusFilter !== 'all') && (
+        {(search || cafeFilter !== 'all' || statusFilter !== 'all') && (
           <button
-            onClick={() => { setSearch(''); setBranchFilter('all'); setStatusFilter('all'); }}
+            onClick={() => { setSearch(''); setCafeFilter('all'); setStatusFilter('all'); }}
             className="text-primary hover:underline"
           >
             Clear filters
@@ -262,7 +262,7 @@ export default function CafeOwnerActiveSessionsOverview() {
                 <button
                   key={s.id}
                   onClick={() =>
-                    navigate(`/billing/session?branchId=${s.branch.id}&customerId=${s.customer.id}`)
+                    navigate(`/billing/session?cafeId=${s.cafe.id}&customerId=${s.customer.id}`)
                   }
                   className="group text-left rounded-xl border border-border/60 bg-card p-3 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_25px_hsl(var(--primary)/0.12)] hover:-translate-y-0.5"
                 >
@@ -329,7 +329,7 @@ export default function CafeOwnerActiveSessionsOverview() {
               <button
                 key={s.id}
                 onClick={() =>
-                  navigate(`/billing/session?branchId=${s.branch.id}&customerId=${s.customer.id}`)
+                  navigate(`/billing/session?cafeId=${s.cafe.id}&customerId=${s.customer.id}`)
                 }
                 className="group text-left rounded-xl border border-border/60 bg-card p-3.5 transition-all duration-200 hover:border-primary/40 hover:shadow-[0_0_25px_hsl(var(--primary)/0.12)] hover:-translate-y-0.5"
               >
@@ -341,7 +341,7 @@ export default function CafeOwnerActiveSessionsOverview() {
                     <div className="min-w-0">
                       <p className="font-semibold text-sm truncate">{s.customer.name}</p>
                       <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-                        <Building2 className="h-3 w-3" /> {s.branch.name}
+                        <Building2 className="h-3 w-3" /> {s.cafe.name}
                       </p>
                     </div>
                   </div>

@@ -9,14 +9,14 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Plus, Trash2, Edit, UserCheck, Coffee, CalendarDays, X, Power } from 'lucide-react';
 import { toast } from 'sonner';
-import { Branch, MOCK_USERS } from '@/shared/lib/mock-data';
+import { Cafe, MOCK_USERS } from '@/shared/lib/mock-data';
 import { useShiftStore, useAuthStore, WEEKDAYS, Weekday, Shift } from '@/shared/lib/store';
 import { cn } from '@/lib/utils';
 
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  branch: Branch | null;
+  cafe: Cafe | null;
 }
 
 interface ShiftForm {
@@ -51,25 +51,25 @@ function getManagerName(id: string) {
   return MOCK_USERS.find(u => u.id === id)?.name || 'Unknown';
 }
 
-export default function ShiftManagementDialog({ open, onOpenChange, branch }: Props) {
+export default function ShiftManagementDialog({ open, onOpenChange, cafe }: Props) {
   const currentUser = useAuthStore(s => s.user);
   const { shifts, addShift, updateShift, deleteShift, toggleShiftActive } = useShiftStore();
   const [form, setForm] = useState<ShiftForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const branchShifts = useMemo(
-    () => (branch ? shifts.filter(s => s.branchId === branch.id) : []),
-    [shifts, branch],
+  const cafeShifts = useMemo(
+    () => (cafe ? shifts.filter(s => s.cafeId === cafe.id) : []),
+    [shifts, cafe],
   );
 
-  // Eligible managers for this branch: branch manager + managers under the cafe owner
+  // Eligible managers for this cafe: cafe manager + managers under the cafe owner
   const eligibleManagers = useMemo(() => {
-    if (!branch) return [];
+    if (!cafe) return [];
     const all = MOCK_USERS.filter(u => u.role === 'manager');
-    const owner = branch.cafeOwnerId;
-    return all.filter(m => m.id === branch.managerId || (owner && m.createdBy === owner));
-  }, [branch]);
+    const owner = cafe.cafeOwnerId;
+    return all.filter(m => m.id === cafe.managerId || (owner && m.createdBy === owner));
+  }, [cafe]);
 
   const role = currentUser?.role;
   const canEdit = role === 'super_admin' || role === 'admin' || role === 'cafe_owner';
@@ -97,7 +97,7 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
   };
 
   const handleSubmit = () => {
-    if (!branch || !currentUser) return;
+    if (!cafe || !currentUser) return;
     if (!form.name.trim()) {
       toast.error('Shift name is required');
       return;
@@ -112,7 +112,7 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
     }
 
     const payload = {
-      branchId: branch.id,
+      cafeId: cafe.id,
       name: form.name.trim(),
       startTime: form.startTime,
       endTime: form.endTime,
@@ -148,7 +148,7 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
     }));
   };
 
-  if (!branch) return null;
+  if (!cafe) return null;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) resetForm(); }}>
@@ -156,10 +156,10 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            {branch.name} — Shift Timings
+            {cafe.name} — Shift Timings
           </DialogTitle>
           <DialogDescription>
-            Configure recurring work shifts for this branch and assign managers responsible for each.
+            Configure recurring work shifts for this cafe and assign managers responsible for each.
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +167,7 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                {branchShifts.length} shift{branchShifts.length === 1 ? '' : 's'} configured
+                {cafeShifts.length} shift{cafeShifts.length === 1 ? '' : 's'} configured
               </p>
               {canEdit && (
                 <Button size="sm" className="gap-1.5 gradient-primary text-primary-foreground" onClick={() => { resetForm(); setShowForm(true); }}>
@@ -176,19 +176,19 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
               )}
             </div>
 
-            {branchShifts.length === 0 ? (
+            {cafeShifts.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-50" />
                   <p className="font-medium text-sm mb-1">No shifts configured yet</p>
                   <p className="text-xs text-muted-foreground">
-                    {canEdit ? 'Add a shift to define operating hours and assign managers.' : 'No shifts have been set up for this branch.'}
+                    {canEdit ? 'Add a shift to define operating hours and assign managers.' : 'No shifts have been set up for this cafe.'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-2">
-                {branchShifts.map(s => (
+                {cafeShifts.map(s => (
                   <Card key={s.id} className={cn('transition-opacity', !s.active && 'opacity-60')}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -335,7 +335,7 @@ export default function ShiftManagementDialog({ open, onOpenChange, branch }: Pr
                 <UserCheck className="h-3.5 w-3.5 text-accent-foreground" /> Assigned Manager(s)
               </Label>
               {eligibleManagers.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No eligible managers for this branch. Assign a cafe owner with managers first.</p>
+                <p className="text-xs text-muted-foreground italic">No eligible managers for this cafe. Assign a cafe owner with managers first.</p>
               ) : (
                 <div className="space-y-1.5">
                   {eligibleManagers.map(m => {

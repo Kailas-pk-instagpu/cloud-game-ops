@@ -22,8 +22,8 @@ export interface IssueReport {
   description: string;
   priority: IssuePriority;
   status: IssueStatus;
-  branchId: string;
-  branchName: string;
+  cafeId: string;
+  cafeName: string;
   reportedById: string;
   reportedByName: string;
   reportedByRole: Role;
@@ -76,8 +76,8 @@ const seed: IssueReport[] = [
     description: 'RTX 4070 throws driver timeout after ~15 min of gameplay. Tried reboot, persists.',
     priority: 'high',
     status: 'in_progress',
-    branchId: 'branch-1',
-    branchName: 'Downtown Hub',
+    cafeId: 'cafe-1',
+    cafeName: 'Downtown Hub',
     reportedById: '4',
     reportedByName: 'Sam Rivera',
     reportedByRole: 'cafe_owner',
@@ -101,8 +101,8 @@ const seed: IssueReport[] = [
     description: 'Customers reporting lag spikes between 7–9pm. Ping to game servers jumps to 250ms.',
     priority: 'medium',
     status: 'open',
-    branchId: 'branch-2',
-    branchName: 'Uptown Arena',
+    cafeId: 'cafe-2',
+    cafeName: 'Uptown Arena',
     reportedById: '4',
     reportedByName: 'Sam Rivera',
     reportedByRole: 'cafe_owner',

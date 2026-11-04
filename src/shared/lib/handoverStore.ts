@@ -6,8 +6,8 @@ export type HandoverPriority = 'info' | 'attention' | 'urgent';
 
 export interface HandoverNote {
   id: string;
-  branchId: string;
-  branchName: string;
+  cafeId: string;
+  cafeName: string;
   shiftLabel: string;
   summary: string;
   pendingTasks: string;
@@ -41,8 +41,8 @@ const now = () => new Date().toISOString();
 const seed: HandoverNote[] = [
   {
     id: 'hn-seed-1',
-    branchId: 'branch-1',
-    branchName: 'Downtown Hub',
+    cafeId: 'cafe-1',
+    cafeName: 'Downtown Hub',
     shiftLabel: 'Morning Shift (9:00 AM – 5:00 PM)',
     summary: 'Steady traffic all day, tournament group booked seats 10–15 for tomorrow evening.',
     pendingTasks: 'Restock energy drinks fridge. Replace mouse pad at seat 4.',

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Booking, MOCK_BRANCHES } from '@/shared/lib/mock-data';
+import { Booking, MOCK_CAFES } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 interface Props {
   bookings: Booking[];
-  branchFilter: string;
+  cafeFilter: string;
   onSlotClick?: (date: string, startTime: string) => void;
 }
 
@@ -42,7 +42,7 @@ function timeToHour(time: string): number {
   return h + m / 60;
 }
 
-export default function BookingCalendarView({ bookings, branchFilter, onSlotClick }: Props) {
+export default function BookingCalendarView({ bookings, cafeFilter, onSlotClick }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
 
@@ -62,12 +62,12 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
     const map: Record<string, Booking[]> = {};
     const filtered = bookings.filter(b => b.status === 'upcoming' || b.status === 'completed');
     for (const b of filtered) {
-      if (branchFilter !== 'all' && b.branchId !== branchFilter) continue;
+      if (cafeFilter !== 'all' && b.cafeId !== cafeFilter) continue;
       if (!map[b.date]) map[b.date] = [];
       map[b.date].push(b);
     }
     return map;
-  }, [bookings, branchFilter]);
+  }, [bookings, cafeFilter]);
 
   const headerLabel = viewMode === 'week'
     ? `${weekDays[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
@@ -163,7 +163,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
                           const endHour = timeToHour(booking.endTime);
                           const top = (startHour - 7) * 52;
                           const height = Math.max((endHour - startHour) * 52, 20);
-                          const branchName = MOCK_BRANCHES.find(b => b.id === booking.branchId)?.name || '';
+                          const cafeName = MOCK_CAFES.find(b => b.id === booking.cafeId)?.name || '';
 
                           return (
                             <Tooltip key={booking.id}>
@@ -177,7 +177,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
                                 >
                                   <p className="text-[10px] font-semibold truncate leading-tight">{booking.customerName}</p>
                                   <p className="text-[9px] truncate leading-tight opacity-80 flex items-center gap-0.5">
-                                    <Monitor className="h-2.5 w-2.5 inline shrink-0" /> Seat #{booking.seatNumber} • {branchName}
+                                    <Monitor className="h-2.5 w-2.5 inline shrink-0" /> Seat #{booking.seatNumber} • {cafeName}
                                   </p>
                                   {height > 40 && (
                                     <p className="text-[9px] truncate leading-tight opacity-70 flex items-center gap-0.5">
@@ -190,7 +190,7 @@ export default function BookingCalendarView({ bookings, branchFilter, onSlotClic
                                 <div className="space-y-1">
                                   <p className="font-semibold text-sm flex items-center gap-1"><User className="h-3 w-3" />{booking.customerName}</p>
                                   <p className="text-xs text-muted-foreground">{booking.customerPhone}</p>
-                                  <p className="text-xs"><Monitor className="h-3 w-3 inline mr-1" />Seat #{booking.seatNumber} — {branchName}</p>
+                                  <p className="text-xs"><Monitor className="h-3 w-3 inline mr-1" />Seat #{booking.seatNumber} — {cafeName}</p>
                                   <p className="text-xs"><Clock className="h-3 w-3 inline mr-1" />{booking.startTime} – {booking.endTime}</p>
                                   {booking.gpuPreference && <p className="text-xs">GPU: {booking.gpuPreference}</p>}
                                   {booking.notes && <p className="text-xs italic">"{booking.notes}"</p>}

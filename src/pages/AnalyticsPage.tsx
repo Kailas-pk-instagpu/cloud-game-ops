@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { REVENUE_DATA, MONTHLY_REVENUE, MOCK_BRANCHES, MOCK_SEATS } from '@/shared/lib/mock-data';
+import { REVENUE_DATA, MONTHLY_REVENUE, MOCK_CAFES, MOCK_SEATS } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,8 +18,8 @@ const GROWTH_RATE = MONTHLY_REVENUE.map((m, i) => ({
   growth: i === 0 ? 0 : Math.round(((m.revenue - MONTHLY_REVENUE[i - 1].revenue) / MONTHLY_REVENUE[i - 1].revenue) * 1000) / 10,
 }));
 
-// Revenue per seat per branch
-const BRANCH_EFFICIENCY = MOCK_BRANCHES.map(b => ({
+// Revenue per seat per cafe
+const CAFE_EFFICIENCY = MOCK_CAFES.map(b => ({
   name: b.name.split(' ').slice(0, 2).join(' '),
   revenuePerSeat: Math.round((b.activeSeats * 320 + Math.random() * 2000) / b.totalSeats),
   occupancy: Math.round((b.activeSeats / b.totalSeats) * 100),
@@ -217,20 +217,20 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Branch Efficiency + Session Duration + Retention */}
+      {/* Cafe Efficiency + Session Duration + Retention */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base">Revenue per Seat</CardTitle>
-              <CardDescription className="text-xs">Branch efficiency comparison</CardDescription>
+              <CardDescription className="text-xs">Cafe efficiency comparison</CardDescription>
             </div>
-            <DownloadBtn data={BRANCH_EFFICIENCY} filename="branch-efficiency.csv" />
+            <DownloadBtn data={CAFE_EFFICIENCY} filename="cafe-efficiency.csv" />
           </CardHeader>
           <CardContent>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={BRANCH_EFFICIENCY} layout="vertical">
+                <BarChart data={CAFE_EFFICIENCY} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis type="number" tick={tickStyle} tickFormatter={v => `RM ${v}`} />
                   <YAxis type="category" dataKey="name" tick={tickStyle} width={90} />

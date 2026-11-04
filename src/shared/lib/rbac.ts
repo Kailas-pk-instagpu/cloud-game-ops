@@ -22,7 +22,7 @@ export interface RouteConfig {
   permission?: Permission;
   /** Hidden from the menu for every role (the page is kept so it can be re-enabled later). */
   hidden?: boolean;
-  /** Menu only, not access: these roles reach the page another way (the Sales Manager opens branches from Cafe Management). */
+  /** Menu only, not access: these roles reach the page another way (the Sales Manager opens cafes from Cafe Management). */
   menuHiddenFor?: Role[];
 }
 
@@ -31,7 +31,7 @@ export const ROUTES: RouteConfig[] = [
   { path: '/users', label: 'User Management', icon: 'Users', permission: 'users.view' },
   { path: '/approvals', label: 'Approvals', icon: 'ClipboardCheck', permission: 'approvals.view' },
   { path: '/gpu-nodes', label: 'GPU Nodes', icon: 'Cpu', permission: 'gpu_nodes.view' },
-  { path: '/branches', label: 'Branches', icon: 'Building2', permission: 'branches.view', menuHiddenFor: ['admin'] },
+  { path: '/cafes', label: 'Cafes', icon: 'Building2', permission: 'cafes.view', menuHiddenFor: ['admin'] },
   { path: '/seats', label: 'Seat Management', icon: 'Monitor', permission: 'seats.operate.view' },
   // Pre-booking is temporarily hidden from every role — keep the entry so the page can be re-enabled later.
   { path: '/bookings', label: 'Pre-Booking', icon: 'CalendarCheck', hidden: true },

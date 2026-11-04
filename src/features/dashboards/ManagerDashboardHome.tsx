@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MOCK_SEATS, MOCK_BRANCHES, MOCK_USERS, REVENUE_DATA } from '@/shared/lib/mock-data';
+import { MOCK_SEATS, MOCK_CAFES, MOCK_USERS, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Banknote, Monitor, Users, Clock, AlertCircle, Zap, Timer, Calendar, Coffee, UserCircle2, ClipboardList, Plus, CheckCircle2, Trash2 } from 'lucide-react';
 import { StatCard } from '@/shared/ui/molecules/StatCard';
@@ -54,18 +54,18 @@ const RECENT_ACTIVITY = [
 ];
 
 export default function ManagerDashboardHome() {
-  const seats = MOCK_SEATS.filter(s => s.branchId === 'branch-1');
+  const seats = MOCK_SEATS.filter(s => s.cafeId === 'cafe-1');
   const occupied = seats.filter(s => s.status === 'occupied').length;
   const available = seats.filter(s => s.status === 'available').length;
   const maintenance = seats.filter(s => s.status === 'maintenance').length;
   const todayEarnings = REVENUE_DATA[5].revenue;
   const totalSessions = REVENUE_DATA.reduce((a, b) => a + b.sessions, 0);
-  const branch = MOCK_BRANCHES.find(b => b.id === 'branch-1');
+  const cafe = MOCK_CAFES.find(b => b.id === 'cafe-1');
 
-  const branchShifts = useShiftStore(s => s.shifts).filter(s => s.branchId === 'branch-1' && s.active);
+  const cafeShifts = useShiftStore(s => s.shifts).filter(s => s.cafeId === 'cafe-1' && s.active);
   const today = getTodayWeekday();
   const now = new Date();
-  const todayShifts = branchShifts.filter(s => s.weekdays.includes(today));
+  const todayShifts = cafeShifts.filter(s => s.weekdays.includes(today));
   const currentShift = todayShifts.find(s => isShiftCurrent(s.startTime, s.endTime, now)) || todayShifts[0];
   const shiftLabel = currentShift
     ? `${currentShift.name}: ${formatTime12(currentShift.startTime)} - ${formatTime12(currentShift.endTime)}`
@@ -76,7 +76,7 @@ export default function ManagerDashboardHome() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Floor Manager</h1>
-          <p className="text-muted-foreground text-sm mt-1">Overview of {branch?.name || 'your branch'}</p>
+          <p className="text-muted-foreground text-sm mt-1">Overview of {cafe?.name || 'your cafe'}</p>
         </div>
         {SHIFTS_ENABLED && (
         <Popover>
@@ -95,7 +95,7 @@ export default function ManagerDashboardHome() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold">{currentShift.name}</p>
-                    <p className="text-xs text-muted-foreground">{branch?.name}</p>
+                    <p className="text-xs text-muted-foreground">{cafe?.name}</p>
                   </div>
                   <Badge variant={isShiftCurrent(currentShift.startTime, currentShift.endTime, now) ? 'default' : 'secondary'}>
                     {isShiftCurrent(currentShift.startTime, currentShift.endTime, now) ? 'Active now' : 'Scheduled'}
@@ -168,14 +168,14 @@ export default function ManagerDashboardHome() {
                   </div>
                 )}
 
-                <HandoverPanel branchId="branch-1" branchName={branch?.name || 'your branch'} shiftLabel={shiftLabel} />
+                <HandoverPanel cafeId="cafe-1" cafeName={cafe?.name || 'your cafe'} shiftLabel={shiftLabel} />
               </div>
             ) : (
               <div className="p-4 text-center space-y-2">
                 <Clock className="h-6 w-6 text-muted-foreground mx-auto" />
                 <p className="text-sm font-medium">No shift configured</p>
                 <p className="text-xs text-muted-foreground">
-                  Ask your Cafe Owner or Sales Manager to set up shifts for this branch in Branches → Shifts.
+                  Ask your Cafe Owner or Sales Manager to set up shifts for this cafe in Cafes → Shifts.
                 </p>
               </div>
             )}
@@ -309,15 +309,15 @@ function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function HandoverPanel({ branchId, branchName, shiftLabel }: { branchId: string; branchName: string; shiftLabel: string }) {
+function HandoverPanel({ cafeId, cafeName, shiftLabel }: { cafeId: string; cafeName: string; shiftLabel: string }) {
   const { user } = useAuthStore();
   const { notes, createNote, acknowledge, deleteNote } = useHandoverStore();
   const [createOpen, setCreateOpen] = useState(false);
 
   if (!user) return null;
 
-  const branchNotes = notes
-    .filter(n => n.branchId === branchId)
+  const cafeNotes = notes
+    .filter(n => n.cafeId === cafeId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
@@ -339,8 +339,8 @@ function HandoverPanel({ branchId, branchName, shiftLabel }: { branchId: string;
             onSubmit={(values) => {
               createNote({
                 ...values,
-                branchId,
-                branchName,
+                cafeId,
+                cafeName,
                 authorId: user.id,
                 authorName: user.name || user.email,
                 authorRole: user.role,
@@ -352,13 +352,13 @@ function HandoverPanel({ branchId, branchName, shiftLabel }: { branchId: string;
         </Dialog>
       </div>
 
-      {branchNotes.length === 0 ? (
+      {cafeNotes.length === 0 ? (
         <p className="text-xs text-muted-foreground italic px-1 py-2">
           No handover notes yet. Leave a note for the next shift.
         </p>
       ) : (
         <div className="space-y-2">
-          {branchNotes.map(n => {
+          {cafeNotes.map(n => {
             const mine = n.authorId === user.id;
             return (
               <div key={n.id} className="rounded-lg border border-border/50 bg-muted/30 p-2.5 space-y-1.5">

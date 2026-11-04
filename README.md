@@ -1,6 +1,6 @@
 # Cloud GPU — Beyond Hardware
 
-An enterprise SaaS platform for managing cloud-GPU cybercafés and workstation networks. The application provides role-tailored dashboards, real-time monitoring, billing, pre-booking, and operational tooling for a multi-branch GPU rental business.
+An enterprise SaaS platform for managing cloud-GPU cybercafés and workstation networks. The application provides role-tailored dashboards, real-time monitoring, billing, pre-booking, and operational tooling for a multi-cafe GPU rental business.
 
 - Live preview: https://id-preview--d6544101-1ac8-4cfa-a85a-4e683a0af25f.lovable.app
 - Production: https://cloud-gpu.lovable.app
@@ -15,7 +15,7 @@ Cloud GPU is built around a strict hierarchical RBAC model and adaptive UX — e
 | ------------- | ------------------------------------------------------------------------------- |
 | Super Admin   | Network-wide telemetry, seat activity, GPU nodes, integrations, deletion review |
 | Admin         | Portfolio oversight, owner/manager management, payment history, analytics      |
-| Cafe Owner    | Branch P&L, active sessions, billing health, simplified KPIs                    |
+| Cafe Owner    | Cafe P&L, active sessions, billing health, simplified KPIs                    |
 | Manager       | Tablet-first POS: live seats, bookings, shift handover, issue reporting         |
 
 Users can only manage their direct subordinates and only see data scoped to their portfolio.
@@ -27,12 +27,12 @@ Users can only manage their direct subordinates and only see data scoped to thei
 - **Pre-booking** — conflict-aware seat scheduling synchronized with the live seat grid.
 - **Billing & usage** — usage-based billing, role-scoped financial responsibility, active session tracking, and payment history.
 - **Monitoring** — live sessions, failed transactions, application logs, and (for super admins) seat activity inspector.
-- **Analytics** — dedicated BI views for P&L, growth rate, branch efficiency, and user retention (Recharts).
+- **Analytics** — dedicated BI views for P&L, growth rate, cafe efficiency, and user retention (Recharts).
 - **Shift handover notes** — managers leave structured notes (summary, pending tasks, incidents, cash, priority) for the next shift, embedded in the shift-timing pill.
 - **Profile & security** — completion meter that requires every profile field plus 2FA enabled to reach 100%.
 - **2FA** — multi-step setup with multiple methods and recovery state machine.
 - **Notifications** — dual interface: slide-out panel and a dedicated page.
-- **Branch management** — hierarchical assignment, multi-step configuration wizard, scoped visibility.
+- **Cafe management** — hierarchical assignment, multi-step configuration wizard, scoped visibility.
 - **Theming** — dark-first premium SaaS aesthetic with light mode, Lucide icons, no emojis.
 
 ## Tech stack
@@ -53,7 +53,7 @@ Users can only manage their direct subordinates and only see data scoped to thei
 ```
 src/
   components/ui/         shadcn primitives
-  features/              feature modules (dashboards, billing, monitoring, bookings, branches, settings, login)
+  features/              feature modules (dashboards, billing, monitoring, bookings, cafes, settings, login)
   pages/                 route-level pages
   shared/
     lib/                 stores (Zustand), RBAC, mock data, helpers

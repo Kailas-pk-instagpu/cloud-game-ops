@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { bffFetch } from '@/shared/lib/bff';
-import type { BranchEditProposal } from '@/shared/lib/mock-data';
+import type { CafeEditProposal } from '@/shared/lib/mock-data';
 import type { ApprovalRequest } from './approvalService';
 
 /**
@@ -18,12 +18,12 @@ interface ApiFields {
 /** GET /api/v1/approvals row. */
 export interface ApiRequest {
   id: string;
-  kind: 'new_branch' | 'edit_branch';
+  kind: 'new_cafe' | 'edit_cafe';
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
   tenant_id: string;
   tenant_name: string;
-  branch_id: string | null;
-  branch_name: string | null;
+  cafe_id: string | null;
+  cafe_name: string | null;
   proposed: ApiFields | null;
   current: ApiFields;
   requested_by: string;
@@ -32,7 +32,7 @@ export interface ApiRequest {
   feedback: string | null;
 }
 
-const toProposal = (f: ApiFields, base: ApiFields = {}): BranchEditProposal => ({
+const toProposal = (f: ApiFields, base: ApiFields = {}): CafeEditProposal => ({
   name: f.name ?? base.name ?? '',
   address: (f.address === undefined ? base.address : f.address) ?? '',
   totalSeats: 0,
@@ -43,12 +43,13 @@ const toProposal = (f: ApiFields, base: ApiFields = {}): BranchEditProposal => (
 export function toRequest(r: ApiRequest): ApprovalRequest {
   return {
     id: r.id,
-    type: r.kind === 'new_branch' ? 'new_cafe' : 'edit_cafe',
-    branchId: r.branch_id ?? '',
-    branchName: r.branch_name ?? '—',
+    type: r.kind === 'new_cafe' ? 'new_cafe' : 'edit_cafe',
+    cafeId: r.cafe_id ?? '',
+    cafeName: r.cafe_name ?? '—',
     ownerName: r.tenant_name,
     createdById: r.requested_by,
-    createdByName: 'Sales Manager',
+    // Owners and Sales Managers both request cafes; the API gives only the requester's id until names come from auth-service.
+    createdByName: 'the requester',
     createdAt: r.requested_at,
     status: r.status === 'withdrawn' ? 'rejected' : r.status,
     feedback: r.feedback ?? undefined,

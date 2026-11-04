@@ -1,6 +1,6 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MOCK_BRANCHES, MOCK_USERS, MOCK_SEATS, REVENUE_DATA } from '@/shared/lib/mock-data';
+import { MOCK_CAFES, MOCK_USERS, MOCK_SEATS, REVENUE_DATA } from '@/shared/lib/mock-data';
 import { Building2, Banknote, TrendingUp, Users, Star, Clock, ArrowUpRight, UserCheck, BarChart3, Calendar, User, Wallet, Repeat, Gamepad2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
@@ -26,9 +26,9 @@ const CUSTOMER_STATS = {
 
 export default function CafeOwnerDashboard() {
   const navigate = useNavigate();
-  const myBranches = MOCK_BRANCHES.filter(b => b.cafeId === 'cafe-1');
-  const totalSeats = myBranches.reduce((a, b) => a + b.totalSeats, 0);
-  const activeSeats = myBranches.reduce((a, b) => a + b.activeSeats, 0);
+  const myCafes = MOCK_CAFES.filter(b => b.tenantId === 'tenant-1');
+  const totalSeats = myCafes.reduce((a, b) => a + b.totalSeats, 0);
+  const activeSeats = myCafes.reduce((a, b) => a + b.activeSeats, 0);
   const occupancy = Math.round((activeSeats / totalSeats) * 100);
   const myManagers = MOCK_USERS.filter(u => u.role === 'manager' && u.createdBy === '4');
 
@@ -45,7 +45,7 @@ export default function CafeOwnerDashboard() {
       {/* Primary KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
         <StatCard title="This Week's Earnings" value="RM 12,400" icon={Banknote} trend={{ value: 8, positive: true }} iconClassName="bg-success/10 text-success" />
-        <StatCard title="My Branches" value={myBranches.length} icon={Building2} iconClassName="bg-primary/10 text-primary" />
+        <StatCard title="My Cafes" value={myCafes.length} icon={Building2} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Seat Occupancy" value={`${occupancy}%`} subtitle={`${activeSeats}/${totalSeats} seats`} icon={Users} iconClassName="bg-info/10 text-info" />
         <StatCard title="My Managers" value={myManagers.length} subtitle="Active staff" icon={UserCheck} iconClassName="bg-warning/10 text-warning" />
         <StatCard title="Avg Session" value={CUSTOMER_STATS.avgSessionTime} icon={Clock} subtitle="Per customer" iconClassName="bg-accent-foreground/10 text-accent-foreground" />
@@ -57,7 +57,7 @@ export default function CafeOwnerDashboard() {
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Weekly Earnings</CardTitle>
-            <CardDescription>Revenue across all your branches</CardDescription>
+            <CardDescription>Revenue across all your cafes</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 min-h-0 pb-4">
             <div className="h-full min-h-[220px]">
@@ -83,7 +83,7 @@ export default function CafeOwnerDashboard() {
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Peak Hours</CardTitle>
-            <CardDescription>When your branches are busiest today</CardDescription>
+            <CardDescription>When your cafes are busiest today</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 min-h-0 pb-4">
             <div className="h-full min-h-[220px]">
@@ -101,7 +101,7 @@ export default function CafeOwnerDashboard() {
         </Card>
       </div>
 
-      {/* Customer Insights + Manager Performance + Branches */}
+      {/* Customer Insights + Manager Performance + Cafes */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
@@ -132,11 +132,11 @@ export default function CafeOwnerDashboard() {
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Manager Performance</CardTitle>
-            <CardDescription>Your branch managers' activity</CardDescription>
+            <CardDescription>Your cafe managers' activity</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
             {myManagers.map(manager => {
-              const branch = MOCK_BRANCHES.find(b => b.managerId === manager.id);
+              const cafe = MOCK_CAFES.find(b => b.managerId === manager.id);
               return (
                 <div key={manager.id} className="p-3 rounded-lg bg-muted/50 space-y-2">
                   <div className="flex items-center justify-between">
@@ -146,18 +146,18 @@ export default function CafeOwnerDashboard() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{manager.name}</p>
-                        <p className="text-xs text-muted-foreground">{branch?.name || 'Unassigned'}</p>
+                        <p className="text-xs text-muted-foreground">{cafe?.name || 'Unassigned'}</p>
                       </div>
                     </div>
                     <StatusBadge status="active" />
                   </div>
-                  {branch && (
+                  {cafe && (
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Seat Utilization</span>
-                        <span>{Math.round((branch.activeSeats / branch.totalSeats) * 100)}%</span>
+                        <span>{Math.round((cafe.activeSeats / cafe.totalSeats) * 100)}%</span>
                       </div>
-                      <Progress value={(branch.activeSeats / branch.totalSeats) * 100} className="h-1.5" />
+                      <Progress value={(cafe.activeSeats / cafe.totalSeats) * 100} className="h-1.5" />
                     </div>
                   )}
                 </div>
@@ -172,23 +172,23 @@ export default function CafeOwnerDashboard() {
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">My Branches</CardTitle>
-              <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/branches')}>
+              <CardTitle className="text-base font-semibold">My Cafes</CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => navigate('/cafes')}>
                 View All <ArrowUpRight className="h-3 w-3" />
               </Button>
             </div>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
-            {myBranches.map(branch => (
-              <div key={branch.id} className="p-3.5 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
+            {myCafes.map(cafe => (
+              <div key={cafe.id} className="p-3.5 sm:p-3 rounded-lg bg-muted/50 touch-manipulation">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold">{branch.name}</h3>
-                  <StatusBadge status={branch.status} />
+                  <h3 className="text-sm font-semibold">{cafe.name}</h3>
+                  <StatusBadge status={cafe.status} />
                 </div>
-                <p className="text-xs text-muted-foreground mb-2.5 sm:mb-2">{branch.address}</p>
+                <p className="text-xs text-muted-foreground mb-2.5 sm:mb-2">{cafe.address}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs"><strong>{branch.activeSeats}</strong>/{branch.totalSeats} seats</span>
-                  <Button variant="outline" size="sm" className="h-9 sm:h-7 text-xs px-4 sm:px-3 touch-manipulation" onClick={() => navigate('/branches')}>Manage</Button>
+                  <span className="text-xs"><strong>{cafe.activeSeats}</strong>/{cafe.totalSeats} seats</span>
+                  <Button variant="outline" size="sm" className="h-9 sm:h-7 text-xs px-4 sm:px-3 touch-manipulation" onClick={() => navigate('/cafes')}>Manage</Button>
                 </div>
               </div>
             ))}

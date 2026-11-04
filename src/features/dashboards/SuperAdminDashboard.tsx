@@ -1,7 +1,7 @@
 import { StatCard } from '@/shared/ui/molecules/StatCard';
 import { StatusBadge } from '@/shared/ui/atoms/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MOCK_GPU_NODES, MOCK_USERS, MOCK_BRANCHES, MOCK_SEATS, REVENUE_DATA, MONTHLY_REVENUE } from '@/shared/lib/mock-data';
+import { MOCK_GPU_NODES, MOCK_USERS, MOCK_CAFES, MOCK_SEATS, REVENUE_DATA, MONTHLY_REVENUE } from '@/shared/lib/mock-data';
 import { Cpu, Banknote, Users, Zap, AlertTriangle, TrendingUp, Building2, Shield, Activity, Server, HardDrive, Clock, UserCheck, UserX, Globe } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Progress } from '@/components/ui/progress';
@@ -32,8 +32,8 @@ const SYSTEM_METRICS = [
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const totalSeats = MOCK_BRANCHES.reduce((a, b) => a + b.totalSeats, 0);
-  const baseActiveSeats = MOCK_BRANCHES.reduce((a, b) => a + b.activeSeats, 0);
+  const totalSeats = MOCK_CAFES.reduce((a, b) => a + b.totalSeats, 0);
+  const baseActiveSeats = MOCK_CAFES.reduce((a, b) => a + b.activeSeats, 0);
   const onlineNodes = MOCK_GPU_NODES.filter(n => n.status === 'online').length;
   const baseAvgUtil = Math.round(MOCK_GPU_NODES.filter(n => n.status !== 'offline').reduce((a, b) => a + b.utilization, 0) / MOCK_GPU_NODES.filter(n => n.status !== 'offline').length);
 
@@ -76,7 +76,7 @@ export default function SuperAdminDashboard() {
         <StatCard title="Active Sessions" value={sessions} icon={Zap} trend={{ value: 8, positive: true }} iconClassName="bg-info/10 text-info" />
         <StatCard title="GPU Nodes" value={`${onlineNodes}/${MOCK_GPU_NODES.length}`} subtitle={`Avg ${avgUtilization}% util`} icon={Cpu} iconClassName="bg-primary/10 text-primary" />
         <StatCard title="Total Users" value={MOCK_USERS.length} subtitle="Across all roles" icon={Users} iconClassName="bg-warning/10 text-warning" />
-        <StatCard title="Branches" value={MOCK_BRANCHES.length} subtitle={`${MOCK_BRANCHES.filter(b => b.status === 'active').length} active`} icon={Building2} iconClassName="bg-accent-foreground/10 text-accent-foreground" />
+        <StatCard title="Cafes" value={MOCK_CAFES.length} subtitle={`${MOCK_CAFES.filter(b => b.status === 'active').length} active`} icon={Building2} iconClassName="bg-accent-foreground/10 text-accent-foreground" />
         <StatCard title="Occupancy" value={`${occupancyRate}%`} subtitle={`${activeSeats}/${totalSeats} seats`} icon={Activity} iconClassName="bg-destructive/10 text-destructive" />
       </div>
 
@@ -85,7 +85,7 @@ export default function SuperAdminDashboard() {
         <Card className="lg:col-span-2 flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
-            <CardDescription>Monthly platform revenue across all branches</CardDescription>
+            <CardDescription>Monthly platform revenue across all cafes</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 min-h-0 pb-4">
             <div className="h-full min-h-[240px]">
@@ -146,7 +146,7 @@ export default function SuperAdminDashboard() {
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Platform Load (Today)</CardTitle>
-            <CardDescription>Hourly session load across all branches</CardDescription>
+            <CardDescription>Hourly session load across all cafes</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 min-h-0 pb-4">
             <div className="h-full min-h-[200px]">
@@ -214,7 +214,7 @@ export default function SuperAdminDashboard() {
         </Card>
       </div>
 
-      {/* Weekly Sessions + Branch Performance + Quick Actions */}
+      {/* Weekly Sessions + Cafe Performance + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
@@ -237,16 +237,16 @@ export default function SuperAdminDashboard() {
 
         <Card className="flex flex-col">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Branch Performance</CardTitle>
-            <CardDescription>Seat occupancy by branch</CardDescription>
+            <CardTitle className="text-base font-semibold">Cafe Performance</CardTitle>
+            <CardDescription>Seat occupancy by cafe</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between gap-3">
-            {MOCK_BRANCHES.map(branch => {
-              const occ = Math.round((branch.activeSeats / branch.totalSeats) * 100);
+            {MOCK_CAFES.map(cafe => {
+              const occ = Math.round((cafe.activeSeats / cafe.totalSeats) * 100);
               return (
-                <div key={branch.id} className="space-y-1.5">
+                <div key={cafe.id} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{branch.name}</span>
+                    <span className="font-medium">{cafe.name}</span>
                     <span className="text-muted-foreground">{occ}%</span>
                   </div>
                   <Progress value={occ} className="h-2" />
@@ -293,9 +293,9 @@ export default function SuperAdminDashboard() {
               <Users className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
               <span className="text-xs">Manage Users</span>
             </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/branches')}>
+            <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/cafes')}>
               <Building2 className="h-6 w-6 sm:h-5 sm:w-5 text-info" />
-              <span className="text-xs">View Branches</span>
+              <span className="text-xs">View Cafes</span>
             </Button>
             <Button variant="outline" className="h-auto flex-col gap-2 py-5 sm:py-4 min-h-[88px] sm:min-h-0 touch-manipulation" onClick={() => navigate('/gpu-nodes')}>
               <Server className="h-6 w-6 sm:h-5 sm:w-5 text-warning" />

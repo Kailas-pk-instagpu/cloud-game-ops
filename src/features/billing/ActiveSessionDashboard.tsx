@@ -12,7 +12,7 @@ interface ActiveSessionDashboardProps {
   lockedAmount?: number;
   costPerMinute?: number;
   readOnly?: boolean;
-  branchName?: string;
+  cafeName?: string;
   onEndSession?: (summary: { durationSec: number; usageCost: number; refund: number }) => void;
 }
 
@@ -29,7 +29,7 @@ export function ActiveSessionDashboard({
   lockedAmount = 100,
   costPerMinute = 2,
   readOnly = false,
-  branchName,
+  cafeName,
   onEndSession,
 }: ActiveSessionDashboardProps) {
   const [now, setNow] = useState<Date>(new Date());
@@ -75,7 +75,7 @@ export function ActiveSessionDashboard({
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Active Gaming Session</h1>
             <p className="text-muted-foreground mt-1">
-              Live billing & usage monitor{branchName ? ` · ${branchName}` : ''}
+              Live billing & usage monitor{cafeName ? ` · ${cafeName}` : ''}
             </p>
           </div>
           <Badge
@@ -236,7 +236,7 @@ export function ActiveSessionDashboard({
         }}
         onConfirm={handleConfirmEnd}
         isProcessing={isEnding}
-        branchName={branchName}
+        cafeName={cafeName}
         durationSec={durationSec}
         lockedAmount={lockedAmount}
         usageCost={usageCost}

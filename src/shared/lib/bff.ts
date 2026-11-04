@@ -71,7 +71,7 @@ export interface MeResponse {
   /** What this person may do now (configurable by the super admin). */
   permissions: string[];
   tenant_scope: '*' | string[];
-  memberships: { tenant_id: string; role: 'CAFE_OWNER' | 'BRANCH_MANAGER'; branch_id: string | null }[];
+  memberships: { tenant_id: string; role: 'CAFE_OWNER' | 'CAFE_MANAGER'; cafe_id: string | null }[];
   phone: string | null;
   address: string | null;
   has_avatar: boolean;
@@ -88,7 +88,7 @@ export function toUser(me: MeResponse): User {
     me.tenant_scope === '*'
       ? ['*']
       : me.role === 'manager'
-        ? me.memberships.map((m) => m.branch_id ?? m.tenant_id)
+        ? me.memberships.map((m) => m.cafe_id ?? m.tenant_id)
         : me.memberships.map((m) => m.tenant_id);
   return {
     id: me.user_id,

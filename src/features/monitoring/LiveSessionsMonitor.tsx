@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MOCK_BRANCHES, MOCK_SEATS } from '@/shared/lib/mock-data';
+import { MOCK_CAFES, MOCK_SEATS } from '@/shared/lib/mock-data';
 import { Activity, Search, RefreshCw, Cpu, Wallet, Users, Building2, Zap, Eye, FilterX, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -20,9 +20,9 @@ import LastUpdated from '@/shared/ui/atoms/LastUpdated';
 interface LiveSession {
   id: string;
   player: string;
-  branchId: string;
-  branchName: string;
   cafeId: string;
+  cafeName: string;
+  tenantId: string;
   seatNumber: number;
   gpu: string;
   startedAt: Date;
@@ -43,10 +43,10 @@ const HEALTH_STYLES: Record<LiveSession['health'], string> = {
 function buildSessions(): LiveSession[] {
   const occupied = MOCK_SEATS.filter((s) => s.status === 'occupied');
   return occupied.map((s, i) => {
-    const branch = MOCK_BRANCHES.find((b) => b.id === s.branchId)!;
+    const cafe = MOCK_CAFES.find((b) => b.id === s.cafeId)!;
     const startedAt = new Date(Date.now() - (15 + (i * 17) % 180) * 60 * 1000);
     const durationMin = Math.round((Date.now() - startedAt.getTime()) / 60000);
-    const ratePerMin = branch.billing.costPerMinute;
+    const ratePerMin = cafe.billing.costPerMinute;
     const spent = +(durationMin * ratePerMin).toFixed(2);
     const walletBalance = +(spent + 20 + (i * 13) % 200).toFixed(2);
     const load = 30 + (i * 11) % 70;
@@ -54,9 +54,9 @@ function buildSessions(): LiveSession[] {
     return {
       id: `SES-${(40010 + i).toString(36).toUpperCase()}`,
       player: s.playerName ?? `Guest ${i + 1}`,
-      branchId: branch.id,
-      branchName: branch.name,
-      cafeId: branch.cafeId,
+      cafeId: cafe.id,
+      cafeName: cafe.name,
+      tenantId: cafe.tenantId,
       seatNumber: s.number,
       gpu: s.gpuModel,
       startedAt,
@@ -79,7 +79,7 @@ const formatDuration = (m: number) => {
 export default function LiveSessionsMonitor() {
   const [sessions, setSessions] = useState<LiveSession[]>(() => buildSessions());
   const [query, setQuery] = useState('');
-  const [branchFilter, setBranchFilter] = useState<string>('all');
+  const [cafeFilter, setCafeFilter] = useState<string>('all');
   const [healthFilter, setHealthFilter] = useState<string>('all');
   const [tick, setTick] = useState(0);
   const [inspected, setInspected] = useState<LiveSession | null>(null);
@@ -105,15 +105,15 @@ export default function LiveSessionsMonitor() {
 
   const filtered = useMemo(() => {
     return sessions.filter((s) => {
-      if (branchFilter !== 'all' && s.branchId !== branchFilter) return false;
+      if (cafeFilter !== 'all' && s.cafeId !== cafeFilter) return false;
       if (healthFilter !== 'all' && s.health !== healthFilter) return false;
       if (query) {
         const q = query.toLowerCase();
-        if (!s.player.toLowerCase().includes(q) && !s.id.toLowerCase().includes(q) && !s.branchName.toLowerCase().includes(q)) return false;
+        if (!s.player.toLowerCase().includes(q) && !s.id.toLowerCase().includes(q) && !s.cafeName.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [sessions, query, branchFilter, healthFilter]);
+  }, [sessions, query, cafeFilter, healthFilter]);
 
   const paged = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -126,21 +126,21 @@ export default function LiveSessionsMonitor() {
     if (page > totalPages) setPage(1);
   }, [filtered.length, page, pageSize]);
 
-  const filtersActive = query.trim() !== '' || branchFilter !== 'all' || healthFilter !== 'all';
-  const isLoading = useDeferredLoading([query, branchFilter, healthFilter, page, pageSize]);
+  const filtersActive = query.trim() !== '' || cafeFilter !== 'all' || healthFilter !== 'all';
+  const isLoading = useDeferredLoading([query, cafeFilter, healthFilter, page, pageSize]);
 
   const clearFilters = () => {
     setQuery('');
-    setBranchFilter('all');
+    setCafeFilter('all');
     setHealthFilter('all');
   };
 
   const stats = useMemo(() => {
     const totalRevenue = sessions.reduce((a, b) => a + b.spent, 0);
-    const branches = new Set(sessions.map((s) => s.branchId)).size;
+    const cafes = new Set(sessions.map((s) => s.cafeId)).size;
     const avgLoad = sessions.length ? Math.round(sessions.reduce((a, b) => a + b.gpuLoad, 0) / sessions.length) : 0;
     const lowWallet = sessions.filter((s) => s.walletBalance - s.spent < 20).length;
-    return { active: sessions.length, totalRevenue, branches, avgLoad, lowWallet };
+    return { active: sessions.length, totalRevenue, cafes, avgLoad, lowWallet };
   }, [sessions]);
 
   const handleRefresh = () => {
@@ -154,7 +154,7 @@ export default function LiveSessionsMonitor() {
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KPI icon={Zap} label="Active sessions" value={stats.active.toString()} tone="text-info" bg="bg-info/10" />
-        <KPI icon={Building2} label="Branches live" value={`${stats.branches}/${MOCK_BRANCHES.length}`} tone="text-primary" bg="bg-primary/10" />
+        <KPI icon={Building2} label="Cafes live" value={`${stats.cafes}/${MOCK_CAFES.length}`} tone="text-primary" bg="bg-primary/10" />
         <KPI icon={Wallet} label="Live revenue" value={`RM ${stats.totalRevenue.toFixed(2)}`} tone="text-success" bg="bg-success/10" />
         <KPI icon={Cpu} label="Avg GPU load" value={`${stats.avgLoad}%`} tone="text-warning" bg="bg-warning/10" />
         <KPI icon={Users} label="Low wallet" value={stats.lowWallet.toString()} tone="text-destructive" bg="bg-destructive/10" />
@@ -188,15 +188,15 @@ export default function LiveSessionsMonitor() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search player, session ID, or branch..."
+                placeholder="Search player, session ID, or cafe..."
                 className="pl-8 h-9"
               />
             </div>
-            <Select value={branchFilter} onValueChange={setBranchFilter}>
+            <Select value={cafeFilter} onValueChange={setCafeFilter}>
               <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All branches</SelectItem>
-                {MOCK_BRANCHES.map((b) => (
+                <SelectItem value="all">All cafes</SelectItem>
+                {MOCK_CAFES.map((b) => (
                   <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -220,7 +220,7 @@ export default function LiveSessionsMonitor() {
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Session</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Player</TableHead>
-                  <TableHead className="h-9 text-[11px] uppercase tracking-wider">Branch / Seat</TableHead>
+                  <TableHead className="h-9 text-[11px] uppercase tracking-wider">Cafe / Seat</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">GPU</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Duration</TableHead>
                   <TableHead className="h-9 text-[11px] uppercase tracking-wider">Spent / Wallet</TableHead>
@@ -241,7 +241,7 @@ export default function LiveSessionsMonitor() {
                         title={filtersActive ? 'No sessions match your filters' : 'No live sessions right now'}
                         description={
                           filtersActive
-                            ? 'Try widening the search, switching branches, or resetting the health filter.'
+                            ? 'Try widening the search, switching cafes, or resetting the health filter.'
                             : 'Once players start a session at any cafe, they’ll appear here in real time.'
                         }
                         actionLabel={filtersActive ? 'Clear filters' : 'Refresh'}
@@ -259,7 +259,7 @@ export default function LiveSessionsMonitor() {
                         <TableCell className="py-2.5 text-sm font-medium">{s.player}</TableCell>
                         <TableCell className="py-2.5 text-sm">
                           <div className="flex flex-col">
-                            <span>{s.branchName}</span>
+                            <span>{s.cafeName}</span>
                             <span className="text-[11px] text-muted-foreground">Seat #{s.seatNumber}</span>
                           </div>
                         </TableCell>

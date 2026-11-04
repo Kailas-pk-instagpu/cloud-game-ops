@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useAuthStore, useBranchStore } from '@/shared/lib/store';
+import { useAuthStore, useCafeStore } from '@/shared/lib/store';
 import { useCan } from '@/shared/lib/permissions';
 import {
   useIssueReportStore,
@@ -52,7 +52,7 @@ function formatDate(iso: string) {
 
 export default function IssuesPage() {
   const { user } = useAuthStore();
-  const { branches } = useBranchStore();
+  const { cafes } = useCafeStore();
   const { issues, createIssue, addReply, updateStatus, deleteIssue } = useIssueReportStore();
 
   const [tab, setTab] = useState<'all' | IssueStatus>('all');
@@ -67,15 +67,15 @@ export default function IssuesPage() {
   const isOwner = user.role === 'cafe_owner';
   const isStaff = user.role === 'super_admin' || user.role === 'admin';
 
-  // Cafe owner: only own branches' issues. Staff: see all.
-  const ownerBranchIds = useMemo(
-    () => branches.filter((b) => b.cafeOwnerId === user.id).map((b) => b.id),
-    [branches, user.id]
+  // Cafe owner: only own cafes' issues. Staff: see all.
+  const ownerCafeIds = useMemo(
+    () => cafes.filter((b) => b.cafeOwnerId === user.id).map((b) => b.id),
+    [cafes, user.id]
   );
 
   const visibleIssues = useMemo(() => {
     let list = issues;
-    if (isOwner) list = list.filter((i) => ownerBranchIds.includes(i.branchId) || i.reportedById === user.id);
+    if (isOwner) list = list.filter((i) => ownerCafeIds.includes(i.cafeId) || i.reportedById === user.id);
     if (tab !== 'all') list = list.filter((i) => i.status === tab);
     if (search) {
       const q = search.toLowerCase();
@@ -83,22 +83,22 @@ export default function IssuesPage() {
         (i) =>
           i.title.toLowerCase().includes(q) ||
           i.description.toLowerCase().includes(q) ||
-          i.branchName.toLowerCase().includes(q) ||
+          i.cafeName.toLowerCase().includes(q) ||
           i.reportedByName.toLowerCase().includes(q)
       );
     }
     return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }, [issues, isOwner, ownerBranchIds, user.id, tab, search]);
+  }, [issues, isOwner, ownerCafeIds, user.id, tab, search]);
 
   const counts = useMemo(() => {
-    const base = isOwner ? issues.filter((i) => ownerBranchIds.includes(i.branchId) || i.reportedById === user.id) : issues;
+    const base = isOwner ? issues.filter((i) => ownerCafeIds.includes(i.cafeId) || i.reportedById === user.id) : issues;
     return {
       all: base.length,
       open: base.filter((i) => i.status === 'open').length,
       in_progress: base.filter((i) => i.status === 'in_progress').length,
       resolved: base.filter((i) => i.status === 'resolved').length,
     };
-  }, [issues, isOwner, ownerBranchIds, user.id]);
+  }, [issues, isOwner, ownerCafeIds, user.id]);
 
   const openIssue = openIssueId ? issues.find((i) => i.id === openIssueId) || null : null;
 
@@ -109,8 +109,8 @@ export default function IssuesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Issue Reports</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isOwner
-              ? 'Report hardware, network, or software problems at your branches.'
-              : 'Track and respond to issues reported by cafe owners across all branches.'}
+              ? 'Report hardware, network, or software problems at your cafes.'
+              : 'Track and respond to issues reported by cafe owners across all cafes.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -126,13 +126,13 @@ export default function IssuesPage() {
               </DialogTrigger>
               <CreateIssueDialog
                 onClose={() => setCreateOpen(false)}
-                ownerBranches={branches.filter((b) => b.cafeOwnerId === user.id)}
+                ownerCafes={cafes.filter((b) => b.cafeOwnerId === user.id)}
                 onSubmit={(values) => {
-                  const branch = branches.find((b) => b.id === values.branchId);
-                  if (!branch) return;
+                  const cafe = cafes.find((b) => b.id === values.cafeId);
+                  if (!cafe) return;
                   createIssue({
                     ...values,
-                    branchName: branch.name,
+                    cafeName: cafe.name,
                     reportedById: user.id,
                     reportedByName: user.name || user.email,
                     reportedByRole: user.role,
@@ -149,7 +149,7 @@ export default function IssuesPage() {
       <div className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2">
         <Search className="h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search issues by title, branch or reporter..."
+          placeholder="Search issues by title, cafe or reporter..."
           className="border-0 bg-transparent focus-visible:ring-0"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -209,7 +209,7 @@ export default function IssuesPage() {
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{iss.description}</p>
                           <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-2 flex-wrap">
-                            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{iss.branchName}</span>
+                            <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{iss.cafeName}</span>
                             <span>By {iss.reportedByName} · {ROLE_LABELS[iss.reportedByRole]}</span>
                             <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{iss.replies.length}</span>
                           </div>
@@ -248,7 +248,7 @@ export default function IssuesPage() {
               <div className="mt-4 space-y-4">
                 <div className="rounded-lg bg-muted/40 border border-border/50 p-3 space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{openIssue.branchName}</span>
+                    <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{openIssue.cafeName}</span>
                     <span>{formatDate(openIssue.createdAt)}</span>
                   </div>
                   <p className="text-sm">{openIssue.description}</p>
@@ -358,19 +358,19 @@ export default function IssuesPage() {
 function CreateIssueDialog({
   onClose,
   onSubmit,
-  ownerBranches,
+  ownerCafes,
 }: {
   onClose: () => void;
-  onSubmit: (v: { category: IssueCategory; title: string; description: string; priority: IssuePriority; branchId: string }) => void;
-  ownerBranches: { id: string; name: string }[];
+  onSubmit: (v: { category: IssueCategory; title: string; description: string; priority: IssuePriority; cafeId: string }) => void;
+  ownerCafes: { id: string; name: string }[];
 }) {
   const [category, setCategory] = useState<IssueCategory>('gpu');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<IssuePriority>('medium');
-  const [branchId, setBranchId] = useState(ownerBranches[0]?.id ?? '');
+  const [cafeId, setCafeId] = useState(ownerCafes[0]?.id ?? '');
 
-  const valid = title.trim().length >= 4 && description.trim().length >= 10 && branchId;
+  const valid = title.trim().length >= 4 && description.trim().length >= 10 && cafeId;
 
   return (
     <DialogContent className="sm:max-w-lg">
@@ -384,13 +384,13 @@ function CreateIssueDialog({
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Branch</label>
-            <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+            <label className="text-xs font-medium text-muted-foreground">Cafe</label>
+            <Select value={cafeId} onValueChange={setCafeId}>
+              <SelectTrigger><SelectValue placeholder="Select cafe" /></SelectTrigger>
               <SelectContent>
-                {ownerBranches.length === 0 ? (
-                  <SelectItem value="none" disabled>No branches assigned</SelectItem>
-                ) : ownerBranches.map((b) => (
+                {ownerCafes.length === 0 ? (
+                  <SelectItem value="none" disabled>No cafes assigned</SelectItem>
+                ) : ownerCafes.map((b) => (
                   <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -448,7 +448,7 @@ function CreateIssueDialog({
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button
           disabled={!valid}
-          onClick={() => onSubmit({ category, title: title.trim(), description: description.trim(), priority, branchId })}
+          onClick={() => onSubmit({ category, title: title.trim(), description: description.trim(), priority, cafeId })}
         >
           Submit Report
         </Button>
