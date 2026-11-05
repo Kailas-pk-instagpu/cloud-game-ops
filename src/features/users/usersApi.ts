@@ -9,8 +9,11 @@ import type { Role } from '@/shared/types/auth';
  *   POST /api/v1/users/sales-managers     Super Admin                   (users.create.admin)
  *   POST /api/v1/users/cafe-owners        Super Admin / Sales Manager   (users.create.cafe_owner): login + owner account
  *   POST /api/v1/users/floor-managers     Super Admin / cafe owner      (users.create.manager): for one active cafe
- * Each create makes a Keycloak login in the role's group and answers a one-time password, shown once; the person must choose
- * their own password at first sign-in.
+ *   PATCH  /api/v1/users/:id                 name / phone (users.edit; the e-mail cannot be changed)
+ *   POST   /api/v1/users/:id/disable|enable  (users.disable; disable also signs them out everywhere)
+ *   POST   /api/v1/users/:id/reset-password  a new one-time password (users.reset_password)
+ *   DELETE /api/v1/users/:id                 soft delete: login removed, history kept (users.delete)
+ * Each create (and reset) answers a one-time password, shown once; the person must choose their own at the next sign-in.
  */
 export interface ApiUser {
   id: string;
@@ -52,6 +55,10 @@ interface BackendUsersState {
   error: string | null;
   load: () => Promise<void>;
   create: (role: Exclude<Role, 'super_admin'>, input: NewUser) => Promise<CreatedUser>;
+  update: (id: string, input: { full_name?: string; phone?: string | null }) => Promise<void>;
+  setEnabled: (id: string, enabled: boolean) => Promise<void>;
+  resetPassword: (id: string) => Promise<string>;
+  remove: (id: string) => Promise<void>;
 }
 
 export const useBackendUsers = create<BackendUsersState>()((set, get) => ({
@@ -75,5 +82,19 @@ export const useBackendUsers = create<BackendUsersState>()((set, get) => ({
     const created = await bffFetch<CreatedUser>(CREATE_PATH[role], { method: 'POST', json: body });
     await get().load();
     return created;
+  },
+
+  update: async (id, input) => {
+    await bffFetch(`/api/v1/users/${id}`, { method: 'PATCH', json: input });
+    await get().load();
+  },
+  setEnabled: async (id, enabled) => {
+    await bffFetch(`/api/v1/users/${id}/${enabled ? 'enable' : 'disable'}`, { method: 'POST', json: {} });
+    await get().load();
+  },
+  resetPassword: async (id) => (await bffFetch<{ temporary_password: string }>(`/api/v1/users/${id}/reset-password`, { method: 'POST', json: {} })).temporary_password,
+  remove: async (id) => {
+    await bffFetch(`/api/v1/users/${id}`, { method: 'DELETE' });
+    await get().load();
   },
 }));

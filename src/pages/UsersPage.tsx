@@ -96,7 +96,7 @@ export default function UsersPage() {
   const [formCafe, setFormCafe] = useState('');
   const [creating, setCreating] = useState(false);
   // The one-time password of the person just created (backend), shown once.
-  const [created, setCreated] = useState<{ name: string; email: string; role: Role; password: string } | null>(null);
+  const [created, setCreated] = useState<{ name: string; email: string; role: Role; password: string; reset?: boolean } | null>(null);
   const mockCafes = useCafeStore(s => s.cafes);
 
   const can = useCan();
@@ -144,8 +144,14 @@ export default function UsersPage() {
   const canReset2FA = can('users.reset_2fa');
   const canResetPassword = can('users.reset_password');
   const canDeleteUser = can('users.delete');
-  // Backend: edit, disable, 2FA, password reset and delete are not built yet (auth-service), so the menu stays hidden there.
-  const hasUserActions = !BACKEND && (canEditUser || canDisableUser || canReset2FA || canResetPassword || canDeleteUser);
+  // Backend: user actions are switched on role by role (Super Admin, Sales Manager, cafe owner: 2026-11-05); 2FA is on hold.
+  // Which actions each role gets still comes from its permissions (Sales Manager: edit, disable / enable; cafe owner: edit,
+  // disable / enable, reset password, on their own Floor Managers only).
+  const BACKEND_ACTION_ROLES: Role[] = ['super_admin', 'admin', 'cafe_owner'];
+  const backendActions = !BACKEND || BACKEND_ACTION_ROLES.includes(currentUser.role);
+  const show2FA = canReset2FA && !BACKEND;
+  const hasUserActions = backendActions && (canEditUser || canDisableUser || show2FA || canResetPassword || canDeleteUser);
+  const fail = (e: unknown, what: string) => toast.error(e instanceof Error ? e.message : `Could not ${what}.`);
 
   const resetForm = () => {
     setFormName('');
@@ -224,6 +230,14 @@ export default function UsersPage() {
   };
 
   const handleEdit = () => {
+    if (BACKEND) {
+      if (!selectedUser || !formName.trim()) return;
+      const u = selectedUser;
+      backendUsers.update(u.id, { full_name: formName.trim(), phone: formPhone.trim() || null })
+        .then(() => { setShowEdit(false); setSelectedUser(null); resetForm(); toast.success('User updated successfully'); })
+        .catch(e => fail(e, 'update the user'));
+      return;
+    }
     if (!selectedUser || !formName.trim() || !formEmail.trim()) return;
     setUsers(prev => prev.map(u =>
       u.id === selectedUser.id
@@ -237,6 +251,16 @@ export default function UsersPage() {
   };
 
   const handleDelete = () => {
+    if (BACKEND) {
+      if (!selectedUser) return;
+      const u = selectedUser;
+      backendUsers.remove(u.id)
+        .then(() => toast.success(`User "${u.name}" has been deleted`))
+        .catch(e => fail(e, 'delete the user'));
+      setShowDelete(false);
+      setSelectedUser(null);
+      return;
+    }
     if (!selectedUser) return;
     setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
     setShowDelete(false);
@@ -245,6 +269,15 @@ export default function UsersPage() {
   };
 
   const toggleUserStatus = (userId: string) => {
+    if (BACKEND) {
+      const u = users.find(x => x.id === userId);
+      if (!u) return;
+      const enable = u.status !== 'active';
+      backendUsers.setEnabled(userId, enable)
+        .then(() => toast.success(`User "${u.name}" has been ${enable ? 'enabled' : 'disabled'}`))
+        .catch(e => fail(e, enable ? 'enable the user' : 'disable the user'));
+      return;
+    }
     setUsers(prev => prev.map(u => {
       if (u.id !== userId) return u;
       const newStatus = u.status === 'active' ? 'disabled' : 'active';
@@ -268,6 +301,14 @@ export default function UsersPage() {
       toast.success(`2FA reset for "${u.name}"`);
       return { ...u, is2FAEnabled: false, twoFAMethod: null };
     }));
+  };
+
+  // Backend: a new one-time password, shown once in the same dialog as after creating someone.
+  const resetPassword = (u: ManagedUser) => {
+    if (!BACKEND) { toast.success(`Password reset link sent to ${u.email}`); return; }
+    backendUsers.resetPassword(u.id)
+      .then(password => setCreated({ name: u.name, email: u.email, role: u.role, password, reset: true }))
+      .catch(e => fail(e, 'reset the password'));
   };
 
   const canActOn = (target: ManagedUser) => {
@@ -452,8 +493,8 @@ export default function UsersPage() {
                           )}
                         </DropdownMenuItem>
                       )}
-                      {(canReset2FA || canResetPassword) && (canEditUser || canDisableUser) && <DropdownMenuSeparator />}
-                      {canReset2FA && (u.is2FAEnabled ? (
+                      {(show2FA || canResetPassword) && (canEditUser || canDisableUser) && <DropdownMenuSeparator />}
+                      {show2FA && (u.is2FAEnabled ? (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); reset2FA(u.id); }} className="gap-2">
                           <ShieldOff className="h-4 w-4" /> Reset 2FA
                         </DropdownMenuItem>
@@ -463,15 +504,21 @@ export default function UsersPage() {
                         </DropdownMenuItem>
                       ))}
                       {canResetPassword && (
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toast.success(`Password reset link sent to ${u.email}`); }} className="gap-2">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); resetPassword(u); }} className="gap-2">
                           <KeyRound className="h-4 w-4" /> Reset Password
                         </DropdownMenuItem>
                       )}
                       {canDeleteUser && (
                         <>
-                          {(canEditUser || canDisableUser || canReset2FA || canResetPassword) && <DropdownMenuSeparator />}
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(u); }} className="gap-2 text-destructive focus:text-destructive">
-                            <Trash2 className="h-4 w-4" /> Delete User
+                          {(canEditUser || canDisableUser || show2FA || canResetPassword) && <DropdownMenuSeparator />}
+                          {/* Backend: delete is on hold (decided 2026-11-05), shown greyed out; the API exists (soft delete). */}
+                          <DropdownMenuItem
+                            disabled={BACKEND}
+                            title={BACKEND ? 'Deleting users is on hold for now' : undefined}
+                            onClick={(e) => { e.stopPropagation(); if (!BACKEND) openDelete(u); }}
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" /> Delete User{BACKEND && <span className="ml-auto text-[10px] text-muted-foreground">On hold</span>}
                           </DropdownMenuItem>
                         </>
                       )}
@@ -600,7 +647,8 @@ export default function UsersPage() {
             </div>
             <div className="space-y-2">
               <Label>Email Address</Label>
-              <Input type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} />
+              <Input type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} readOnly={BACKEND} disabled={BACKEND} />
+              {BACKEND && <p className="text-xs text-muted-foreground">The e-mail is the sign-in and cannot be changed.</p>}
             </div>
             <div className="space-y-2">
               <Label>Phone</Label>
@@ -626,7 +674,7 @@ export default function UsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowEdit(false); setSelectedUser(null); resetForm(); }}>Cancel</Button>
-            <Button onClick={handleEdit} className="gradient-primary text-primary-foreground" disabled={!formName.trim() || !formEmail.trim()}>
+            <Button onClick={handleEdit} className="gradient-primary text-primary-foreground" disabled={!formName.trim() || (!BACKEND && !formEmail.trim())}>
               Save Changes
             </Button>
           </DialogFooter>
@@ -637,9 +685,9 @@ export default function UsersPage() {
       <Dialog open={!!created} onOpenChange={v => { if (!v) setCreated(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{created ? `${ROLE_LABELS[created.role]} created` : ''}</DialogTitle>
+            <DialogTitle>{created ? (created.reset ? 'Password reset' : `${ROLE_LABELS[created.role]} created`) : ''}</DialogTitle>
             <DialogDescription>
-              Give {created?.name} this one-time password. They sign in with {created?.email} and must choose their own password at first sign-in. It is shown only now.
+              Give {created?.name} this one-time password. They sign in with {created?.email} and must choose their own password at {created?.reset ? 'their next' : 'first'} sign-in. It is shown only now.
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
@@ -660,8 +708,13 @@ export default function UsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete User</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete <strong>{selectedUser?.name}</strong> ({selectedUser ? ROLE_LABELS[selectedUser.role] : ''})?
-              This action cannot be undone.
+              {BACKEND ? (
+                <>Delete <strong>{selectedUser?.name}</strong> ({selectedUser ? ROLE_LABELS[selectedUser.role] : ''})? Their login is removed and they
+                lose access at once. Their history (sessions, bills, audit) is kept.</>
+              ) : (
+                <>Are you sure you want to permanently delete <strong>{selectedUser?.name}</strong> ({selectedUser ? ROLE_LABELS[selectedUser.role] : ''})?
+                This action cannot be undone.</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
