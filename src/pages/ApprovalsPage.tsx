@@ -185,6 +185,12 @@ export default function ApprovalsPage() {
                   {(BACKEND ? reviewing.current?.address : cafes.find(b => b.id === reviewing.cafeId)?.address) || '—'}
                 </span>
               </div>
+              {BACKEND && reviewing.type === 'new_cafe' && (
+                <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground">Seats requested</span>
+                  <span className="font-medium text-right">{reviewing.current?.totalSeats || '—'}</span>
+                </div>
+              )}
               {BACKEND ? (
                 <div className="flex justify-between gap-3 p-3 rounded-lg bg-muted/50">
                   <span className="text-muted-foreground">Daily spend limit</span>

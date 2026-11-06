@@ -30,6 +30,7 @@ import ShiftManagementDialog from '@/features/cafes/ShiftManagementDialog';
 import { SHIFTS_ENABLED } from '@/shared/lib/featureFlags';
 import { AUTH_MODE } from '@/shared/lib/bff';
 import { useBackendCafes, changedFields, parseRinggit, formatRinggit, type OwnerAccount } from '@/features/cafes/cafesApi';
+import CafeSeatsDialog from '@/features/seats/CafeSeatsDialog';
 
 /**
  * Real backend (default): cafes, cafes and every action go to cafe-management-service (features/cafes/cafesApi.ts).
@@ -107,13 +108,21 @@ function CafeFormFields({
           <Label htmlFor="address">Address *</Label>
           <Input id="address" placeholder="e.g. 123 Main Street, City" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
         </div>
+        {(!isEdit || selectedCafe?.status === 'rejected') ? (
+          <div>
+            <Label htmlFor="seats">Number of seats *</Label>
+            <Input id="seats" type="number" min={1} max={200} className="w-28" value={form.totalSeats}
+              onChange={e => setForm(f => ({ ...f, totalSeats: Math.min(200, Math.max(1, parseInt(e.target.value) || 1)) }))} />
+            <p className="text-xs text-muted-foreground mt-1">The Super Admin approves the cafe with this number; InstaGPU then sets up one thin client per seat.</p>
+          </div>
+        ) : null}
         <div>
           <Label htmlFor="spend-limit">Daily spend limit (RM)</Label>
           <Input id="spend-limit" inputMode="decimal" placeholder="No limit" value={form.dailySpendLimit} onChange={e => setForm(f => ({ ...f, dailySpendLimit: e.target.value }))} />
           <p className="text-xs text-muted-foreground mt-1">Alerts at 80% and 100% of this amount per day. Leave empty for no limit.</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          {isEdit && selectedCafe ? `${selectedCafe.totalSeats} seats. ` : ''}Seats and team assignments are set up separately.
+          {isEdit && selectedCafe && selectedCafe.status !== 'rejected' ? `${selectedCafe.totalSeats} seats (changing the number of seats comes later). ` : ''}Team assignments are set up separately.
         </p>
       </div>
     );
@@ -291,6 +300,8 @@ export default function CafesPage() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSeatGrid, setShowSeatGrid] = useState(false);
+  // Backend mode: the cafe whose seats dialog is open (seats come from the API).
+  const [seatsCafe, setSeatsCafe] = useState<Cafe | null>(null);
   const [showShiftDialog, setShowShiftDialog] = useState(false);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
@@ -413,7 +424,7 @@ export default function CafesPage() {
       const limit = spendLimitSen();
       if (limit === undefined) return;
       const ok = await run(
-        () => backend.create(form.tenantId, { name: form.name.trim(), address: form.address.trim(), daily_spend_limit_minor: limit }),
+        () => backend.create(form.tenantId, { name: form.name.trim(), address: form.address.trim(), daily_spend_limit_minor: limit, requested_seats: form.totalSeats }),
         `Cafe "${form.name}" submitted for Super Admin approval`,
       );
       if (ok) setShowAddDialog(false);
@@ -460,7 +471,11 @@ export default function CafesPage() {
     if (BACKEND) {
       const limit = spendLimitSen();
       if (limit === undefined) return;
-      const input = changedFields(selectedCafe, { name: form.name, address: form.address, dailySpendLimitMinor: limit });
+      const input = changedFields(selectedCafe, {
+        name: form.name, address: form.address, dailySpendLimitMinor: limit,
+        // Only a rejected new cafe can still change its seat count (it goes back for approval).
+        requestedSeats: selectedCafe.status === 'rejected' ? form.totalSeats : undefined,
+      });
       let ok = false;
       if (selectedCafe.status === 'rejected' && canRequest) {
         // A rejected new cafe: the corrections go back for approval together.
@@ -785,6 +800,11 @@ export default function CafesPage() {
                     <LayoutGrid className="h-3.5 w-3.5" /> Seats
                   </Button>
                 )}
+                {BACKEND && !isBlocked && canViewSeats && (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSeatsCafe(cafe)}>
+                    <LayoutGrid className="h-3.5 w-3.5" /> Seats
+                  </Button>
+                )}
                 {SHIFTS_ENABLED && !isBlocked && (userRole === 'super_admin' || userRole === 'admin' || userRole === 'cafe_owner') && (
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setSelectedCafe(cafe); setShowShiftDialog(true); }}>
                     <Clock className="h-3.5 w-3.5" /> Shifts
@@ -943,6 +963,8 @@ export default function CafesPage() {
         </DialogContent>
       </Dialog>
 
+
+      {BACKEND && <CafeSeatsDialog cafe={seatsCafe} onClose={() => setSeatsCafe(null)} canEdit={canEditSeats} canSetup={can('seats.setup')} />}
 
       {/* Seat Grid Dialog */}
       <Dialog open={showSeatGrid} onOpenChange={(o) => { setShowSeatGrid(o); if (!o) { setEditingSeat(null); setCanSaveSeatConfig(false); setBaselineGpu(defaultGpu); } else { setBaselineGpu(defaultGpu); setCanSaveSeatConfig(false); } }}>

@@ -13,6 +13,8 @@ interface ApiFields {
   name?: string;
   address?: string | null;
   daily_spend_limit_minor?: number | null;
+  /** New-cafe requests: how many seats it asks for. */
+  requested_seats?: number | null;
 }
 
 /** GET /api/v1/approvals row. */
@@ -35,7 +37,7 @@ export interface ApiRequest {
 const toProposal = (f: ApiFields, base: ApiFields = {}): CafeEditProposal => ({
   name: f.name ?? base.name ?? '',
   address: (f.address === undefined ? base.address : f.address) ?? '',
-  totalSeats: 0,
+  totalSeats: f.requested_seats ?? base.requested_seats ?? 0,
   dailySpendLimitMinor: f.daily_spend_limit_minor === undefined ? base.daily_spend_limit_minor ?? null : f.daily_spend_limit_minor,
 });
 

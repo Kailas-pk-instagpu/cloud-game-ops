@@ -15,7 +15,20 @@ import {
   STATUS_META,
   aggregateStatus,
   useIntegrationStatuses,
+  lastHorizonStatus,
+  type HorizonStatus,
 } from '@/shared/lib/integrationsStatus';
+
+/** Backend mode: one line from GET /api/v1/horizon/status (last sync, sessions, missing AD logins). */
+function horizonDetail(h: HorizonStatus): string {
+  if (!h.enabled) return 'Not configured: the Horizon sync is off';
+  const ago = h.last_success_at ? Math.max(0, Math.round((Date.now() - new Date(h.last_success_at).getTime()) / 1000)) : null;
+  const parts = [ago === null ? 'Never synced' : ago < 60 ? `Synced ${ago}s ago` : `Synced ${Math.round(ago / 60)} min ago`];
+  if (h.consecutive_failures) parts.push(`${h.consecutive_failures} failed in a row`);
+  parts.push(`${h.sessions.connected} connected`);
+  if (h.seat_logins_missing) parts.push(`${h.seat_logins_missing} seat login${h.seat_logins_missing > 1 ? 's' : ''} not in AD`);
+  return parts.join(' · ');
+}
 
 /**
  * Global integrations health indicator shown in the top navbar.
@@ -126,8 +139,8 @@ export function IntegrationsStatusIndicator() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{integration.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {integration.description}
+                    <p className="text-xs text-muted-foreground truncate" title={integration.id === 'horizon' ? lastHorizonStatus()?.last_error ?? undefined : undefined}>
+                      {integration.id === 'horizon' && lastHorizonStatus() ? horizonDetail(lastHorizonStatus()!) : integration.description}
                     </p>
                   </div>
                   <span className="flex items-center gap-2 shrink-0">

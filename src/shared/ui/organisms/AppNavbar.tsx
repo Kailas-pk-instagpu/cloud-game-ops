@@ -18,6 +18,7 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose
 } from '@/components/ui/sheet';
 import { ArrowRight } from 'lucide-react';
+import { IntegrationsStatusIndicator } from '@/shared/ui/atoms/IntegrationsStatusIndicator';
 
 const typeIcon = {
   error: <AlertCircle className="h-4 w-4 text-destructive" />,
@@ -61,6 +62,8 @@ export function AppNavbar() {
 
 
       <div className="flex items-center gap-2">
+        {/* Horizon sync health (integrations.status.view: Super Admin, Sales Manager); restored 2026-11-06, real data in backend mode. */}
+        <IntegrationsStatusIndicator />
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

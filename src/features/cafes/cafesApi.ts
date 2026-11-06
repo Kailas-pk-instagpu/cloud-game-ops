@@ -26,6 +26,8 @@ export interface ApiCafe {
   status: string;
   daily_spend_limit_minor: number | null;
   seat_count: number;
+  /** Seats asked for with the new-cafe request (created when approved). */
+  requested_seats: number | null;
   version: number;
   created_by: string | null;
   created_at: string;
@@ -47,6 +49,8 @@ export interface OwnerAccount {
 
 /** The fields the API takes for a cafe. */
 export interface CafeInput {
+  /** New cafe (and a rejected one being corrected): how many seats it needs, 1-200. */
+  requested_seats?: number;
   name?: string;
   address?: string | null;
   daily_spend_limit_minor?: number | null;
@@ -71,7 +75,8 @@ export function toCafe(b: ApiCafe): Cafe {
     tenantId: b.tenant_id,
     tenantName: b.tenant_name,
     address: b.address ?? '',
-    totalSeats: b.seat_count,
+    // Before approval there are no seats yet: show the number asked for.
+    totalSeats: b.seat_count || b.requested_seats || 0,
     activeSeats: b.seat_count,
     status,
     billing: { costPerMinute: 0, lockedAmount: 0, currency: 'MYR' },
@@ -158,8 +163,9 @@ export const useBackendCafes = create<BackendCafesState>()((set, get) => ({
 }));
 
 /** Only the fields that differ from the cafe's live values (what an edit or edit request sends). */
-export function changedFields(cafe: Cafe, next: { name: string; address: string; dailySpendLimitMinor: number | null }): CafeInput {
+export function changedFields(cafe: Cafe, next: { name: string; address: string; dailySpendLimitMinor: number | null; requestedSeats?: number }): CafeInput {
   const out: CafeInput = {};
+  if (next.requestedSeats !== undefined && next.requestedSeats !== cafe.totalSeats) out.requested_seats = next.requestedSeats;
   if (next.name.trim() !== cafe.name) out.name = next.name.trim();
   if (next.address.trim() !== (cafe.address ?? '')) out.address = next.address.trim() || null;
   if (next.dailySpendLimitMinor !== (cafe.dailySpendLimitMinor ?? null)) out.daily_spend_limit_minor = next.dailySpendLimitMinor;

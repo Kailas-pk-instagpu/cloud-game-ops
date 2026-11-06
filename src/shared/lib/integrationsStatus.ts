@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Server, type LucideIcon } from 'lucide-react';
+import { AUTH_MODE, bffFetch } from '@/shared/lib/bff';
 
 /**
  * Generic integration health status used across the app.
@@ -49,11 +50,50 @@ export function aggregateStatus(
   return worst;
 }
 
+/** GET /api/v1/horizon/status (integration-service, integrations.status.view). */
+export interface HorizonStatus {
+  enabled: boolean;
+  health: 'operational' | 'delay' | 'issue' | 'off';
+  last_success_at: string | null;
+  last_error: string | null;
+  consecutive_failures: number;
+  sessions: { connected: number; disconnected: number };
+  seat_logins: number;
+  seat_logins_missing: number;
+}
+
+/** Last Horizon status read from the backend (for the popover's detail line). */
+let lastHorizon: HorizonStatus | null = null;
+export const lastHorizonStatus = () => lastHorizon;
+
 /**
- * Simulated real-time poll for every registered integration.
- * Replace with a real subscription / query when wired to the backend.
+ * Backend mode: the real Horizon sync health, every 30 s (off counts as an issue: no sync, no usage recorded). Callers without
+ * integrations.status.view get 403 and stay "operational" (the indicator is hidden for them anyway).
  */
+function useBackendStatuses(): Record<string, IntegrationStatus> {
+  const [statuses, setStatuses] = useState<Record<string, IntegrationStatus>>({ horizon: 'operational' });
+  useEffect(() => {
+    let stop = false;
+    const load = () =>
+      bffFetch<HorizonStatus>('/api/v1/horizon/status')
+        .then(s => {
+          lastHorizon = s;
+          if (!stop) setStatuses({ horizon: s.health === 'off' ? 'issue' : s.health });
+        })
+        .catch(() => { if (!stop) setStatuses({ horizon: 'issue' }); });
+    void load();
+    const id = setInterval(load, 30_000);
+    return () => { stop = true; clearInterval(id); };
+  }, []);
+  return statuses;
+}
+
+/** Simulated real-time poll for every registered integration (mock mode only). */
 export function useIntegrationStatuses(): Record<string, IntegrationStatus> {
+  return AUTH_MODE === 'bff' ? useBackendStatuses() : useMockStatuses();
+}
+
+function useMockStatuses(): Record<string, IntegrationStatus> {
   const [statuses, setStatuses] = useState<Record<string, IntegrationStatus>>(
     () => Object.fromEntries(INTEGRATIONS.map(i => [i.id, 'operational' as IntegrationStatus])),
   );

@@ -31,6 +31,7 @@ export const PERMISSIONS = {
   'cafes.delete': { feature: 'Cafes', description: 'Delete a cafe', locked: false },
   'seats.config.view': { feature: 'Cafes', description: "See a cafe's seat configuration", locked: false },
   'seats.config.edit': { feature: 'Cafes', description: 'Rename seats, set GPU model and status', locked: false },
+  'seats.setup': { feature: 'Cafes', description: 'Link seats to their thin client and Horizon login', locked: true },
 
   'approvals.view': { feature: 'Approvals', description: 'List approval requests', locked: true },
   'approvals.decide': { feature: 'Approvals', description: 'Approve or reject a request', locked: true },
@@ -75,7 +76,7 @@ export const DEFAULT_GRANTS: Record<Role, Permission[]> = {
     'users.view', 'users.create.admin', 'users.create.cafe_owner', 'users.create.manager', 'users.edit', 'users.disable',
     'users.reset_2fa', 'users.reset_password', 'users.delete',
     'cafes.view', 'cafes.request', 'cafes.edit', 'cafes.enable', 'cafes.disable', 'cafes.maintenance', 'cafes.delete',
-    'seats.config.view', 'seats.config.edit',
+    'seats.config.view', 'seats.config.edit', 'seats.setup',
     'approvals.view', 'approvals.decide',
     'billing.view', 'billing.invoices.download', 'sessions.view', 'settlements.view',
     'issues.view', 'issues.reply', 'issues.status', 'issues.delete',
